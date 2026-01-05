@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login | Tekvwarho IT Solutions</title>
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="login-page">
+    <div class="login-card">
+        <div class="login-header">
+            <h1>Tekvwarho Admin</h1>
+            <p id="login-subtitle">Sign in to access the dashboard</p>
+        </div>
+        
+        <!-- Login Form -->
+        <form class="login-form" id="login-form">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" class="form-control" required placeholder="admin@example.com">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" class="form-control" required placeholder="Enter your password">
+            </div>
+            <div id="login-error" class="text-danger mb-3" style="display: none;"></div>
+            <button type="submit" class="btn btn-primary" id="login-btn">Sign In</button>
+        </form>
+        
+        <!-- Change Password Form (Hidden by default) -->
+        <form class="login-form" id="change-password-form" style="display: none;">
+            <div class="alert alert-warning" style="margin-bottom: 20px; padding: 15px; background: #fff3cd; border-radius: 8px;">
+                <strong>Password Change Required</strong><br>
+                <small>For security, you must change your password before continuing.</small>
+            </div>
+            <div class="form-group">
+                <label for="new-password">New Password</label>
+                <input type="password" id="new-password" name="new-password" class="form-control" required minlength="8" placeholder="Minimum 8 characters">
+            </div>
+            <div class="form-group">
+                <label for="confirm-password">Confirm Password</label>
+                <input type="password" id="confirm-password" name="confirm-password" class="form-control" required minlength="8" placeholder="Confirm your new password">
+            </div>
+            <div id="change-error" class="text-danger mb-3" style="display: none;"></div>
+            <button type="submit" class="btn btn-primary" id="change-btn">Change Password & Continue</button>
+        </form>
+        
+        <div class="login-footer">
+            <a href="../index.html">Back to Website</a>
+        </div>
+    </div>
+    
+    <script>
+        let tempToken = null;
+        
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const btn = document.getElementById('login-btn');
+            const errorDiv = document.getElementById('login-error');
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            btn.disabled = true;
+            btn.textContent = 'Signing in...';
+            errorDiv.style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Check if password change is required
+                    if (data.mustChangePassword) {
+                        tempToken = data.token;
+                        document.getElementById('login-form').style.display = 'none';
+                        document.getElementById('change-password-form').style.display = 'block';
+                        document.getElementById('login-subtitle').textContent = 'Change your password';
+                        btn.disabled = false;
+                        btn.textContent = 'Sign In';
+                    } else {
+                        localStorage.setItem('adminToken', data.token);
+                        localStorage.setItem('adminUser', JSON.stringify(data.user));
+                        window.location.href = 'index.html';
+                    }
+                } else {
+                    errorDiv.textContent = data.message || 'Invalid credentials';
+                    errorDiv.style.display = 'block';
+                    btn.disabled = false;
+                    btn.textContent = 'Sign In';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                errorDiv.textContent = 'An error occurred. Please try again.';
+                errorDiv.style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = 'Sign In';
+            }
+        });
+        
+        document.getElementById('change-password-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const btn = document.getElementById('change-btn');
+            const errorDiv = document.getElementById('change-error');
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            
+            errorDiv.style.display = 'none';
+            
+            // Validate passwords match
+            if (newPassword !== confirmPassword) {
+                errorDiv.textContent = 'Passwords do not match';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            if (newPassword.length < 8) {
+                errorDiv.textContent = 'Password must be at least 8 characters';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.textContent = 'Changing password...';
+            
+            try {
+                const response = await fetch('/api/admin/change-password', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${tempToken}`
+                    },
+                    body: JSON.stringify({ newPassword })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Password changed - save token and redirect
+                    localStorage.setItem('adminToken', tempToken);
+                    window.location.href = 'index.html';
+                } else {
+                    errorDiv.textContent = data.message || 'Failed to change password';
+                    errorDiv.style.display = 'block';
+                    btn.disabled = false;
+                    btn.textContent = 'Change Password & Continue';
+                }
+            } catch (error) {
+                console.error('Change password error:', error);
+                errorDiv.textContent = 'An error occurred. Please try again.';
+                errorDiv.style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = 'Change Password & Continue';
+            }
+        });
+        
+        // Redirect if already logged in
+        if (localStorage.getItem('adminToken')) {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Tech insights, tutorials, and industry trends from Tekvwarho IT Solutions. Stay updated with our latest articles.">
+    <meta name="keywords" content="tech blog, IT insights, software development, technology trends">
+    <meta name="author" content="Tekvwarho IT Solutions Ltd">
+    
+    <title>Blog | Tech Insights & Tutorials | Tekvwarho</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="img/tekvwarho IT solutions logo.jpg">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header" id="header">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <img src="img/tekvwarho IT solutions logo.jpg" alt="Tekvwarho Logo">
+                <span class="logo-text">Tekvwarho</span>
+            </a>
+            
+            <nav class="nav">
+                <ul class="nav-links" id="navLinks">
+                    <li class="nav-dropdown">
+                        <a href="#" class="nav-link nav-dropdown-toggle">
+                            Services <i class="fas fa-chevron-down"></i>
+                        </a>
+                        <ul class="nav-dropdown-menu">
+                            <li><a href="it-consulting.html" class="nav-dropdown-item">IT Consulting</a></li>
+                            <li><a href="software-development.html" class="nav-dropdown-item">Software Development</a></li>
+                            <li><a href="website-development.html" class="nav-dropdown-item">Website Development</a></li>
+                            <li><a href="data-analytics.html" class="nav-dropdown-item">Data Analytics</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="about.html" class="nav-link">About</a></li>
+                    <li><a href="portfolio.html" class="nav-link">Portfolio</a></li>
+                    <li><a href="blog.html" class="nav-link active">Blog</a></li>
+                    <li><a href="book-consultation.html" class="nav-link">Book Consultation</a></li>
+                </ul>
+                <a href="contact.html" class="btn btn-primary">Contact Us</a>
+                <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Page Hero -->
+    <section class="page-hero">
+        <div class="container">
+            <h1>Blog & Insights</h1>
+            <p>Tech insights, tutorials, and industry trends from our team</p>
+        </div>
+    </section>
+
+    <!-- Blog Coming Soon -->
+    <section class="section">
+        <div class="container">
+            <!-- Category Filters (placeholder for future) -->
+            <div class="blog-filters" style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; margin-bottom: 3rem;">
+                <button class="btn btn-secondary active" style="opacity: 0.5; cursor: default;">All Posts</button>
+                <button class="btn btn-outline" style="opacity: 0.5; cursor: default;">Technology</button>
+                <button class="btn btn-outline" style="opacity: 0.5; cursor: default;">Development</button>
+                <button class="btn btn-outline" style="opacity: 0.5; cursor: default;">Business</button>
+                <button class="btn btn-outline" style="opacity: 0.5; cursor: default;">Tutorials</button>
+            </div>
+            
+            <!-- Coming Soon Card -->
+            <div class="coming-soon-card" style="text-align: center; padding: 4rem 2rem; max-width: 700px; margin: 0 auto;">
+                <div style="font-size: 5rem; color: var(--color-primary); margin-bottom: 1.5rem;">
+                    <i class="fas fa-newspaper"></i>
+                </div>
+                <h2 style="font-size: 2rem; margin-bottom: 1rem; color: var(--color-dark);">Blog Coming Soon</h2>
+                <p style="font-size: 1.125rem; color: var(--color-gray); margin-bottom: 2rem; line-height: 1.7;">
+                    We're working on bringing you valuable content about technology trends, development best practices, and business insights. Subscribe to be notified when we publish our first articles.
+                </p>
+                
+                <!-- Preview Topics -->
+                <div style="margin: 2.5rem 0;">
+                    <h4 style="margin-bottom: 1.5rem; color: var(--color-dark);">Topics We'll Cover:</h4>
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center;">
+                        <span class="service-tag">Cloud Computing</span>
+                        <span class="service-tag">Web Development</span>
+                        <span class="service-tag">Digital Transformation</span>
+                        <span class="service-tag">Data Analytics</span>
+                        <span class="service-tag">Cybersecurity</span>
+                        <span class="service-tag">AI & Machine Learning</span>
+                        <span class="service-tag">DevOps</span>
+                        <span class="service-tag">Startup Tips</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter Section -->
+    <section class="section newsletter-section">
+        <div class="container">
+            <div class="newsletter-box">
+                <div class="newsletter-content">
+                    <h2><i class="fas fa-envelope-open-text"></i> Stay Updated</h2>
+                    <p>Subscribe to our newsletter and be the first to know when we publish new articles.</p>
+                </div>
+                <form class="newsletter-form" id="newsletterForm">
+                    <div class="form-group" style="margin-bottom: 0; flex: 1;">
+                        <input type="email" class="form-control" placeholder="Enter your email address" required style="height: 54px;">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-bell"></i> Notify Me
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Preview Blog Cards (Coming Soon Teasers) -->
+    <section class="section" style="background-color: var(--color-light);">
+        <div class="container">
+            <div class="section-header">
+                <h2>Upcoming Articles</h2>
+                <p>A sneak peek at what we're working on</p>
+            </div>
+            
+            <div class="blog-grid">
+                <article class="blog-card" style="opacity: 0.7;">
+                    <div class="blog-image" style="background: linear-gradient(135deg, #0066CC 0%, #0052a3 100%); display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-cloud" style="font-size: 4rem; color: white;"></i>
+                    </div>
+                    <div class="blog-content">
+                        <div class="blog-meta">
+                            <span class="blog-category">Technology</span>
+                            <span class="blog-date">Coming Soon</span>
+                        </div>
+                        <h3>Choosing the Right Cloud Provider for Your Business</h3>
+                        <p>A comprehensive comparison of AWS, Azure, and Google Cloud to help you make the right decision for your infrastructure needs.</p>
+                        <span class="blog-link" style="color: var(--color-gray); cursor: default;">
+                            Coming Soon <i class="fas fa-arrow-right"></i>
+                        </span>
+                    </div>
+                </article>
+                
+                <article class="blog-card" style="opacity: 0.7;">
+                    <div class="blog-image" style="background: linear-gradient(135deg, #FF6B35 0%, #e55a2b 100%); display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-code" style="font-size: 4rem; color: white;"></i>
+                    </div>
+                    <div class="blog-content">
+                        <div class="blog-meta">
+                            <span class="blog-category">Development</span>
+                            <span class="blog-date">Coming Soon</span>
+                        </div>
+                        <h3>Modern Web Development Best Practices in 2025</h3>
+                        <p>Stay ahead of the curve with the latest frameworks, tools, and techniques that every web developer should know.</p>
+                        <span class="blog-link" style="color: var(--color-gray); cursor: default;">
+                            Coming Soon <i class="fas fa-arrow-right"></i>
+                        </span>
+                    </div>
+                </article>
+                
+                <article class="blog-card" style="opacity: 0.7;">
+                    <div class="blog-image" style="background: linear-gradient(135deg, #2D3436 0%, #1a1e1f 100%); display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-chart-line" style="font-size: 4rem; color: white;"></i>
+                    </div>
+                    <div class="blog-content">
+                        <div class="blog-meta">
+                            <span class="blog-category">Business</span>
+                            <span class="blog-date">Coming Soon</span>
+                        </div>
+                        <h3>Digital Transformation: A Guide for SMBs</h3>
+                        <p>Learn how small and medium businesses can leverage technology to compete with larger enterprises and drive growth.</p>
+                        <span class="blog-link" style="color: var(--color-gray); cursor: default;">
+                            Coming Soon <i class="fas fa-arrow-right"></i>
+                        </span>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Have a Topic Suggestion?</h2>
+                <p>We'd love to hear what topics you'd like us to cover. Reach out and let us know!</p>
+                <a href="contact.html" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-lightbulb"></i> Suggest a Topic
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-about">
+                    <div class="footer-logo">
+                        <img src="img/tekvwarho IT solutions logo.jpg" alt="Tekvwarho Logo">
+                        <span>Tekvwarho</span>
+                    </div>
+                    <p>Transforming businesses through innovative technology solutions. Based in Canada and Nigeria.</p>
+                    <div class="footer-social">
+                        <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-services">
+                    <h4>Services</h4>
+                    <ul class="footer-links">
+                        <li><a href="it-consulting.html">IT Consulting</a></li>
+                        <li><a href="software-development.html">Software Development</a></li>
+                        <li><a href="website-development.html">Website Development</a></li>
+                        <li><a href="data-analytics.html">Data Analytics</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-company">
+                    <h4>Company</h4>
+                    <ul class="footer-links">
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="portfolio.html">Portfolio</a></li>
+                        <li><a href="blog.html">Blog</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-contact">
+                    <h4>Contact</h4>
+                    <p><i class="fas fa-envelope"></i> efe.obukohwo@outlook.com</p>
+                    <p><i class="fas fa-phone"></i> Canada: +1 (905) 781 9825</p>
+                    <p><i class="fas fa-phone"></i> Nigeria: +234 906 577 9323</p>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2026 Tekvwarho IT Solutions Ltd. All rights reserved.</p>
+                <div class="footer-bottom-links">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/tracking.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/chat-widget.js"></script>
+</body>
+</html>

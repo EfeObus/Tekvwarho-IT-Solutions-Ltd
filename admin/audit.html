@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Logs | Tekvwarho Admin</title>
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Tekvwarho</h2>
+                <span class="subtitle">Admin Dashboard</span>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <span class="nav-section-title">Main</span>
+                    <a href="index.html" class="nav-item">
+                        <i class="fas fa-home"></i> Dashboard
+                    </a>
+                    <a href="messages.html" class="nav-item">
+                        <i class="fas fa-envelope"></i> Messages
+                    </a>
+                    <a href="chats.html" class="nav-item">
+                        <i class="fas fa-comments"></i> Live Chats
+                    </a>
+                    <a href="consultations.html" class="nav-item">
+                        <i class="fas fa-calendar-alt"></i> Consultations
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <span class="nav-section-title">Management</span>
+                    <a href="staff.html" class="nav-item">
+                        <i class="fas fa-users"></i> Staff
+                    </a>
+                    <a href="analytics.html" class="nav-item">
+                        <i class="fas fa-chart-bar"></i> Analytics
+                    </a>
+                    <a href="performance.html" class="nav-item">
+                        <i class="fas fa-chart-line"></i> Performance
+                    </a>
+                    <a href="audit.html" class="nav-item active">
+                        <i class="fas fa-history"></i> Audit Logs
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <span class="nav-section-title">Settings</span>
+                    <a href="settings.html" class="nav-item">
+                        <i class="fas fa-cog"></i> Settings
+                    </a>
+                    <a href="../index.html" class="nav-item">
+                        <i class="fas fa-globe"></i> View Website
+                    </a>
+                    <a href="#" class="nav-item" id="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Header -->
+            <header class="admin-header">
+                <div class="header-left">
+                    <button class="sidebar-toggle" id="sidebar-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Audit Logs</h1>
+                </div>
+                <div class="header-right">
+                    <div class="user-dropdown" id="user-dropdown">
+                        <div class="user-avatar" id="user-avatar">A</div>
+                        <div class="user-info">
+                            <div class="user-name" id="user-name">Admin</div>
+                            <div class="user-role" id="user-role">Administrator</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <div class="admin-content">
+                <!-- Filters -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="filter-row">
+                            <div class="form-group">
+                                <label for="filter-action">Action</label>
+                                <select id="filter-action" class="form-control">
+                                    <option value="">All Actions</option>
+                                    <option value="login">Login</option>
+                                    <option value="login_failed">Login Failed</option>
+                                    <option value="logout">Logout</option>
+                                    <option value="reply">Reply</option>
+                                    <option value="update_status">Status Update</option>
+                                    <option value="assign">Assignment</option>
+                                    <option value="staff_created">Staff Created</option>
+                                    <option value="staff_deleted">Staff Deleted</option>
+                                    <option value="settings_change">Settings Change</option>
+                                    <option value="export">Export</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="filter-entity">Entity Type</label>
+                                <select id="filter-entity" class="form-control">
+                                    <option value="">All Types</option>
+                                    <option value="auth">Authentication</option>
+                                    <option value="message">Messages</option>
+                                    <option value="consultation">Consultations</option>
+                                    <option value="chat">Chats</option>
+                                    <option value="staff">Staff</option>
+                                    <option value="settings">Settings</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="filter-start">Start Date</label>
+                                <input type="date" id="filter-start" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="filter-end">End Date</label>
+                                <input type="date" id="filter-end" class="form-control">
+                            </div>
+                            <div class="form-group" style="align-self: flex-end;">
+                                <button class="btn btn-primary" id="apply-filters">
+                                    <i class="fas fa-search"></i> Filter
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Staff Performance Summary -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3>Staff Performance (Last 30 Days)</h3>
+                    </div>
+                    <div class="card-body" style="padding: 0;">
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Staff Member</th>
+                                        <th>Replies Sent</th>
+                                        <th>Status Updates</th>
+                                        <th>Assignments</th>
+                                        <th>Total Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="performance-tbody">
+                                    <tr><td colspan="5" class="text-center text-muted">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Audit Logs Table -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Activity Log</h3>
+                    </div>
+                    <div class="card-body" style="padding: 0;">
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Timestamp</th>
+                                        <th>Staff</th>
+                                        <th>Action</th>
+                                        <th>Entity</th>
+                                        <th>Details</th>
+                                        <th>IP Address</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="audit-tbody">
+                                    <tr><td colspan="6" class="text-center text-muted">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn btn-secondary" id="load-more" style="display: none;">
+                            Load More
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/admin.js"></script>
+    <script>
+        const AuditPage = {
+            offset: 0,
+            limit: 50,
+            
+            async init() {
+                this.bindEvents();
+                await Promise.all([
+                    this.loadPerformance(),
+                    this.loadLogs()
+                ]);
+            },
+            
+            bindEvents() {
+                document.getElementById('apply-filters').addEventListener('click', () => {
+                    this.offset = 0;
+                    this.loadLogs();
+                });
+                
+                document.getElementById('load-more').addEventListener('click', () => {
+                    this.offset += this.limit;
+                    this.loadLogs(true);
+                });
+            },
+            
+            async loadPerformance() {
+                try {
+                    const response = await AdminApp.apiRequest('/audit/summary');
+                    if (response.success) {
+                        this.renderPerformance(response.data);
+                    }
+                } catch (error) {
+                    console.error('Load performance error:', error);
+                }
+            },
+            
+            renderPerformance(data) {
+                const tbody = document.getElementById('performance-tbody');
+                
+                if (!data || !data.length) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No data available</td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = data.map(row => `
+                    <tr>
+                        <td><strong>${row.staff_name || 'Unknown'}</strong></td>
+                        <td>${row.replies_sent || 0}</td>
+                        <td>${row.status_updates || 0}</td>
+                        <td>${row.assignments || 0}</td>
+                        <td><strong>${row.total_actions || 0}</strong></td>
+                    </tr>
+                `).join('');
+            },
+            
+            async loadLogs(append = false) {
+                try {
+                    const action = document.getElementById('filter-action').value;
+                    const entityType = document.getElementById('filter-entity').value;
+                    const startDate = document.getElementById('filter-start').value;
+                    const endDate = document.getElementById('filter-end').value;
+                    
+                    const params = new URLSearchParams();
+                    if (action) params.append('action', action);
+                    if (entityType) params.append('entityType', entityType);
+                    if (startDate) params.append('startDate', startDate);
+                    if (endDate) params.append('endDate', endDate);
+                    params.append('limit', this.limit);
+                    params.append('offset', this.offset);
+                    
+                    const response = await AdminApp.apiRequest(`/audit?${params}`);
+                    
+                    if (response.success) {
+                        this.renderLogs(response.data, append);
+                        
+                        // Show/hide load more button
+                        document.getElementById('load-more').style.display = 
+                            response.data.length >= this.limit ? 'block' : 'none';
+                    }
+                } catch (error) {
+                    console.error('Load logs error:', error);
+                    document.getElementById('audit-tbody').innerHTML = 
+                        '<tr><td colspan="6" class="text-center text-danger">Failed to load logs</td></tr>';
+                }
+            },
+            
+            renderLogs(logs, append = false) {
+                const tbody = document.getElementById('audit-tbody');
+                
+                if (!logs.length && !append) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No logs found</td></tr>';
+                    return;
+                }
+                
+                const html = logs.map(log => `
+                    <tr>
+                        <td>${this.formatDate(log.created_at)}</td>
+                        <td>${log.staff_name || log.staff_email || '<em>System</em>'}</td>
+                        <td>
+                            <span class="badge ${this.getActionBadgeClass(log.action)}">
+                                ${this.formatAction(log.action)}
+                            </span>
+                        </td>
+                        <td>${log.entity_type || '-'}</td>
+                        <td>${this.formatDetails(log.details)}</td>
+                        <td><code>${log.ip_address || '-'}</code></td>
+                    </tr>
+                `).join('');
+                
+                if (append) {
+                    tbody.insertAdjacentHTML('beforeend', html);
+                } else {
+                    tbody.innerHTML = html;
+                }
+            },
+            
+            formatDate(dateStr) {
+                const date = new Date(dateStr);
+                return date.toLocaleString();
+            },
+            
+            formatAction(action) {
+                return action.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            },
+            
+            getActionBadgeClass(action) {
+                if (action.includes('failed')) return 'badge-danger';
+                if (action.includes('delete')) return 'badge-danger';
+                if (action.includes('create') || action.includes('activate')) return 'badge-success';
+                if (action.includes('login') || action.includes('logout')) return 'badge-info';
+                return 'badge-secondary';
+            },
+            
+            formatDetails(details) {
+                if (!details) return '-';
+                try {
+                    const obj = typeof details === 'string' ? JSON.parse(details) : details;
+                    return Object.entries(obj)
+                        .map(([k, v]) => `${k}: ${v}`)
+                        .join(', ');
+                } catch {
+                    return String(details);
+                }
+            }
+        };
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof AdminApp !== 'undefined') {
+                AdminApp.init();
+                AuditPage.init();
+            }
+        });
+    </script>
+    
+    <style>
+        .filter-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+        
+        .filter-row .form-group {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .mb-4 {
+            margin-bottom: 20px;
+        }
+        
+        code {
+            background: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .card-footer {
+            padding: 15px;
+            text-align: center;
+            border-top: 1px solid var(--border-color, #e5e7eb);
+        }
+    </style>
+</body>
+</html>

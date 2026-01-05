@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book a Consultation | Tekvwarho IT Solutions Ltd</title>
+    <meta name="description" content="Schedule a free consultation with our IT experts. Book a time that works for you.">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="img/tekvwarho IT solutions logo.jpg">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header" id="header">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <img src="img/tekvwarho IT solutions logo.jpg" alt="Tekvwarho Logo">
+                <span class="logo-text">Tekvwarho</span>
+            </a>
+            
+            <nav class="nav">
+                <ul class="nav-links" id="navLinks">
+                    <li class="nav-dropdown">
+                        <a href="#" class="nav-link nav-dropdown-toggle">
+                            Services <i class="fas fa-chevron-down"></i>
+                        </a>
+                        <ul class="nav-dropdown-menu">
+                            <li><a href="it-consulting.html" class="nav-dropdown-item">IT Consulting</a></li>
+                            <li><a href="software-development.html" class="nav-dropdown-item">Software Development</a></li>
+                            <li><a href="website-development.html" class="nav-dropdown-item">Website Development</a></li>
+                            <li><a href="data-analytics.html" class="nav-dropdown-item">Data Analytics</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="about.html" class="nav-link">About</a></li>
+                    <li><a href="portfolio.html" class="nav-link">Portfolio</a></li>
+                    <li><a href="blog.html" class="nav-link">Blog</a></li>
+                    <li><a href="tech-stack.html" class="nav-link">Tech Stack</a></li>
+                    <li><a href="contact.html" class="nav-link">Contact</a></li>
+                    <li><a href="book-consultation.html" class="nav-link active">Book Consultation</a></li>
+                </ul>
+                <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1>Book a Consultation</h1>
+            <p>Schedule a free consultation with our IT experts</p>
+        </div>
+    </section>
+
+    <!-- Booking Section -->
+    <section class="booking-section">
+        <div class="container">
+            <div class="booking-container">
+                <!-- Calendar Side -->
+                <div class="booking-calendar">
+                    <h2>Select a Date</h2>
+                    <div class="calendar-navigation">
+                        <button class="calendar-nav prev" aria-label="Previous month">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="15 18 9 12 15 6"></polyline>
+                            </svg>
+                        </button>
+                        <span class="calendar-month-year" id="calendar-month-year">January 2025</span>
+                        <button class="calendar-nav next" aria-label="Next month">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="calendar-grid" id="calendar-grid">
+                        <div class="calendar-header">
+                            <span>Sun</span>
+                            <span>Mon</span>
+                            <span>Tue</span>
+                            <span>Wed</span>
+                            <span>Thu</span>
+                            <span>Fri</span>
+                            <span>Sat</span>
+                        </div>
+                        <div class="calendar-days" id="calendar-days">
+                            <!-- Days will be generated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Time Slots Side -->
+                <div class="booking-times">
+                    <h2>Available Times</h2>
+                    <p class="selected-date" id="selected-date-display">Select a date to see available times</p>
+                    <div class="time-slots" id="time-slots">
+                        <!-- Time slots will be generated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Booking Form -->
+            <div class="booking-form-container" id="booking-form-container" style="display: none;">
+                <h2>Complete Your Booking</h2>
+                <div class="booking-summary" id="booking-summary">
+                    <div class="summary-item">
+                        <strong>Date:</strong> <span id="summary-date"></span>
+                    </div>
+                    <div class="summary-item">
+                        <strong>Time:</strong> <span id="summary-time"></span>
+                    </div>
+                </div>
+                <form id="booking-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="booking-name">Full Name *</label>
+                            <input type="text" id="booking-name" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="booking-email">Email Address *</label>
+                            <input type="email" id="booking-email" name="email" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="booking-phone">Phone Number</label>
+                            <input type="tel" id="booking-phone" name="phone">
+                        </div>
+                        <div class="form-group">
+                            <label for="booking-company">Company Name</label>
+                            <input type="text" id="booking-company" name="company">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="booking-service">Service of Interest *</label>
+                        <select id="booking-service" name="service" required>
+                            <option value="">Select a service</option>
+                            <option value="IT Consulting">IT Consulting</option>
+                            <option value="Software Development">Software Development</option>
+                            <option value="Website Development">Website Development</option>
+                            <option value="Data Analytics">Data Analytics</option>
+                            <option value="General Inquiry">General Inquiry</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="booking-notes">Additional Notes</label>
+                        <textarea id="booking-notes" name="notes" rows="4" placeholder="Tell us about your project or any specific questions you have..."></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" id="back-to-calendar">Back</button>
+                        <button type="submit" class="btn-primary">Confirm Booking</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Success Message -->
+            <div class="booking-success" id="booking-success" style="display: none;">
+                <div class="success-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                </div>
+                <h2>Booking Confirmed!</h2>
+                <p>Thank you for scheduling a consultation with us. You will receive a confirmation email shortly.</p>
+                <div class="success-details" id="success-details">
+                    <!-- Filled by JavaScript -->
+                </div>
+                <div class="success-actions">
+                    <a href="index.html" class="btn-secondary">Return Home</a>
+                    <button class="btn-primary" id="book-another">Book Another</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-about">
+                    <a href="index.html" class="footer-logo">
+                        <img src="img/tekvwarho IT solutions logo.jpg" alt="Tekvwarho Logo">
+                        <span>Tekvwarho IT Solutions</span>
+                    </a>
+                    <p>Your trusted partner for innovative IT solutions in Canada and Nigeria. We transform businesses through technology.</p>
+                    <div class="footer-social">
+                        <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-services">
+                    <h4>Services</h4>
+                    <ul class="footer-links">
+                        <li><a href="it-consulting.html">IT Consulting</a></li>
+                        <li><a href="software-development.html">Software Development</a></li>
+                        <li><a href="website-development.html">Website Development</a></li>
+                        <li><a href="data-analytics.html">Data Analytics</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-company">
+                    <h4>Company</h4>
+                    <ul class="footer-links">
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="portfolio.html">Portfolio</a></li>
+                        <li><a href="blog.html">Blog</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-contact">
+                    <h4>Contact</h4>
+                    <p><i class="fas fa-envelope"></i> efe.obukohwo@outlook.com</p>
+                    <p><i class="fas fa-phone"></i> Canada: +1 (905) 781 9825</p>
+                    <p><i class="fas fa-phone"></i> Nigeria: +234 906 577 9323</p>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2026 Tekvwarho IT Solutions Ltd. All rights reserved.</p>
+                <div class="footer-bottom-links">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/main.js"></script>
+    <script src="js/booking.js"></script>
+    <script src="js/chat-widget.js"></script>
+    <script src="js/tracking.js"></script>
+</body>
+</html>

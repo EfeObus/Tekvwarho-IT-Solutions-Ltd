@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Performance | Tekvwarho Admin</title>
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .performance-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .metric-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .metric-card h3 {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 0.5rem;
+        }
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+        .metric-subtext {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            margin-top: 0.25rem;
+        }
+        .metric-icon {
+            float: right;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+        .metric-icon.blue { background: #dbeafe; color: #2563eb; }
+        .metric-icon.green { background: #d1fae5; color: #059669; }
+        .metric-icon.purple { background: #e9d5ff; color: #7c3aed; }
+        .metric-icon.orange { background: #fed7aa; color: #ea580c; }
+        .metric-icon.pink { background: #fce7f3; color: #db2777; }
+        
+        .score-card {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+        }
+        .score-card h3 { color: rgba(255,255,255,0.8); }
+        .score-card .metric-value { 
+            color: white;
+            font-size: 3rem;
+        }
+        
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .leaderboard-table th,
+        .leaderboard-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .leaderboard-table th {
+            background: #f9fafb;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #6b7280;
+        }
+        .leaderboard-table tr:hover {
+            background: #f9fafb;
+        }
+        .rank-badge {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.75rem;
+        }
+        .rank-1 { background: #fef3c7; color: #d97706; }
+        .rank-2 { background: #e5e7eb; color: #4b5563; }
+        .rank-3 { background: #fed7aa; color: #ea580c; }
+        .rank-other { background: #f3f4f6; color: #6b7280; }
+        
+        .score-bar {
+            width: 100px;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            display: inline-block;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        .score-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        .score-bar-fill.excellent { background: #10b981; }
+        .score-bar-fill.good { background: #3b82f6; }
+        .score-bar-fill.average { background: #f59e0b; }
+        .score-bar-fill.low { background: #ef4444; }
+        
+        .period-selector {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .period-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid #e5e7eb;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+        .period-btn:hover { border-color: #6366f1; }
+        .period-btn.active {
+            background: #6366f1;
+            color: white;
+            border-color: #6366f1;
+        }
+        
+        .staff-selector {
+            margin-bottom: 1.5rem;
+        }
+        .staff-selector select {
+            padding: 0.75rem 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            min-width: 250px;
+        }
+        
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 2rem 0 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .section-title i { color: #6366f1; }
+        
+        .progress-ring {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto;
+        }
+        .progress-ring circle {
+            fill: none;
+            stroke-width: 8;
+        }
+        .progress-ring .bg { stroke: rgba(255,255,255,0.2); }
+        .progress-ring .progress {
+            stroke: white;
+            stroke-linecap: round;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+            transition: stroke-dashoffset 0.5s ease;
+        }
+        .progress-text {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Tekvwarho</h2>
+                <span class="subtitle">Admin Dashboard</span>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <span class="nav-section-title">Main</span>
+                    <a href="index.html" class="nav-item">
+                        <i class="fas fa-home"></i> Dashboard
+                    </a>
+                    <a href="messages.html" class="nav-item">
+                        <i class="fas fa-envelope"></i> Messages
+                    </a>
+                    <a href="chats.html" class="nav-item">
+                        <i class="fas fa-comments"></i> Live Chats
+                    </a>
+                    <a href="consultations.html" class="nav-item">
+                        <i class="fas fa-calendar-alt"></i> Consultations
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <span class="nav-section-title">Management</span>
+                    <a href="staff.html" class="nav-item">
+                        <i class="fas fa-users"></i> Staff
+                    </a>
+                    <a href="performance.html" class="nav-item active">
+                        <i class="fas fa-chart-line"></i> Performance
+                    </a>
+                    <a href="analytics.html" class="nav-item">
+                        <i class="fas fa-chart-bar"></i> Analytics
+                    </a>
+                    <a href="audit.html" class="nav-item">
+                        <i class="fas fa-history"></i> Audit Logs
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <span class="nav-section-title">Settings</span>
+                    <a href="settings.html" class="nav-item">
+                        <i class="fas fa-cog"></i> Settings
+                    </a>
+                    <a href="../index.html" class="nav-item">
+                        <i class="fas fa-globe"></i> View Website
+                    </a>
+                    <a href="#" class="nav-item" id="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Header -->
+            <header class="admin-header">
+                <div class="header-left">
+                    <button class="sidebar-toggle" id="sidebar-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Staff Performance</h1>
+                </div>
+                <div class="header-right">
+                    <div class="user-dropdown" id="user-dropdown">
+                        <div class="user-avatar" id="user-avatar">A</div>
+                        <div class="user-info">
+                            <div class="user-name" id="user-name">Admin</div>
+                            <div class="user-role" id="user-role">Administrator</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <div class="admin-content">
+                <!-- Period Selector -->
+                <div class="period-selector">
+                    <button class="period-btn" data-period="week">This Week</button>
+                    <button class="period-btn active" data-period="month">This Month</button>
+                    <button class="period-btn" data-period="quarter">This Quarter</button>
+                    <button class="period-btn" data-period="year">This Year</button>
+                </div>
+
+                <!-- Staff Selector (Admin only) -->
+                <div class="staff-selector" id="staff-selector-container" style="display: none;">
+                    <select id="staff-selector">
+                        <option value="">All Staff - Summary View</option>
+                    </select>
+                </div>
+
+                <!-- Individual Performance View -->
+                <div id="individual-view">
+                    <div class="performance-grid">
+                        <div class="metric-card score-card">
+                            <h3>Performance Score</h3>
+                            <div class="metric-value" id="performance-score">--</div>
+                            <div class="metric-subtext">Out of 100</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon blue"><i class="fas fa-envelope"></i></div>
+                            <h3>Messages Handled</h3>
+                            <div class="metric-value" id="messages-handled">--</div>
+                            <div class="metric-subtext"><span id="messages-converted">--</span> converted (<span id="messages-rate">--</span>%)</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon green"><i class="fas fa-calendar-check"></i></div>
+                            <h3>Consultations</h3>
+                            <div class="metric-value" id="consultations-handled">--</div>
+                            <div class="metric-subtext"><span id="consultations-completed">--</span> completed (<span id="consultations-rate">--</span>%)</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon purple"><i class="fas fa-comments"></i></div>
+                            <h3>Chat Sessions</h3>
+                            <div class="metric-value" id="chats-handled">--</div>
+                            <div class="metric-subtext"><span id="chat-messages">--</span> messages sent</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon orange"><i class="fas fa-clock"></i></div>
+                            <h3>Avg Response Time</h3>
+                            <div class="metric-value" id="response-time">--</div>
+                            <div class="metric-subtext">To first reply</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon pink"><i class="fas fa-bolt"></i></div>
+                            <h3>Total Actions</h3>
+                            <div class="metric-value" id="total-actions">--</div>
+                            <div class="metric-subtext"><span id="active-days">--</span> active days</div>
+                        </div>
+                    </div>
+
+                    <!-- Activity Breakdown -->
+                    <h2 class="section-title"><i class="fas fa-list"></i> Activity Breakdown</h2>
+                    <div class="performance-grid">
+                        <div class="metric-card">
+                            <h3>Login Sessions</h3>
+                            <div class="metric-value" id="logins">--</div>
+                        </div>
+                        <div class="metric-card">
+                            <h3>Replies Sent</h3>
+                            <div class="metric-value" id="replies">--</div>
+                        </div>
+                        <div class="metric-card">
+                            <h3>Chat Responses</h3>
+                            <div class="metric-value" id="chat-responses">--</div>
+                        </div>
+                        <div class="metric-card">
+                            <h3>Status Updates</h3>
+                            <div class="metric-value" id="status-updates">--</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Leaderboard View -->
+                <div id="leaderboard-view">
+                    <h2 class="section-title"><i class="fas fa-trophy"></i> Staff Leaderboard</h2>
+                    <div class="card">
+                        <table class="leaderboard-table">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Staff Member</th>
+                                    <th>Messages</th>
+                                    <th>Consultations</th>
+                                    <th>Chats</th>
+                                    <th>Actions</th>
+                                    <th>Score</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leaderboard-tbody">
+                                <tr><td colspan="7" class="text-center">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/admin.js"></script>
+    <script>
+        const PerformancePage = {
+            currentPeriod: 'month',
+            selectedStaffId: null,
+            isAdmin: false,
+
+            async init() {
+                const user = AdminApp.getCurrentUser();
+                this.isAdmin = user?.role === 'admin';
+                
+                this.bindEvents();
+                
+                if (this.isAdmin) {
+                    document.getElementById('staff-selector-container').style.display = 'block';
+                    await this.loadStaffList();
+                    await this.loadLeaderboard();
+                } else {
+                    this.selectedStaffId = user?.id;
+                    document.getElementById('leaderboard-view').style.display = 'none';
+                }
+                
+                await this.loadPerformance();
+            },
+
+            bindEvents() {
+                // Period buttons
+                document.querySelectorAll('.period-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.currentPeriod = e.target.dataset.period;
+                        this.loadPerformance();
+                        if (this.isAdmin) this.loadLeaderboard();
+                    });
+                });
+
+                // Staff selector
+                document.getElementById('staff-selector').addEventListener('change', (e) => {
+                    this.selectedStaffId = e.target.value || null;
+                    if (this.selectedStaffId) {
+                        document.getElementById('leaderboard-view').style.display = 'none';
+                        document.getElementById('individual-view').style.display = 'block';
+                    } else {
+                        document.getElementById('leaderboard-view').style.display = 'block';
+                    }
+                    this.loadPerformance();
+                });
+            },
+
+            async loadStaffList() {
+                try {
+                    const response = await AdminApp.apiRequest('/admin/staff');
+                    if (response?.success) {
+                        const select = document.getElementById('staff-selector');
+                        response.data.forEach(staff => {
+                            const option = document.createElement('option');
+                            option.value = staff.id;
+                            option.textContent = `${staff.name} (${staff.role})`;
+                            select.appendChild(option);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Failed to load staff list:', error);
+                }
+            },
+
+            async loadPerformance() {
+                try {
+                    let url;
+                    if (this.selectedStaffId) {
+                        url = `/performance/staff/${this.selectedStaffId}?period=${this.currentPeriod}`;
+                    } else if (this.isAdmin) {
+                        // Show summary view
+                        return;
+                    } else {
+                        url = `/performance/my-stats?period=${this.currentPeriod}`;
+                    }
+
+                    const response = await AdminApp.apiRequest(url);
+                    if (response?.success) {
+                        this.displayMetrics(response.data);
+                    }
+                } catch (error) {
+                    console.error('Failed to load performance:', error);
+                }
+            },
+
+            displayMetrics(data) {
+                document.getElementById('performance-score').textContent = data.performanceScore || '--';
+                
+                // Messages
+                document.getElementById('messages-handled').textContent = data.messages?.assigned || 0;
+                document.getElementById('messages-converted').textContent = data.messages?.converted || 0;
+                document.getElementById('messages-rate').textContent = data.messages?.conversionRate || 0;
+                
+                // Consultations
+                document.getElementById('consultations-handled').textContent = data.consultations?.assigned || 0;
+                document.getElementById('consultations-completed').textContent = data.consultations?.completed || 0;
+                document.getElementById('consultations-rate').textContent = data.consultations?.completionRate || 0;
+                
+                // Chats
+                document.getElementById('chats-handled').textContent = data.chats?.sessionsHandled || 0;
+                document.getElementById('chat-messages').textContent = data.chats?.messagesSent || 0;
+                
+                // Response time
+                document.getElementById('response-time').textContent = data.responseTime?.averageFormatted || 'N/A';
+                
+                // Activity
+                document.getElementById('total-actions').textContent = data.activity?.totalActions || 0;
+                document.getElementById('active-days').textContent = data.activity?.activeDays || 0;
+                document.getElementById('logins').textContent = data.activity?.logins || 0;
+                document.getElementById('replies').textContent = data.activity?.replies || 0;
+                document.getElementById('chat-responses').textContent = data.activity?.chatResponses || 0;
+                document.getElementById('status-updates').textContent = data.activity?.statusUpdates || 0;
+            },
+
+            async loadLeaderboard() {
+                try {
+                    const response = await AdminApp.apiRequest(`/performance/leaderboard?period=${this.currentPeriod}`);
+                    if (response?.success) {
+                        this.displayLeaderboard(response.data);
+                    }
+                } catch (error) {
+                    console.error('Failed to load leaderboard:', error);
+                }
+            },
+
+            displayLeaderboard(data) {
+                const tbody = document.getElementById('leaderboard-tbody');
+                
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No performance data yet</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = data.map((staff, index) => {
+                    const rank = index + 1;
+                    const rankClass = rank <= 3 ? `rank-${rank}` : 'rank-other';
+                    const scoreClass = staff.performanceScore >= 80 ? 'excellent' : 
+                                       staff.performanceScore >= 60 ? 'good' :
+                                       staff.performanceScore >= 40 ? 'average' : 'low';
+                    
+                    return `
+                        <tr>
+                            <td><span class="rank-badge ${rankClass}">${rank}</span></td>
+                            <td>
+                                <strong>${staff.name}</strong>
+                                <div class="text-muted" style="font-size: 0.75rem;">${staff.role}</div>
+                            </td>
+                            <td>${staff.messagesConverted || 0}</td>
+                            <td>${staff.consultationsCompleted || 0}</td>
+                            <td>${staff.chatsHandled || 0}</td>
+                            <td>${staff.totalActions || 0}</td>
+                            <td>
+                                <div class="score-bar">
+                                    <div class="score-bar-fill ${scoreClass}" style="width: ${staff.performanceScore}%"></div>
+                                </div>
+                                <span>${staff.performanceScore}</span>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        };
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            AdminApp.init();
+            PerformancePage.init();
+        });
+    </script>
+</body>
+</html>

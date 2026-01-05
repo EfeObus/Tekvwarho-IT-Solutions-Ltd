@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Management | Tekvwarho Admin</title>
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Tekvwarho</h2>
+                <span class="subtitle">Admin Dashboard</span>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <span class="nav-section-title">Main</span>
+                    <a href="index.html" class="nav-item">
+                        <i class="fas fa-home"></i> Dashboard
+                    </a>
+                    <a href="messages.html" class="nav-item">
+                        <i class="fas fa-envelope"></i> Messages
+                        <span class="badge" id="messages-badge">0</span>
+                    </a>
+                    <a href="chats.html" class="nav-item">
+                        <i class="fas fa-comments"></i> Live Chats
+                        <span class="badge" id="chats-badge">0</span>
+                    </a>
+                    <a href="consultations.html" class="nav-item">
+                        <i class="fas fa-calendar-alt"></i> Consultations
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <span class="nav-section-title">Management</span>
+                    <a href="staff.html" class="nav-item active">
+                        <i class="fas fa-users"></i> Staff
+                    </a>
+                    <a href="analytics.html" class="nav-item">
+                        <i class="fas fa-chart-bar"></i> Analytics
+                    </a>
+                    <a href="performance.html" class="nav-item">
+                        <i class="fas fa-chart-line"></i> Performance
+                    </a>
+                    <a href="audit.html" class="nav-item">
+                        <i class="fas fa-history"></i> Audit Logs
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <span class="nav-section-title">Settings</span>
+                    <a href="settings.html" class="nav-item">
+                        <i class="fas fa-cog"></i> Settings
+                    </a>
+                    <a href="../index.html" class="nav-item">
+                        <i class="fas fa-globe"></i> View Website
+                    </a>
+                    <a href="#" class="nav-item" id="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Header -->
+            <header class="admin-header">
+                <div class="header-left">
+                    <button class="sidebar-toggle" id="sidebar-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Staff Management</h1>
+                </div>
+                <div class="header-right">
+                    <button class="btn btn-primary" id="add-staff-btn">
+                        <i class="fas fa-plus"></i> Add Staff
+                    </button>
+                    <div class="user-dropdown" id="user-dropdown">
+                        <div class="user-avatar" id="user-avatar">A</div>
+                        <div class="user-info">
+                            <div class="user-name" id="user-name">Admin</div>
+                            <div class="user-role" id="user-role">Administrator</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <div class="admin-content">
+                <!-- Stats Cards -->
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-primary"><i class="fas fa-users"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="total-staff">0</span>
+                            <span class="stat-label">Total Staff</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon bg-success"><i class="fas fa-user-check"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="active-staff">0</span>
+                            <span class="stat-label">Active</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon bg-warning"><i class="fas fa-user-shield"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="admin-count">0</span>
+                            <span class="stat-label">Admins</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Staff Table -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Staff Members</h3>
+                        <div class="card-actions">
+                            <select class="form-control" id="filter-role" style="width: auto;">
+                                <option value="">All Roles</option>
+                                <option value="admin">Admin</option>
+                                <option value="manager">Manager</option>
+                                <option value="staff">Staff</option>
+                            </select>
+                            <select class="form-control" id="filter-status" style="width: auto;">
+                                <option value="">All Status</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-body" style="padding: 0;">
+                        <div class="table-responsive">
+                            <table class="data-table" id="staff-table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Department</th>
+                                        <th>Permissions</th>
+                                        <th>Status</th>
+                                        <th>Last Login</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="staff-tbody">
+                                    <tr>
+                                        <td colspan="8" class="text-center text-muted" style="padding: 60px;">
+                                            Loading staff...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add/Edit Staff Modal -->
+    <div class="modal-overlay" id="staff-modal">
+        <div class="modal" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 id="staff-modal-title">Add Staff Member</h3>
+                <button class="modal-close" id="modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="staff-form">
+                    <input type="hidden" id="staff-id">
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="staff-name">Full Name *</label>
+                            <input type="text" id="staff-name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="staff-email">Email Address *</label>
+                            <input type="email" id="staff-email" class="form-control" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="staff-phone">Phone Number</label>
+                            <input type="tel" id="staff-phone" class="form-control" placeholder="+1 (xxx) xxx-xxxx">
+                        </div>
+                        <div class="form-group">
+                            <label for="staff-department">Department</label>
+                            <select id="staff-department" class="form-control">
+                                <option value="">Select Department</option>
+                                <option value="IT Support">IT Support</option>
+                                <option value="Development">Development</option>
+                                <option value="Sales">Sales</option>
+                                <option value="Customer Service">Customer Service</option>
+                                <option value="Management">Management</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row" id="password-row">
+                        <div class="form-group">
+                            <label for="staff-password">Password *</label>
+                            <input type="password" id="staff-password" class="form-control" minlength="8" placeholder="Minimum 8 characters">
+                        </div>
+                        <div class="form-group">
+                            <label for="staff-role">Role *</label>
+                            <select id="staff-role" class="form-control" required>
+                                <option value="staff">Staff</option>
+                                <option value="manager">Manager</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Permissions</label>
+                        <div class="permissions-grid">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="perm-messages" checked>
+                                <span>Manage Messages</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="perm-consultations" checked>
+                                <span>Manage Consultations</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="perm-chats" checked>
+                                <span>Manage Live Chats</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="perm-analytics">
+                                <span>View Analytics</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div id="form-error" class="alert alert-danger" style="display: none;"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="close-modal-btn">Cancel</button>
+                <button class="btn btn-primary" id="save-staff-btn">
+                    <i class="fas fa-save"></i> Save
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reset Password Modal -->
+    <div class="modal-overlay" id="reset-password-modal">
+        <div class="modal" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>Reset Password</h3>
+                <button class="modal-close" onclick="document.getElementById('reset-password-modal').classList.remove('active')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="reset-staff-id">
+                <p class="text-muted mb-3">Set a new password for <strong id="reset-staff-name"></strong></p>
+                <div class="form-group">
+                    <label for="new-password">New Password</label>
+                    <input type="password" id="new-password" class="form-control" minlength="8" placeholder="Minimum 8 characters">
+                </div>
+                <p class="text-muted text-sm">The user will be required to change this password on their next login.</p>
+                <div id="reset-error" class="alert alert-danger" style="display: none;"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="document.getElementById('reset-password-modal').classList.remove('active')">Cancel</button>
+                <button class="btn btn-primary" id="reset-password-btn">
+                    <i class="fas fa-key"></i> Reset Password
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="delete-modal">
+        <div class="modal" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>Confirm Delete</h3>
+                <button class="modal-close" onclick="document.getElementById('delete-modal').classList.remove('active')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="delete-staff-id">
+                <p>Are you sure you want to permanently delete <strong id="delete-staff-name"></strong>?</p>
+                <p class="text-danger">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="document.getElementById('delete-modal').classList.remove('active')">Cancel</button>
+                <button class="btn btn-danger" id="confirm-delete-btn">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/admin.js"></script>
+    <script>
+        // Staff Management Page Logic
+        const StaffPage = {
+            staffList: [],
+            
+            async init() {
+                this.bindEvents();
+                await this.loadStaff();
+            },
+            
+            bindEvents() {
+                // Add staff button
+                document.getElementById('add-staff-btn').addEventListener('click', () => this.openModal());
+                
+                // Close modal buttons
+                document.getElementById('modal-close').addEventListener('click', () => this.closeModal());
+                document.getElementById('close-modal-btn').addEventListener('click', () => this.closeModal());
+                
+                // Save staff
+                document.getElementById('save-staff-btn').addEventListener('click', () => this.saveStaff());
+                
+                // Reset password
+                document.getElementById('reset-password-btn').addEventListener('click', () => this.resetPassword());
+                
+                // Confirm delete
+                document.getElementById('confirm-delete-btn').addEventListener('click', () => this.deleteStaff());
+                
+                // Filters
+                document.getElementById('filter-role').addEventListener('change', () => this.applyFilters());
+                document.getElementById('filter-status').addEventListener('change', () => this.applyFilters());
+                
+                // Role change - update permissions for admin
+                document.getElementById('staff-role').addEventListener('change', (e) => {
+                    if (e.target.value === 'admin') {
+                        document.querySelectorAll('.permissions-grid input').forEach(cb => cb.checked = true);
+                    }
+                });
+            },
+            
+            async loadStaff() {
+                try {
+                    const response = await AdminApp.apiRequest('/admin/staff');
+                    if (response.success) {
+                        this.staffList = response.data;
+                        this.renderTable(response.data);
+                        this.updateStats(response.data);
+                    }
+                } catch (error) {
+                    console.error('Failed to load staff:', error);
+                    document.getElementById('staff-tbody').innerHTML = `
+                        <tr><td colspan="8" class="text-center text-danger">Failed to load staff list</td></tr>
+                    `;
+                }
+            },
+            
+            updateStats(staff) {
+                document.getElementById('total-staff').textContent = staff.length;
+                document.getElementById('active-staff').textContent = staff.filter(s => s.is_active).length;
+                document.getElementById('admin-count').textContent = staff.filter(s => s.role === 'admin').length;
+            },
+            
+            renderTable(staff) {
+                const tbody = document.getElementById('staff-tbody');
+                
+                if (staff.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted" style="padding: 60px;">No staff members found</td></tr>`;
+                    return;
+                }
+                
+                tbody.innerHTML = staff.map(member => `
+                    <tr>
+                        <td>
+                            <div class="user-cell">
+                                <div class="user-avatar-sm">${member.name.charAt(0).toUpperCase()}</div>
+                                <div>
+                                    <div class="font-medium">${member.name}</div>
+                                    ${member.must_change_password ? '<span class="badge badge-warning">Password Change Required</span>' : ''}
+                                </div>
+                            </div>
+                        </td>
+                        <td>${member.email}</td>
+                        <td>
+                            <span class="badge badge-${member.role === 'admin' ? 'danger' : member.role === 'manager' ? 'warning' : 'info'}">
+                                ${member.role.charAt(0).toUpperCase() + member.role.slice(1)}
+                            </span>
+                        </td>
+                        <td>${member.department || '-'}</td>
+                        <td>
+                            <div class="permission-badges">
+                                ${member.can_manage_messages ? '<span class="perm-badge" title="Messages"><i class="fas fa-envelope"></i></span>' : ''}
+                                ${member.can_manage_consultations ? '<span class="perm-badge" title="Consultations"><i class="fas fa-calendar"></i></span>' : ''}
+                                ${member.can_manage_chats ? '<span class="perm-badge" title="Chats"><i class="fas fa-comments"></i></span>' : ''}
+                                ${member.can_view_analytics ? '<span class="perm-badge" title="Analytics"><i class="fas fa-chart-bar"></i></span>' : ''}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status-badge ${member.is_active ? 'status-active' : 'status-inactive'}">
+                                ${member.is_active ? 'Active' : 'Inactive'}
+                            </span>
+                        </td>
+                        <td>${member.last_login ? this.formatDate(member.last_login) : 'Never'}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn-icon" title="Edit" onclick="StaffPage.openModal('${member.id}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-icon" title="Reset Password" onclick="StaffPage.openResetPassword('${member.id}', '${member.name}')">
+                                    <i class="fas fa-key"></i>
+                                </button>
+                                ${member.is_active 
+                                    ? `<button class="btn-icon text-warning" title="Deactivate" onclick="StaffPage.toggleStatus('${member.id}', false)">
+                                        <i class="fas fa-user-slash"></i>
+                                       </button>`
+                                    : `<button class="btn-icon text-success" title="Activate" onclick="StaffPage.toggleStatus('${member.id}', true)">
+                                        <i class="fas fa-user-check"></i>
+                                       </button>`
+                                }
+                                <button class="btn-icon text-danger" title="Delete" onclick="StaffPage.openDeleteConfirm('${member.id}', '${member.name}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            },
+            
+            formatDate(dateStr) {
+                const date = new Date(dateStr);
+                const now = new Date();
+                const diff = now - date;
+                
+                if (diff < 60000) return 'Just now';
+                if (diff < 3600000) return Math.floor(diff / 60000) + ' min ago';
+                if (diff < 86400000) return Math.floor(diff / 3600000) + ' hours ago';
+                if (diff < 604800000) return Math.floor(diff / 86400000) + ' days ago';
+                
+                return date.toLocaleDateString();
+            },
+            
+            applyFilters() {
+                const role = document.getElementById('filter-role').value;
+                const status = document.getElementById('filter-status').value;
+                
+                let filtered = this.staffList;
+                
+                if (role) {
+                    filtered = filtered.filter(s => s.role === role);
+                }
+                
+                if (status) {
+                    const isActive = status === 'active';
+                    filtered = filtered.filter(s => s.is_active === isActive);
+                }
+                
+                this.renderTable(filtered);
+            },
+            
+            openModal(staffId = null) {
+                const modal = document.getElementById('staff-modal');
+                const title = document.getElementById('staff-modal-title');
+                const form = document.getElementById('staff-form');
+                const passwordRow = document.getElementById('password-row');
+                const passwordInput = document.getElementById('staff-password');
+                
+                form.reset();
+                document.getElementById('form-error').style.display = 'none';
+                
+                if (staffId) {
+                    // Edit mode
+                    const member = this.staffList.find(s => s.id === staffId);
+                    if (member) {
+                        title.textContent = 'Edit Staff Member';
+                        document.getElementById('staff-id').value = member.id;
+                        document.getElementById('staff-name').value = member.name;
+                        document.getElementById('staff-email').value = member.email;
+                        document.getElementById('staff-email').disabled = true;
+                        document.getElementById('staff-phone').value = member.phone || '';
+                        document.getElementById('staff-department').value = member.department || '';
+                        document.getElementById('staff-role').value = member.role;
+                        document.getElementById('perm-messages').checked = member.can_manage_messages;
+                        document.getElementById('perm-consultations').checked = member.can_manage_consultations;
+                        document.getElementById('perm-chats').checked = member.can_manage_chats;
+                        document.getElementById('perm-analytics').checked = member.can_view_analytics;
+                        
+                        passwordInput.required = false;
+                        passwordInput.placeholder = 'Leave blank to keep current';
+                    }
+                } else {
+                    // Add mode
+                    title.textContent = 'Add Staff Member';
+                    document.getElementById('staff-id').value = '';
+                    document.getElementById('staff-email').disabled = false;
+                    passwordInput.required = true;
+                    passwordInput.placeholder = 'Minimum 8 characters';
+                }
+                
+                modal.classList.add('active');
+            },
+            
+            closeModal() {
+                document.getElementById('staff-modal').classList.remove('active');
+            },
+            
+            async saveStaff() {
+                const id = document.getElementById('staff-id').value;
+                const name = document.getElementById('staff-name').value;
+                const email = document.getElementById('staff-email').value;
+                const password = document.getElementById('staff-password').value;
+                const phone = document.getElementById('staff-phone').value;
+                const department = document.getElementById('staff-department').value;
+                const role = document.getElementById('staff-role').value;
+                const errorDiv = document.getElementById('form-error');
+                
+                const permissions = {
+                    canManageMessages: document.getElementById('perm-messages').checked,
+                    canManageConsultations: document.getElementById('perm-consultations').checked,
+                    canManageChats: document.getElementById('perm-chats').checked,
+                    canViewAnalytics: document.getElementById('perm-analytics').checked
+                };
+                
+                // Validation
+                if (!name || !email || !role) {
+                    errorDiv.textContent = 'Please fill in all required fields';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+                
+                if (!id && (!password || password.length < 8)) {
+                    errorDiv.textContent = 'Password must be at least 8 characters';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+                
+                const btn = document.getElementById('save-staff-btn');
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+                
+                try {
+                    const payload = { name, phone, department, role, permissions };
+                    if (!id) {
+                        payload.email = email;
+                        payload.password = password;
+                    } else if (password) {
+                        payload.password = password;
+                    }
+                    
+                    const url = id ? `/api/admin/staff/${id}` : '/api/admin/staff';
+                    const method = id ? 'PATCH' : 'POST';
+                    
+                    const response = await AdminApp.apiRequest(url, {
+                        method,
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if (response.success) {
+                        this.closeModal();
+                        await this.loadStaff();
+                        AdminApp.showNotification(id ? 'Staff member updated' : 'Staff member added', 'success');
+                    } else {
+                        errorDiv.textContent = response.message || 'Failed to save';
+                        errorDiv.style.display = 'block';
+                    }
+                } catch (error) {
+                    console.error('Save error:', error);
+                    errorDiv.textContent = 'An error occurred';
+                    errorDiv.style.display = 'block';
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-save"></i> Save';
+                }
+            },
+            
+            openResetPassword(staffId, staffName) {
+                document.getElementById('reset-staff-id').value = staffId;
+                document.getElementById('reset-staff-name').textContent = staffName;
+                document.getElementById('new-password').value = '';
+                document.getElementById('reset-error').style.display = 'none';
+                document.getElementById('reset-password-modal').classList.add('active');
+            },
+            
+            async resetPassword() {
+                const staffId = document.getElementById('reset-staff-id').value;
+                const newPassword = document.getElementById('new-password').value;
+                const errorDiv = document.getElementById('reset-error');
+                const btn = document.getElementById('reset-password-btn');
+                
+                if (!newPassword || newPassword.length < 8) {
+                    errorDiv.textContent = 'Password must be at least 8 characters';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+                
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Resetting...';
+                
+                try {
+                    const response = await AdminApp.apiRequest(`/admin/staff/${staffId}/reset-password`, {
+                        method: 'POST',
+                        body: JSON.stringify({ newPassword })
+                    });
+                    
+                    if (response.success) {
+                        document.getElementById('reset-password-modal').classList.remove('active');
+                        await this.loadStaff();
+                        AdminApp.showNotification('Password reset successfully', 'success');
+                    } else {
+                        errorDiv.textContent = response.message || 'Failed to reset password';
+                        errorDiv.style.display = 'block';
+                    }
+                } catch (error) {
+                    errorDiv.textContent = 'An error occurred';
+                    errorDiv.style.display = 'block';
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-key"></i> Reset Password';
+                }
+            },
+            
+            async toggleStatus(staffId, activate) {
+                try {
+                    const endpoint = activate ? 'activate' : 'deactivate';
+                    const response = await AdminApp.apiRequest(`/admin/staff/${staffId}/${endpoint}`, {
+                        method: 'POST'
+                    });
+                    
+                    if (response.success) {
+                        await this.loadStaff();
+                        AdminApp.showNotification(`Staff member ${activate ? 'activated' : 'deactivated'}`, 'success');
+                    }
+                } catch (error) {
+                    console.error('Toggle status error:', error);
+                    AdminApp.showNotification('Failed to update status', 'error');
+                }
+            },
+            
+            openDeleteConfirm(staffId, staffName) {
+                document.getElementById('delete-staff-id').value = staffId;
+                document.getElementById('delete-staff-name').textContent = staffName;
+                document.getElementById('delete-modal').classList.add('active');
+            },
+            
+            async deleteStaff() {
+                const staffId = document.getElementById('delete-staff-id').value;
+                const btn = document.getElementById('confirm-delete-btn');
+                
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+                
+                try {
+                    const response = await AdminApp.apiRequest(`/admin/staff/${staffId}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    if (response.success) {
+                        document.getElementById('delete-modal').classList.remove('active');
+                        await this.loadStaff();
+                        AdminApp.showNotification('Staff member deleted', 'success');
+                    } else {
+                        AdminApp.showNotification(response.message || 'Failed to delete', 'error');
+                    }
+                } catch (error) {
+                    AdminApp.showNotification('An error occurred', 'error');
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-trash"></i> Delete';
+                    document.getElementById('delete-modal').classList.remove('active');
+                }
+            }
+        };
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof AdminApp !== 'undefined') {
+                AdminApp.init();
+                StaffPage.init();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Dashboard | Tekvwarho IT Solutions</title>
+    <link rel="stylesheet" href="../admin/css/admin.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Staff Portal</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item active">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="my-messages.html" class="nav-item" id="nav-messages">
+                    <i class="fas fa-envelope"></i>
+                    <span>My Messages</span>
+                </a>
+                <a href="my-consultations.html" class="nav-item" id="nav-consultations">
+                    <i class="fas fa-calendar"></i>
+                    <span>My Consultations</span>
+                </a>
+                <a href="my-chats.html" class="nav-item" id="nav-chats">
+                    <i class="fas fa-comments"></i>
+                    <span>Live Chats</span>
+                </a>
+                <div class="nav-divider"></div>
+                <a href="profile.html" class="nav-item">
+                    <i class="fas fa-user"></i>
+                    <span>My Profile</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <button class="menu-toggle" id="menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1>Dashboard</h1>
+                <div class="header-actions">
+                    <span class="user-name" id="user-name"></span>
+                    <button class="btn btn-outline" id="logout-btn">Logout</button>
+                </div>
+            </header>
+
+            <div class="content-body">
+                <div class="welcome-card">
+                    <h2>Welcome back, <span id="welcome-name"></span>!</h2>
+                    <p>Here's an overview of your assigned tasks.</p>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card" id="stat-messages" style="display: none;">
+                        <div class="stat-icon" style="background: #4f46e5;">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="messages-count">0</h3>
+                            <p>Assigned Messages</p>
+                        </div>
+                    </div>
+                    <div class="stat-card" id="stat-consultations" style="display: none;">
+                        <div class="stat-icon" style="background: #10b981;">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="consultations-count">0</h3>
+                            <p>Upcoming Consultations</p>
+                        </div>
+                    </div>
+                    <div class="stat-card" id="stat-chats" style="display: none;">
+                        <div class="stat-icon" style="background: #f59e0b;">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="chats-count">0</h3>
+                            <p>Active Chats</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h2>Recent Assigned Tasks</h2>
+                    </div>
+                    <div class="card-body">
+                        <div id="recent-tasks" class="recent-list">
+                            <p class="text-muted">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Auth check
+        const token = localStorage.getItem('adminToken');
+        const user = JSON.parse(localStorage.getItem('adminUser') || '{}');
+        
+        if (!token || !user.id) {
+            window.location.href = 'index.html';
+        }
+
+        // Set user info
+        document.getElementById('user-name').textContent = user.name;
+        document.getElementById('welcome-name').textContent = user.name.split(' ')[0];
+
+        // Show/hide features based on permissions
+        if (user.can_manage_messages) {
+            document.getElementById('stat-messages').style.display = 'block';
+            document.getElementById('nav-messages').style.display = 'flex';
+        }
+        if (user.can_manage_consultations) {
+            document.getElementById('stat-consultations').style.display = 'block';
+            document.getElementById('nav-consultations').style.display = 'flex';
+        }
+        if (user.can_manage_chats) {
+            document.getElementById('stat-chats').style.display = 'block';
+            document.getElementById('nav-chats').style.display = 'flex';
+        }
+
+        // Load dashboard stats
+        async function loadDashboard() {
+            try {
+                const response = await fetch('/api/admin/staff-dashboard', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('messages-count').textContent = data.stats.messages || 0;
+                    document.getElementById('consultations-count').textContent = data.stats.consultations || 0;
+                    document.getElementById('chats-count').textContent = data.stats.chats || 0;
+                    
+                    // Render recent tasks
+                    const tasksContainer = document.getElementById('recent-tasks');
+                    if (data.recentTasks && data.recentTasks.length > 0) {
+                        tasksContainer.innerHTML = data.recentTasks.map(task => `
+                            <div class="recent-item">
+                                <div class="recent-icon">
+                                    <i class="fas fa-${task.type === 'message' ? 'envelope' : task.type === 'consultation' ? 'calendar' : 'comment'}"></i>
+                                </div>
+                                <div class="recent-info">
+                                    <h4>${task.title}</h4>
+                                    <p>${task.subtitle}</p>
+                                </div>
+                                <span class="recent-time">${formatTime(task.created_at)}</span>
+                            </div>
+                        `).join('');
+                    } else {
+                        tasksContainer.innerHTML = '<p class="text-muted">No recent tasks assigned to you.</p>';
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to load dashboard:', error);
+            }
+        }
+
+        function formatTime(dateStr) {
+            const date = new Date(dateStr);
+            const now = new Date();
+            const diff = now - date;
+            
+            if (diff < 60000) return 'Just now';
+            if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
+            if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
+            return date.toLocaleDateString();
+        }
+
+        // Logout
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('adminUser');
+            window.location.href = 'index.html';
+        });
+
+        // Mobile menu toggle
+        document.getElementById('menu-toggle').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('open');
+        });
+
+        loadDashboard();
+    </script>
+</body>
+</html>
