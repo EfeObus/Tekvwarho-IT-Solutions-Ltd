@@ -5,6 +5,7 @@ A comprehensive IT solutions website with integrated admin dashboard, live chat,
 ![License](https://img.shields.io/badge/license-Proprietary-blue)
 ![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14%2B-blue)
+![Version](https://img.shields.io/badge/version-1.2.0-orange)
 
 ## 🏢 Company Information
 
@@ -23,13 +24,17 @@ A comprehensive IT solutions website with integrated admin dashboard, live chat,
 ## 📋 Table of Contents
 
 - [Features](#-features)
+- [Security Features](#-security-features)
 - [Project Structure](#-project-structure)
 - [Quick Start](#-quick-start)
 - [Environment Variables](#-environment-variables)
 - [API Documentation](#-api-documentation)
 - [Admin Dashboard](#-admin-dashboard)
 - [Database Schema](#-database-schema)
+- [Security](#-security)
+- [Documentation](#-documentation)
 - [Deployment](#-deployment)
+- [Changelog](#-changelog)
 - [License](#-license)
 
 ---
@@ -44,9 +49,10 @@ A comprehensive IT solutions website with integrated admin dashboard, live chat,
 - 💬 Live chat widget (WebSocket-based, no login required)
 - 📅 Consultation booking system with calendar integration
 - 📱 Progressive enhancement for all browsers
+- 📜 Legal pages (Privacy Policy, Terms of Service, Cookie Policy)
 
 ### Admin Dashboard
-- 📊 **Dashboard** - Real-time statistics and quick actions
+- 📊 **Dashboard** - Real-time statistics, quick actions, and onboarding
 - 📧 **Messages** - View, respond to, and manage contact form submissions
 - 💬 **Chats** - Real-time live chat management with conversation history
 - 📅 **Consultations** - Schedule, manage, and track consultation bookings
@@ -55,16 +61,61 @@ A comprehensive IT solutions website with integrated admin dashboard, live chat,
 - ⚙️ **Settings** - Business hours, notifications, email templates, data export
 - 📋 **Audit Logs** - Complete activity tracking and compliance logging
 - 🏆 **Performance** - Staff performance metrics, scores, and leaderboards
+- 🔍 **Search & Filters** - Advanced search, date range filters, pagination
+- 💾 **Saved Replies** - Quick response templates with keyboard shortcuts
+- 📝 **Drafts** - Auto-save drafts for messages and replies
+- 🎯 **Onboarding** - First-time user onboarding with guided tour
 
 ### Backend Features
-- 🔒 JWT-based authentication with role-based access control (RBAC)
-- 🔄 RESTful API architecture (52+ endpoints)
+- 🔒 JWT-based authentication with refresh tokens and session management
+- 🛡️ Role-based access control (RBAC) with granular permissions
+- 🔄 RESTful API architecture (60+ endpoints)
 - ⚡ WebSocket support for real-time chat
 - 📧 Email notification system (Nodemailer + SMTP)
 - 📝 Comprehensive audit logging
 - 🎯 Staff performance tracking and scoring
 - 🏷️ Notes and tags system for lead management
 - 📤 Data export (CSV, PDF reports)
+- 🚦 Rate limiting and abuse protection
+- 🧹 Input sanitization and XSS protection
+- 🔐 Security headers (CSP, HSTS, X-Frame-Options)
+
+---
+
+## 🔒 Security Features
+
+### Authentication & Session Management
+| Feature | Implementation |
+|---------|---------------|
+| Access Tokens | JWT, 15-minute expiry |
+| Refresh Tokens | 7-day expiry, stored in database |
+| Token Rotation | New refresh token on each use |
+| Session Revocation | Logout single or all sessions |
+| Password Policies | Minimum 8 characters, change enforcement |
+
+### Rate Limiting
+| Route | Limit | Window |
+|-------|-------|--------|
+| Login | 5 attempts | 15 minutes |
+| Contact Form | 3 submissions | 1 hour |
+| Newsletter | 5 attempts | 1 hour |
+| Chat Messages | 30 messages | 1 minute |
+| API (authenticated) | 100 requests | 1 minute |
+| API (public) | 30 requests | 1 minute |
+
+### Security Headers
+- Content Security Policy (CSP)
+- X-Content-Type-Options: nosniff
+- X-Frame-Options: DENY
+- X-XSS-Protection: 1; mode=block
+- Referrer-Policy: strict-origin-when-cross-origin
+- Permissions-Policy (geolocation, microphone, camera disabled)
+
+### Input Protection
+- XSS sanitization on all user inputs
+- HTML escaping in responses
+- SQL injection prevention (parameterized queries)
+- File upload validation
 
 ---
 
@@ -73,6 +124,9 @@ A comprehensive IT solutions website with integrated admin dashboard, live chat,
 ```
 tekvwarho-it-solutions/
 ├── 📄 README.md                    # This file
+├── 📄 ROADMAP.md                   # Security & Feature Roadmap
+├── 📄 SECURITY_POLICY.md           # Security policies and procedures
+├── 📄 BACKUP_RECOVERY.md           # Backup and disaster recovery plan
 ├── 📄 TECH_STACK.md               # Technology stack documentation
 ├── 📄 FILE_STRUCTURE.md           # Detailed file structure
 ├── 📄 API_DOCUMENTATION.md        # Complete API reference
@@ -90,37 +144,71 @@ tekvwarho-it-solutions/
 │   ├── settings.html              # System settings
 │   ├── audit.html                 # Audit log viewer
 │   ├── performance.html           # Staff performance tracking
-│   ├── css/admin.css              # Admin styles
-│   └── js/admin.js                # Admin JavaScript (1386 lines)
+│   ├── css/
+│   │   ├── admin.css              # Main admin styles
+│   │   ├── onboarding.css         # Onboarding & empty states
+│   │   ├── dataTable.css          # Search, filters, pagination
+│   │   └── savedReplies.css       # Saved replies styles
+│   └── js/
+│       ├── admin.js               # Core admin JavaScript
+│       ├── onboarding.js          # Onboarding system
+│       └── components/
+│           ├── dataTable.js       # Data table with search/pagination
+│           └── savedReplies.js    # Saved replies manager
 │
 ├── 📂 server/                     # Backend (Node.js + Express)
 │   ├── index.js                   # Server entry point (port 5500)
 │   ├── config/
 │   │   └── database.js            # PostgreSQL pool configuration
+│   ├── models/
+│   │   ├── Staff.js               # Staff model
+│   │   ├── Message.js             # Message model
+│   │   ├── Chat.js                # Chat model
+│   │   ├── Consultation.js        # Consultation model
+│   │   ├── Visitor.js             # Visitor model
+│   │   ├── SavedReply.js          # Saved replies model
+│   │   └── Draft.js               # Drafts model
 │   ├── routes/
 │   │   ├── admin.js               # Staff CRUD, auth routes
+│   │   ├── auth.js                # Token refresh, sessions
 │   │   ├── analytics.js           # Analytics data routes
 │   │   ├── audit-export.js        # Data export routes
 │   │   ├── chat.js                # Chat message routes
 │   │   ├── consultation.js        # Booking routes
 │   │   ├── contact.js             # Contact form routes
+│   │   ├── messages.js            # Messages with search/pagination
 │   │   ├── notes-tags.js          # Notes and tags routes
+│   │   ├── newsletter.js          # Newsletter subscription
 │   │   ├── performance.js         # Performance metrics routes
+│   │   ├── savedReplies.js        # Saved replies CRUD
 │   │   └── settings.js            # Settings CRUD routes
 │   ├── middleware/
-│   │   └── auth.js                # JWT verification, RBAC
+│   │   ├── auth.js                # JWT verification, RBAC
+│   │   ├── rateLimiter.js         # Rate limiting
+│   │   ├── sanitizer.js           # Input sanitization
+│   │   ├── securityHeaders.js     # Security headers
+│   │   ├── errorHandler.js        # Global error handler
+│   │   └── pagination.js          # Pagination middleware
 │   ├── services/
 │   │   ├── auditService.js        # Audit logging service
 │   │   ├── emailService.js        # Email notifications
-│   │   └── performanceService.js  # Performance calculations
+│   │   ├── performanceService.js  # Performance calculations
+│   │   └── tokenManager.js        # JWT token management
+│   ├── utils/
+│   │   └── queryBuilder.js        # Dynamic SQL query builder
 │   └── websocket/
 │       └── chatHandler.js         # WebSocket chat handler
 │
 ├── 📂 database/
-│   ├── schema.sql                 # Database schema (15+ tables)
-│   └── seed.sql                   # Sample data
+│   ├── schema.sql                 # Database schema (20+ tables)
+│   ├── init.js                    # Database initialization
+│   └── migrations/
+│       └── 003_saved_replies_drafts.sql
 │
 ├── 📂 docs/
+│   ├── ARCHITECTURE.md            # System architecture diagrams
+│   ├── API_DOCUMENTATION.md       # Full API reference
+│   ├── DATABASE_SCHEMA.md         # ERD and table documentation
 │   ├── PROJECT_DOCUMENTATION.md   # Project overview
 │   ├── WIREFRAMES.md              # UI wireframes
 │   └── CONTENT_STRATEGY.md        # Content guidelines
@@ -146,7 +234,10 @@ tekvwarho-it-solutions/
     ├── software-development.html  # Software Development service
     ├── website-development.html   # Website Development service
     ├── data-analytics.html        # Data Analytics service
-    └── tech-stack.html            # Technology showcase
+    ├── tech-stack.html            # Technology showcase
+    ├── privacy-policy.html        # Privacy Policy
+    ├── terms-of-service.html      # Terms of Service
+    └── cookie-policy.html         # Cookie Policy
 ```
 
 ---
@@ -186,6 +277,9 @@ tekvwarho-it-solutions/
    # Run schema
    psql -d tekvwarho_IT_solutions -f database/schema.sql
    
+   # Run migrations
+   psql -d tekvwarho_IT_solutions -f database/migrations/003_saved_replies_drafts.sql
+   
    # (Optional) Seed sample data
    psql -d tekvwarho_IT_solutions -f database/seed.sql
    ```
@@ -215,7 +309,8 @@ NODE_ENV=development
 DATABASE_URL=postgresql://user:password@localhost:5432/tekvwarho_IT_solutions
 
 # Authentication
-JWT_SECRET=your-super-secret-jwt-key-here
+JWT_SECRET=your-super-secret-jwt-key-here-min-256-bits
+JWT_REFRESH_SECRET=your-refresh-token-secret-here
 
 # Admin Account (for initial setup)
 ADMIN_EMAIL=admin@tekvwarho.com
@@ -230,21 +325,25 @@ EMAIL_FROM=noreply@tekvwarho.com
 
 # Optional: Email notifications
 ADMIN_NOTIFICATION_EMAIL=admin@tekvwarho.com
+
+# Security (Production)
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
 ```
 
 ---
 
 ## 📚 API Documentation
 
-See [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) for the complete API reference.
+See [docs/API_DOCUMENTATION.md](./docs/API_DOCUMENTATION.md) for the complete API reference.
 
 ### Quick Reference
 
 | Module | Base Path | Description |
 |--------|-----------|-------------|
-| Auth | `/api/admin/auth/*` | Login, logout, password management |
+| Auth | `/api/admin/login`, `/api/auth/*` | Login, logout, token refresh |
 | Staff | `/api/admin/staff/*` | Staff CRUD, activation, permissions |
-| Messages | `/api/messages/*` | Contact form management |
+| Messages | `/api/messages/*` | Contact form management with search |
 | Chats | `/api/chats/*` | Live chat sessions |
 | Consultations | `/api/consultations/*` | Booking management |
 | Analytics | `/api/analytics/*` | Dashboard statistics |
@@ -253,6 +352,7 @@ See [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) for the complete API referenc
 | Performance | `/api/performance/*` | Staff metrics |
 | Export | `/api/export/*` | Data export (CSV, PDF) |
 | Notes/Tags | `/api/notes/*`, `/api/tags/*` | Lead management |
+| Saved Replies | `/api/saved-replies/*` | Quick response templates |
 
 ### Authentication
 
@@ -260,7 +360,20 @@ All admin endpoints require JWT authentication:
 
 ```javascript
 // Request header
-Authorization: Bearer <your-jwt-token>
+Authorization: Bearer <your-access-token>
+```
+
+### Token Refresh
+
+Access tokens expire after 15 minutes. Use the refresh endpoint:
+
+```javascript
+POST /api/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "your-refresh-token"
+}
 ```
 
 ### Response Format
@@ -269,7 +382,23 @@ Authorization: Bearer <your-jwt-token>
 {
   "success": true,
   "data": { ... },
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 150,
+    "totalPages": 8
+  },
   "message": "Operation successful"
+}
+```
+
+### Error Response
+
+```json
+{
+  "success": false,
+  "error": "Error description",
+  "code": "ERROR_CODE"
 }
 ```
 
@@ -302,9 +431,33 @@ Navigate to `http://localhost:5500/admin/login.html`
 - `can_manage_chats` - Handle live chats
 - `can_view_analytics` - View analytics dashboard
 
+### New Features
+
+#### Onboarding System
+First-time users see:
+- Welcome modal with feature overview
+- Guided tour of dashboard features
+- Checklist widget tracking setup progress
+- Empty states with helpful tips
+
+#### Search & Filters
+- Full-text search across messages, chats, consultations
+- Status filters (new, pending, resolved, closed)
+- Date range filters
+- Sortable columns
+- Pagination with configurable page size
+
+#### Saved Replies
+- Create quick response templates
+- Keyboard shortcuts for fast access
+- Categories for organization
+- Variable placeholders ({{name}}, {{date}})
+
 ---
 
 ## 🗃️ Database Schema
+
+See [docs/DATABASE_SCHEMA.md](./docs/DATABASE_SCHEMA.md) for complete ERD and table documentation.
 
 ### Core Tables
 
@@ -320,6 +473,9 @@ Navigate to `http://localhost:5500/admin/login.html`
 | `settings` | System configuration |
 | `notes` | Notes attached to leads |
 | `tags` | Tags for categorization |
+| `refresh_tokens` | JWT refresh tokens |
+| `saved_replies` | Quick response templates |
+| `drafts` | Auto-saved message drafts |
 
 ### Entity Relationships
 
@@ -328,10 +484,49 @@ staff (1) ──── (N) audit_logs
 staff (1) ──── (N) messages (assigned_to)
 staff (1) ──── (N) consultations (assigned_to)
 staff (1) ──── (N) chat_sessions (assigned_to)
+staff (1) ──── (N) saved_replies
+staff (1) ──── (N) drafts
+staff (1) ──── (N) refresh_tokens
 messages (1) ──── (N) notes
 consultations (1) ──── (N) notes
 visitors (1) ──── (N) chat_sessions
 ```
+
+---
+
+## 🔐 Security
+
+### Security Documentation
+
+| Document | Description |
+|----------|-------------|
+| [SECURITY_POLICY.md](./SECURITY_POLICY.md) | Security policies and procedures |
+| [BACKUP_RECOVERY.md](./BACKUP_RECOVERY.md) | Backup and disaster recovery plan |
+
+### Reporting Security Issues
+
+If you discover a security vulnerability, please email **efe.obukohwo@outlook.com** with:
+- Description of the vulnerability
+- Steps to reproduce
+- Potential impact
+
+Do not open public issues for security vulnerabilities.
+
+---
+
+## 📖 Documentation
+
+| Document | Location | Description |
+|----------|----------|-------------|
+| README | [README.md](./README.md) | This file - project overview |
+| Roadmap | [ROADMAP.md](./ROADMAP.md) | Feature roadmap and implementation status |
+| API Reference | [docs/API_DOCUMENTATION.md](./docs/API_DOCUMENTATION.md) | Complete REST API documentation |
+| Architecture | [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) | System architecture diagrams |
+| Database Schema | [docs/DATABASE_SCHEMA.md](./docs/DATABASE_SCHEMA.md) | ERD and table documentation |
+| Security Policy | [SECURITY_POLICY.md](./SECURITY_POLICY.md) | Security policies and procedures |
+| Backup & Recovery | [BACKUP_RECOVERY.md](./BACKUP_RECOVERY.md) | Disaster recovery plan |
+| Tech Stack | [TECH_STACK.md](./TECH_STACK.md) | Technology stack overview |
+| File Structure | [FILE_STRUCTURE.md](./FILE_STRUCTURE.md) | Detailed file structure |
 
 ---
 
@@ -371,11 +566,15 @@ View top performers at `/admin/performance.html`
 
 - [ ] Set `NODE_ENV=production`
 - [ ] Use strong `JWT_SECRET` (256+ bits)
+- [ ] Use strong `JWT_REFRESH_SECRET` (256+ bits)
 - [ ] Configure HTTPS/SSL
 - [ ] Set up PostgreSQL with SSL
 - [ ] Configure email SMTP
 - [ ] Set up monitoring/logging
-- [ ] Configure backup strategy
+- [ ] Configure backup strategy (see [BACKUP_RECOVERY.md](./BACKUP_RECOVERY.md))
+- [ ] Review security headers
+- [ ] Enable rate limiting
+- [ ] Set up log rotation
 
 ### Cloud Deployment
 
@@ -385,6 +584,7 @@ Compatible with:
 - **DigitalOcean**
 - **Vercel** (frontend only)
 - **Railway**
+- **Azure** (App Service, Azure Database for PostgreSQL)
 
 ---
 
@@ -415,11 +615,44 @@ npm test
 
 # Test specific endpoint
 curl -X GET http://localhost:5500/api/health
+
+# Test with authentication
+curl -X GET http://localhost:5500/api/messages \
+  -H "Authorization: Bearer <your-token>"
 ```
 
 ---
 
 ## 📝 Changelog
+
+### v1.2.0 (January 5, 2026)
+
+#### Security Enhancements
+- ✅ JWT refresh tokens with 15-minute access / 7-day refresh
+- ✅ Rate limiting on all endpoints
+- ✅ Input sanitization and XSS protection
+- ✅ Security headers (CSP, X-Frame-Options, etc.)
+- ✅ Global error handler with sanitized responses
+
+#### New Features
+- ✅ Onboarding system with welcome modal and guided tour
+- ✅ Empty states for all admin pages
+- ✅ Search, filters, and pagination for data tables
+- ✅ Saved replies with keyboard shortcuts
+- ✅ Auto-save drafts for messages
+
+#### Documentation
+- ✅ Architecture diagrams
+- ✅ API documentation
+- ✅ Database schema documentation
+- ✅ Security policy
+- ✅ Backup and recovery plan
+
+### v1.1.0 (January 2026)
+
+- ✅ Legal pages (Privacy Policy, Terms of Service, Cookie Policy)
+- ✅ Enhanced audit logging
+- ✅ Staff performance tracking improvements
 
 ### v1.0.0 (January 2026)
 
