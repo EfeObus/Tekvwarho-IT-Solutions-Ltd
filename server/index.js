@@ -29,6 +29,8 @@ const notesTagsRoutes = require('./routes/notes-tags');
 const auditExportRoutes = require('./routes/audit-export');
 const performanceRoutes = require('./routes/performance');
 const newsletterRoutes = require('./routes/newsletter');
+const messagesRoutes = require('./routes/messages');
+const savedRepliesRoutes = require('./routes/savedReplies');
 
 // Import middleware
 const { securityHeaders, corsOptions, botProtection } = require('./middleware/securityHeaders');
@@ -99,6 +101,8 @@ app.use('/api/chat', chatRoutes);
 // Auth routes (login has its own rate limiting in admin.js)
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/admin/messages', messagesRoutes);
+app.use('/api/admin', savedRepliesRoutes);
 
 // Authenticated API routes
 app.use('/api/analytics', analyticsRoutes);

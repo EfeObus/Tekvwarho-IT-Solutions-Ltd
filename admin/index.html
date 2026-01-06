@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | Tekvwarho Admin</title>
     <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="css/onboarding.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -274,6 +275,7 @@
         </main>
     </div>
 
+    <script src="js/onboarding.js"></script>
     <script src="js/admin.js"></script>
     <script>
         // Initialize dashboard
@@ -281,6 +283,10 @@
             if (typeof AdminApp !== 'undefined') {
                 AdminApp.init();
                 AdminApp.loadDashboardStats();
+            }
+            // Initialize onboarding on dashboard (main entry point)
+            if (typeof OnboardingManager !== 'undefined') {
+                OnboardingManager.init();
             }
         });
     </script>

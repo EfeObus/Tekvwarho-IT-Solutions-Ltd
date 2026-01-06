@@ -1,0 +1,434 @@
+/**
+ * Saved Replies & Drafts Styles
+ */
+
+/* ==================== Saved Replies Panel ==================== */
+.saved-replies-manager {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.saved-replies-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f9fafb;
+}
+
+.saved-replies-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.saved-replies-search {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.saved-replies-search input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.saved-replies-search input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.saved-replies-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f9fafb;
+}
+
+.category-btn {
+    padding: 4px 12px;
+    border: 1px solid #e5e7eb;
+    background: #ffffff;
+    border-radius: 16px;
+    font-size: 13px;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.category-btn:hover {
+    border-color: #3b82f6;
+    color: #3b82f6;
+}
+
+.category-btn.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: #ffffff;
+}
+
+.saved-replies-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* ==================== Reply Item ==================== */
+.saved-reply-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f3f4f6;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.saved-reply-item:hover {
+    background: #f9fafb;
+}
+
+.saved-reply-item:last-child {
+    border-bottom: none;
+}
+
+.reply-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.reply-title {
+    font-weight: 500;
+    color: #111827;
+    font-size: 14px;
+}
+
+.reply-shortcut {
+    padding: 2px 8px;
+    background: #e0e7ff;
+    color: #3730a3;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: monospace;
+}
+
+.reply-preview {
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.reply-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+}
+
+.reply-category {
+    padding: 2px 8px;
+    background: #f3f4f6;
+    color: #6b7280;
+    border-radius: 4px;
+}
+
+.reply-global {
+    font-size: 14px;
+}
+
+.reply-usage {
+    color: #9ca3af;
+}
+
+.reply-actions {
+    display: none;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.saved-reply-item:hover .reply-actions {
+    display: flex;
+}
+
+/* ==================== Modal ==================== */
+.saved-reply-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.saved-reply-modal .modal-content {
+    background: #ffffff;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.saved-reply-modal .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.saved-reply-modal .modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.saved-reply-modal .modal-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: none;
+    font-size: 24px;
+    color: #6b7280;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+}
+
+.saved-reply-modal .modal-close:hover {
+    background: #f3f4f6;
+}
+
+.saved-reply-modal form {
+    padding: 20px;
+}
+
+.saved-reply-modal .form-group {
+    margin-bottom: 16px;
+}
+
+.saved-reply-modal label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+}
+
+.saved-reply-modal input[type="text"],
+.saved-reply-modal select,
+.saved-reply-modal textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.saved-reply-modal input:focus,
+.saved-reply-modal select:focus,
+.saved-reply-modal textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.saved-reply-modal small {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    color: #9ca3af;
+}
+
+.saved-reply-modal .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.saved-reply-modal .form-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.saved-reply-modal .form-checkbox input {
+    width: auto;
+}
+
+.saved-reply-modal .form-checkbox label {
+    margin: 0;
+    font-weight: normal;
+}
+
+.saved-reply-modal .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+    margin-top: 16px;
+}
+
+.saved-reply-modal .delete-reply {
+    margin-right: auto;
+}
+
+/* ==================== Draft Status ==================== */
+.draft-status {
+    font-size: 12px;
+    color: #6b7280;
+    padding: 4px 0;
+    text-align: right;
+}
+
+.draft-notification {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: #fef3c7;
+    border: 1px solid #fcd34d;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    font-size: 13px;
+}
+
+.draft-notification .discard-draft {
+    padding: 4px 8px;
+    border: none;
+    background: transparent;
+    color: #92400e;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+/* ==================== Notification ==================== */
+.notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    background: #10b981;
+    color: #ffffff;
+    border-radius: 8px;
+    font-size: 14px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 2000;
+    animation: slideIn 0.3s ease;
+}
+
+.notification-error {
+    background: #ef4444;
+}
+
+.notification.fade-out {
+    animation: fadeOut 0.3s ease forwards;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+/* ==================== Empty State ==================== */
+.saved-replies-manager .empty-state {
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.saved-replies-manager .empty-state p {
+    color: #9ca3af;
+    margin-bottom: 16px;
+}
+
+/* ==================== Button Icons ==================== */
+.btn-icon {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    color: #6b7280;
+    transition: all 0.2s ease;
+}
+
+.btn-icon:hover {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.btn-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* ==================== Quick Insert Tooltip ==================== */
+.quick-insert-hint {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #0369a1;
+    margin-bottom: 8px;
+}
+
+.quick-insert-hint code {
+    background: #e0f2fe;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+}
+
+/* ==================== Responsive ==================== */
+@media (max-width: 768px) {
+    .saved-reply-modal .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .saved-replies-categories {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .category-btn {
+        flex-shrink: 0;
+    }
+}

@@ -1,0 +1,609 @@
+/**
+ * Onboarding & Empty States Styles
+ * Tekvwarho IT Solutions - Admin Dashboard
+ */
+
+/* =========================================
+   ONBOARDING MODAL
+   ========================================= */
+.onboarding-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.onboarding-modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.onboarding-modal {
+    background: white;
+    border-radius: 16px;
+    max-width: 520px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    transform: scale(0.9) translateY(20px);
+    transition: transform 0.3s ease;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.onboarding-modal-overlay.active .onboarding-modal {
+    transform: scale(1) translateY(0);
+}
+
+.onboarding-modal-content {
+    padding: 40px;
+    text-align: center;
+}
+
+.onboarding-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+    animation: wave 1.5s ease-in-out infinite;
+}
+
+@keyframes wave {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(20deg); }
+    75% { transform: rotate(-20deg); }
+}
+
+.onboarding-modal h2 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 12px;
+}
+
+.onboarding-modal p {
+    color: #666;
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 32px;
+}
+
+.onboarding-features {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+    text-align: left;
+}
+
+.onboarding-feature {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+}
+
+.onboarding-feature:hover {
+    background: #e9ecef;
+    transform: translateY(-2px);
+}
+
+.onboarding-feature .feature-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.onboarding-feature strong {
+    display: block;
+    color: #1a1a1a;
+    font-size: 14px;
+    margin-bottom: 2px;
+}
+
+.onboarding-feature span {
+    color: #666;
+    font-size: 12px;
+}
+
+.onboarding-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.onboarding-actions .btn-lg {
+    padding: 16px 32px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.onboarding-actions .btn-outline {
+    background: transparent;
+    border: none;
+    color: #666;
+    padding: 12px;
+}
+
+.onboarding-actions .btn-outline:hover {
+    color: var(--admin-primary);
+}
+
+/* =========================================
+   ONBOARDING CHECKLIST WIDGET
+   ========================================= */
+.onboarding-widget {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 24px;
+    color: white;
+    animation: slideInDown 0.4s ease;
+    transition: all 0.3s ease;
+}
+
+.onboarding-widget.dismissing {
+    opacity: 0;
+    transform: translateY(-20px);
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.onboarding-widget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.onboarding-widget-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.onboarding-icon-sm {
+    font-size: 32px;
+}
+
+.onboarding-widget-title h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.onboarding-widget-title .progress-text {
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+.onboarding-dismiss {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 8px;
+    padding: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.onboarding-dismiss:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.onboarding-dismiss svg {
+    width: 16px;
+    height: 16px;
+    stroke: white;
+}
+
+.onboarding-progress-bar {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.onboarding-progress-fill {
+    height: 100%;
+    background: white;
+    border-radius: 3px;
+    transition: width 0.5s ease;
+}
+
+.onboarding-checklist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 12px;
+}
+
+.onboarding-step {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 16px;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+}
+
+.onboarding-step:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.onboarding-step.completed {
+    opacity: 0.7;
+}
+
+.step-checkbox {
+    width: 24px;
+    height: 24px;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.onboarding-step.completed .step-checkbox {
+    background: white;
+    border-color: white;
+}
+
+.step-checkbox svg {
+    width: 14px;
+    height: 14px;
+    stroke: #667eea;
+}
+
+.step-content {
+    flex: 1;
+}
+
+.step-title {
+    display: block;
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 2px;
+}
+
+.onboarding-step.completed .step-title {
+    text-decoration: line-through;
+    opacity: 0.8;
+}
+
+.step-description {
+    font-size: 12px;
+    opacity: 0.9;
+}
+
+.step-action {
+    background: white !important;
+    color: #667eea !important;
+    border: none !important;
+    font-weight: 600 !important;
+}
+
+.step-action:hover {
+    background: rgba(255, 255, 255, 0.9) !important;
+    transform: scale(1.05);
+}
+
+/* =========================================
+   EMPTY STATES
+   ========================================= */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 40px;
+    text-align: center;
+    min-height: 400px;
+}
+
+.empty-state-icon {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, #f0f4ff 0%, #e8eeff 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.empty-state-icon svg {
+    width: 48px;
+    height: 48px;
+    stroke: var(--admin-primary);
+}
+
+.empty-state-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0 0 12px 0;
+}
+
+.empty-state-description {
+    font-size: 15px;
+    color: #666;
+    max-width: 400px;
+    line-height: 1.6;
+    margin: 0 0 24px 0;
+}
+
+.empty-state-tips {
+    background: #fef9e7;
+    border: 1px solid #f4d03f;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    text-align: left;
+    max-width: 400px;
+}
+
+.tips-label {
+    font-weight: 600;
+    color: #a67c00;
+    font-size: 14px;
+}
+
+.empty-state-tips ul {
+    margin: 8px 0 0 0;
+    padding-left: 20px;
+}
+
+.empty-state-tips li {
+    font-size: 13px;
+    color: #666;
+    margin: 6px 0;
+}
+
+.empty-state-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.empty-state-actions .btn {
+    min-width: 150px;
+}
+
+/* =========================================
+   TOUR HIGHLIGHTS
+   ========================================= */
+.tour-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 10000;
+}
+
+.tour-tooltip {
+    position: fixed;
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    max-width: 300px;
+    z-index: 10002;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    animation: fadeInRight 0.3s ease;
+}
+
+@keyframes fadeInRight {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.tour-tooltip::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 20px;
+    width: 0;
+    height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-right: 8px solid white;
+}
+
+.tour-tooltip-content h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0 0 8px 0;
+}
+
+.tour-tooltip-content p {
+    font-size: 14px;
+    color: #666;
+    margin: 0 0 16px 0;
+    line-height: 1.5;
+}
+
+.tour-next {
+    width: 100%;
+}
+
+/* =========================================
+   CELEBRATION TOAST
+   ========================================= */
+.celebration-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 16px 24px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 10px 40px rgba(40, 167, 69, 0.3);
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 10001;
+}
+
+.celebration-toast.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.celebration-icon {
+    font-size: 32px;
+    animation: bounce 0.5s ease infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+.celebration-content strong {
+    display: block;
+    font-size: 15px;
+    margin-bottom: 2px;
+}
+
+.celebration-content span {
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+/* =========================================
+   TOAST NOTIFICATIONS
+   ========================================= */
+.toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #1a1a1a;
+    color: white;
+    padding: 14px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 10001;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.toast.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.toast-success {
+    background: #28a745;
+}
+
+.toast-error {
+    background: #dc3545;
+}
+
+.toast-warning {
+    background: #ffc107;
+    color: #1a1a1a;
+}
+
+.toast-info {
+    background: #17a2b8;
+}
+
+/* =========================================
+   RESPONSIVE ADJUSTMENTS
+   ========================================= */
+@media (max-width: 768px) {
+    .onboarding-modal-content {
+        padding: 24px;
+    }
+    
+    .onboarding-modal h2 {
+        font-size: 22px;
+    }
+    
+    .onboarding-features {
+        grid-template-columns: 1fr;
+    }
+    
+    .onboarding-widget {
+        padding: 16px;
+    }
+    
+    .onboarding-checklist {
+        gap: 8px;
+    }
+    
+    .onboarding-step {
+        padding: 12px;
+    }
+    
+    .empty-state {
+        padding: 40px 20px;
+        min-height: 300px;
+    }
+    
+    .empty-state-icon {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .empty-state-icon svg {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .empty-state-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .empty-state-actions .btn {
+        width: 100%;
+    }
+}
+
+/* =========================================
+   DARK MODE SUPPORT (Future)
+   ========================================= */
+@media (prefers-color-scheme: dark) {
+    .onboarding-modal {
+        /* Uncomment when dark mode is implemented */
+        /* background: #1a1a1a; */
+    }
+}
