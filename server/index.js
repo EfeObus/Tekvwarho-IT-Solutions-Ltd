@@ -22,7 +22,7 @@ const auditExportRoutes = require('./routes/audit-export');
 const performanceRoutes = require('./routes/performance');
 
 // Import WebSocket handler
-const { handleWebSocket } = require('./websocket/chatHandler');
+const { initChatHandler } = require('./websocket/chatHandler');
 
 const app = express();
 const server = http.createServer(app);
@@ -59,9 +59,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // WebSocket connection handling
-wss.on('connection', (ws, req) => {
-    handleWebSocket(ws, req, wss);
-});
+initChatHandler(wss);
 
 // Serve index.html for root and other frontend routes
 app.get('/', (req, res) => {

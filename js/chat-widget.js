@@ -8,7 +8,7 @@
 
     // Configuration
     const config = {
-        wsUrl: `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}`,
+        wsUrl: `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws/chat`,
         reconnectDelay: 3000,
         maxReconnectAttempts: 5
     };
