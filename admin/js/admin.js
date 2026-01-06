@@ -411,24 +411,35 @@ const AdminApp = (function() {
     // ========================================
 
     async function loadDashboardStats() {
-        const data = await apiRequest('/admin/dashboard');
+        const response = await apiRequest('/admin/dashboard');
         
-        if (!data || !data.success) {
+        if (!response || !response.success) {
             console.error('Failed to load dashboard stats');
             return;
         }
         
-        const stats = data.stats;
+        // Handle both response formats (data.stats or data.data.stats)
+        const data = response.data || response;
+        const stats = data.stats || {};
         
         // Update stats
-        document.getElementById('stat-messages').textContent = stats.totalMessages || 0;
-        document.getElementById('stat-new-messages').textContent = `${stats.newMessages || 0} new today`;
-        document.getElementById('stat-chats').textContent = stats.activeChats || 0;
-        document.getElementById('stat-waiting-chats').textContent = `${stats.waitingChats || 0} waiting`;
-        document.getElementById('stat-consultations').textContent = stats.upcomingConsultations || 0;
-        document.getElementById('stat-today-consultations').textContent = `${stats.todayConsultations || 0} today`;
-        document.getElementById('stat-leads').textContent = stats.totalLeads || 0;
-        document.getElementById('stat-converted-leads').textContent = `${stats.convertedLeads || 0} converted`;
+        const statMessages = document.getElementById('stat-messages');
+        const statNewMessages = document.getElementById('stat-new-messages');
+        const statChats = document.getElementById('stat-chats');
+        const statWaitingChats = document.getElementById('stat-waiting-chats');
+        const statConsultations = document.getElementById('stat-consultations');
+        const statTodayConsultations = document.getElementById('stat-today-consultations');
+        const statLeads = document.getElementById('stat-leads');
+        const statConvertedLeads = document.getElementById('stat-converted-leads');
+        
+        if (statMessages) statMessages.textContent = stats.totalMessages || 0;
+        if (statNewMessages) statNewMessages.textContent = `${stats.newMessages || 0} new today`;
+        if (statChats) statChats.textContent = stats.activeChats || 0;
+        if (statWaitingChats) statWaitingChats.textContent = `${stats.unreadChats || stats.waitingChats || 0} waiting`;
+        if (statConsultations) statConsultations.textContent = stats.totalConsultations || stats.upcomingConsultations || 0;
+        if (statTodayConsultations) statTodayConsultations.textContent = `${stats.pendingConsultations || stats.todayConsultations || 0} pending`;
+        if (statLeads) statLeads.textContent = stats.totalVisitors || stats.totalLeads || 0;
+        if (statConvertedLeads) statConvertedLeads.textContent = `${stats.convertedLeads || 0} converted`;
         
         // Load recent messages
         loadRecentMessages(data.recentMessages || []);
@@ -502,14 +513,43 @@ const AdminApp = (function() {
             ...messagesFilters
         });
         
-        const data = await apiRequest(`/contact?${params}`);
+        // Try the admin messages endpoint first (with auth), fallback to contact endpoint
+        let data = await apiRequest(`/admin/messages?${params}`);
+        
+        // If that fails (no auth), try the public contact endpoint
+        if (!data || !data.success) {
+            data = await apiRequest(`/contact?${params}`);
+            // Normalize the response format
+            if (data && data.success && data.data) {
+                data.messages = data.data;
+                data.pagination = {
+                    page: messagesPage,
+                    limit: 20,
+                    total: data.data.length,
+                    totalPages: 1
+                };
+            }
+        } else {
+            // Normalize the response from admin/messages endpoint
+            data.messages = data.data;
+        }
         
         if (!data || !data.success) {
             console.error('Failed to load messages');
+            const tbody = document.getElementById('messages-tbody');
+            if (tbody) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center text-muted" style="padding: 60px;">
+                            Failed to load messages. Please try again.
+                        </td>
+                    </tr>
+                `;
+            }
             return;
         }
         
-        renderMessages(data.messages);
+        renderMessages(data.messages || []);
         renderPagination(data.pagination);
         
         // Setup filter listeners
