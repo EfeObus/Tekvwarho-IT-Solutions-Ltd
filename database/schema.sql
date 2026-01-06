@@ -149,6 +149,20 @@ CREATE TABLE IF NOT EXISTS tags (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Newsletter Subscribers Table
+CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    email VARCHAR(255) UNIQUE NOT NULL,
+    name VARCHAR(255),
+    is_active BOOLEAN DEFAULT true,
+    source VARCHAR(100) DEFAULT 'website',
+    subscribed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    unsubscribed_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_newsletter_email ON newsletter_subscribers(email);
+
 -- Entity Tags (many-to-many relationship)
 CREATE TABLE IF NOT EXISTS entity_tags (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

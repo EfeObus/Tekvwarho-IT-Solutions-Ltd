@@ -247,13 +247,42 @@ function initFormValidation() {
     }
     
     if (newsletterForm) {
-        newsletterForm.addEventListener('submit', function(e) {
+        newsletterForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const emailInput = this.querySelector('input[type="email"]');
+            const submitBtn = this.querySelector('button[type="submit"]');
+            
             if (emailInput && validateEmail(emailInput.value)) {
-                showFormMessage(this, 'success', 'Thank you for subscribing! We\'ll keep you updated.');
-                this.reset();
+                // Show loading state
+                const originalText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Subscribing...';
+                
+                try {
+                    const response = await fetch('/api/newsletter/subscribe', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ email: emailInput.value })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showFormMessage(this, 'success', result.message || 'Thank you for subscribing!');
+                        this.reset();
+                    } else {
+                        showFormMessage(this, 'error', result.message || 'Failed to subscribe.');
+                    }
+                } catch (error) {
+                    console.error('Newsletter error:', error);
+                    showFormMessage(this, 'error', 'Failed to subscribe. Please try again.');
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }
             } else {
                 showFormMessage(this, 'error', 'Please enter a valid email address.');
             }

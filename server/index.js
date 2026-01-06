@@ -20,6 +20,7 @@ const settingsRoutes = require('./routes/settings');
 const notesTagsRoutes = require('./routes/notes-tags');
 const auditExportRoutes = require('./routes/audit-export');
 const performanceRoutes = require('./routes/performance');
+const newsletterRoutes = require('./routes/newsletter');
 
 // Import WebSocket handler
 const { initChatHandler } = require('./websocket/chatHandler');
@@ -52,6 +53,7 @@ app.use('/api', notesTagsRoutes); // Notes and tags routes
 app.use('/api/audit', auditExportRoutes);
 app.use('/api/export', auditExportRoutes);
 app.use('/api/performance', performanceRoutes);
+app.use('/api/newsletter', newsletterRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
