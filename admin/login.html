@@ -55,6 +55,15 @@
     
     <script>
         let tempToken = null;
+        let tempRefreshToken = null;
+        
+        // Check for session expired message
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('session') === 'expired') {
+            const errorDiv = document.getElementById('login-error');
+            errorDiv.textContent = 'Your session has expired. Please log in again.';
+            errorDiv.style.display = 'block';
+        }
         
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -80,19 +89,23 @@
                 if (data.success) {
                     // Check if password change is required
                     if (data.mustChangePassword) {
-                        tempToken = data.token;
+                        tempToken = data.accessToken;
+                        tempRefreshToken = data.refreshToken;
                         document.getElementById('login-form').style.display = 'none';
                         document.getElementById('change-password-form').style.display = 'block';
                         document.getElementById('login-subtitle').textContent = 'Change your password';
                         btn.disabled = false;
                         btn.textContent = 'Sign In';
                     } else {
-                        localStorage.setItem('adminToken', data.token);
+                        // Store tokens (new format with refresh token)
+                        localStorage.setItem('adminToken', data.accessToken);
+                        localStorage.setItem('refreshToken', data.refreshToken);
+                        localStorage.setItem('tokenExpiresIn', data.expiresIn || 900);
                         localStorage.setItem('adminUser', JSON.stringify(data.user));
                         window.location.href = 'index.html';
                     }
                 } else {
-                    errorDiv.textContent = data.message || 'Invalid credentials';
+                    errorDiv.textContent = data.message || data.error?.message || 'Invalid credentials';
                     errorDiv.style.display = 'block';
                     btn.disabled = false;
                     btn.textContent = 'Sign In';
@@ -145,8 +158,12 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    // Password changed - save token and redirect
+                    // Password changed - save tokens and redirect
                     localStorage.setItem('adminToken', tempToken);
+                    if (tempRefreshToken) {
+                        localStorage.setItem('refreshToken', tempRefreshToken);
+                        localStorage.setItem('tokenExpiresIn', '900');
+                    }
                     window.location.href = 'index.html';
                 } else {
                     errorDiv.textContent = data.message || 'Failed to change password';

@@ -13,14 +13,16 @@ const Chat = require('../models/Chat');
 const Consultation = require('../models/Consultation');
 const Visitor = require('../models/Visitor');
 const { authMiddleware, adminOnly, hasPermission } = require('../middleware/auth');
+const { loginLimiter, passwordResetLimiter } = require('../middleware/rateLimiter');
 const db = require('../config/database');
 const AuditService = require('../services/auditService');
+const TokenManager = require('../services/tokenManager');
 
 /**
  * POST /api/admin/login
- * Staff/Admin authentication
+ * Staff/Admin authentication with access + refresh tokens
  */
-router.post('/login', [
+router.post('/login', loginLimiter, [
     body('email').isEmail().withMessage('Valid email is required'),
     body('password').notEmpty().withMessage('Password is required')
 ], async (req, res) => {
@@ -89,26 +91,22 @@ router.post('/login', [
         // Log successful login
         await AuditService.logLogin(staff.id, req.ip, true);
 
-        // Generate JWT
-        const token = jwt.sign(
-            { 
-                id: staff.id, 
-                email: staff.email, 
-                role: staff.role,
-                permissions: {
-                    canManageMessages: staff.can_manage_messages,
-                    canManageConsultations: staff.can_manage_consultations,
-                    canManageChats: staff.can_manage_chats,
-                    canViewAnalytics: staff.can_view_analytics
-                }
-            },
-            process.env.JWT_SECRET || 'your-secret-key',
-            { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+        // Generate access token (short-lived)
+        const accessToken = TokenManager.generateAccessToken(staff);
+        
+        // Generate refresh token (long-lived, stored in DB)
+        const refreshTokenData = await TokenManager.generateRefreshToken(
+            staff.id,
+            req.ip,
+            req.get('User-Agent')
         );
 
         res.json({
             success: true,
-            token,
+            accessToken,
+            refreshToken: refreshTokenData.token,
+            expiresIn: 900, // 15 minutes in seconds
+            refreshExpiresAt: refreshTokenData.expiresAt,
             mustChangePassword: staff.must_change_password,
             user: {
                 id: staff.id,

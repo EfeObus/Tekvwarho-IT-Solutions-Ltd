@@ -19,11 +19,40 @@ CREATE TABLE IF NOT EXISTS staff (
     can_manage_consultations BOOLEAN DEFAULT true,
     can_manage_chats BOOLEAN DEFAULT true,
     can_view_analytics BOOLEAN DEFAULT false,
+    token_version INTEGER DEFAULT 0, -- Incremented on password/role change to invalidate tokens
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_login TIMESTAMP,
     created_by UUID REFERENCES staff(id) ON DELETE SET NULL
 );
+
+-- Refresh Tokens Table (for secure token rotation)
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES staff(id) ON DELETE CASCADE NOT NULL,
+    token_hash VARCHAR(255) NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    revoked_at TIMESTAMP,
+    replaced_by UUID REFERENCES refresh_tokens(id),
+    user_agent TEXT,
+    ip_address INET
+);
+
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_hash ON refresh_tokens(token_hash);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user ON refresh_tokens(user_id, revoked_at);
+
+-- Active Sessions Table (for session management)
+CREATE TABLE IF NOT EXISTS active_sessions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES staff(id) ON DELETE CASCADE NOT NULL,
+    refresh_token_id UUID REFERENCES refresh_tokens(id) ON DELETE CASCADE,
+    last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_active_sessions_user ON active_sessions(user_id, is_active);
 
 -- Visitors Table (for tracking and chat)
 CREATE TABLE IF NOT EXISTS visitors (

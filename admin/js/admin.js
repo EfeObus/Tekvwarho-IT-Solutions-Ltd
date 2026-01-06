@@ -1,6 +1,11 @@
 /**
  * Admin Dashboard JavaScript
  * Tekvwarho IT Solutions Ltd
+ * 
+ * Security Features:
+ * - JWT access tokens (15 min) + refresh tokens (7 days)
+ * - Automatic token refresh before expiry
+ * - Session management and forced logout
  */
 
 const AdminApp = (function() {
@@ -8,6 +13,12 @@ const AdminApp = (function() {
 
     // API Base URL
     const API_BASE = '/api';
+    
+    // Token refresh settings
+    const TOKEN_REFRESH_THRESHOLD = 60 * 1000; // Refresh 1 minute before expiry
+    let tokenRefreshTimer = null;
+    let isRefreshing = false;
+    let refreshSubscribers = [];
     
     // State
     let currentUser = null;
@@ -23,6 +34,9 @@ const AdminApp = (function() {
             return;
         }
 
+        // Setup token refresh
+        setupTokenRefresh();
+        
         // Setup common event listeners
         setupEventListeners();
         
@@ -57,11 +71,97 @@ const AdminApp = (function() {
     }
 
     /**
-     * API request helper
+     * Setup automatic token refresh
+     */
+    function setupTokenRefresh() {
+        const expiresIn = parseInt(localStorage.getItem('tokenExpiresIn') || '900', 10);
+        const refreshTime = (expiresIn * 1000) - TOKEN_REFRESH_THRESHOLD;
+        
+        if (tokenRefreshTimer) {
+            clearTimeout(tokenRefreshTimer);
+        }
+        
+        tokenRefreshTimer = setTimeout(async () => {
+            await refreshAccessToken();
+        }, Math.max(refreshTime, 60000)); // Minimum 1 minute
+    }
+
+    /**
+     * Refresh access token using refresh token
+     */
+    async function refreshAccessToken() {
+        if (isRefreshing) {
+            return new Promise((resolve) => {
+                refreshSubscribers.push(resolve);
+            });
+        }
+        
+        isRefreshing = true;
+        const refreshToken = localStorage.getItem('refreshToken');
+        
+        if (!refreshToken) {
+            handleAuthFailure();
+            return;
+        }
+        
+        try {
+            const response = await fetch(`${API_BASE}/auth/refresh`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ refreshToken })
+            });
+            
+            if (!response.ok) {
+                throw new Error('Token refresh failed');
+            }
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Store new tokens
+                localStorage.setItem('adminToken', data.accessToken);
+                localStorage.setItem('refreshToken', data.refreshToken);
+                localStorage.setItem('tokenExpiresIn', '900'); // 15 minutes
+                
+                // Notify subscribers
+                refreshSubscribers.forEach(callback => callback(data.accessToken));
+                refreshSubscribers = [];
+                
+                // Setup next refresh
+                setupTokenRefresh();
+                
+                console.log('Token refreshed successfully');
+                return data.accessToken;
+            } else {
+                throw new Error(data.error?.message || 'Token refresh failed');
+            }
+        } catch (error) {
+            console.error('Token refresh error:', error);
+            handleAuthFailure();
+        } finally {
+            isRefreshing = false;
+        }
+    }
+
+    /**
+     * Handle authentication failure
+     */
+    function handleAuthFailure() {
+        localStorage.removeItem('adminToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('adminUser');
+        localStorage.removeItem('tokenExpiresIn');
+        if (tokenRefreshTimer) clearTimeout(tokenRefreshTimer);
+        if (chatWs) chatWs.close();
+        window.location.href = 'login.html?session=expired';
+    }
+
+    /**
+     * API request helper with auto-refresh
      */
     async function apiRequest(endpoint, options = {}) {
         try {
-            const response = await fetch(`${API_BASE}${endpoint}`, {
+            let response = await fetch(`${API_BASE}${endpoint}`, {
                 ...options,
                 headers: {
                     ...getAuthHeaders(),
@@ -69,11 +169,30 @@ const AdminApp = (function() {
                 }
             });
 
+            // If token expired, try to refresh and retry
             if (response.status === 401) {
-                localStorage.removeItem('adminToken');
-                localStorage.removeItem('adminUser');
-                window.location.href = 'login.html';
-                return null;
+                const errorData = await response.json().catch(() => ({}));
+                
+                if (errorData.error?.code === 'TOKEN_EXPIRED') {
+                    const newToken = await refreshAccessToken();
+                    if (newToken) {
+                        // Retry the request with new token
+                        response = await fetch(`${API_BASE}${endpoint}`, {
+                            ...options,
+                            headers: {
+                                'Authorization': `Bearer ${newToken}`,
+                                'Content-Type': 'application/json',
+                                ...options.headers
+                            }
+                        });
+                    } else {
+                        handleAuthFailure();
+                        return null;
+                    }
+                } else {
+                    handleAuthFailure();
+                    return null;
+                }
             }
 
             return await response.json();
@@ -147,10 +266,32 @@ const AdminApp = (function() {
     /**
      * Logout
      */
-    function logout() {
+    async function logout() {
+        const refreshToken = localStorage.getItem('refreshToken');
+        
+        // Call logout API to revoke tokens
+        if (refreshToken) {
+            try {
+                await fetch(`${API_BASE}/auth/logout`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ refreshToken })
+                });
+            } catch (error) {
+                console.error('Logout API error:', error);
+            }
+        }
+        
+        // Clear local storage
         localStorage.removeItem('adminToken');
+        localStorage.removeItem('refreshToken');
         localStorage.removeItem('adminUser');
+        localStorage.removeItem('tokenExpiresIn');
+        
+        // Clear timers
+        if (tokenRefreshTimer) clearTimeout(tokenRefreshTimer);
         if (chatWs) chatWs.close();
+        
         window.location.href = 'login.html';
     }
 
