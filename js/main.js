@@ -197,13 +197,51 @@ function initFormValidation() {
     const newsletterForm = document.getElementById('newsletterForm');
     
     if (contactForm) {
-        contactForm.addEventListener('submit', function(e) {
+        contactForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             if (validateForm(this)) {
-                // Show success message
-                showFormMessage(this, 'success', 'Thank you for your message! We\'ll get back to you soon.');
-                this.reset();
+                // Get form data
+                const formData = new FormData(this);
+                const data = {
+                    name: formData.get('name'),
+                    email: formData.get('email'),
+                    phone: formData.get('phone') || '',
+                    company: formData.get('company') || '',
+                    service: formData.get('service') || '',
+                    message: formData.get('message')
+                };
+                
+                // Show loading state
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+                
+                try {
+                    const response = await fetch('/api/contact', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showFormMessage(this, 'success', 'Thank you for your message! We\'ll get back to you soon.');
+                        this.reset();
+                    } else {
+                        showFormMessage(this, 'error', result.message || 'Failed to send message. Please try again.');
+                    }
+                } catch (error) {
+                    console.error('Contact form error:', error);
+                    showFormMessage(this, 'error', 'Failed to send message. Please try again.');
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }
             }
         });
     }
