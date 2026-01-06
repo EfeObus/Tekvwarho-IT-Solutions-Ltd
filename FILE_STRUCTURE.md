@@ -87,6 +87,8 @@ tekvwarho-it-solutions/
 | main.js | Core functionality (menu, forms, animations) |
 | chat-widget.js | Live chat widget functionality |
 | booking.js | Consultation booking system |
+| cookie-consent.js | GDPR/CCPA cookie consent manager |
+| tracking.js | Analytics and visitor tracking |
 
 ---
 

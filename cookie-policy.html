@@ -260,6 +260,16 @@
             <p>We do not use third-party advertising cookies or social media tracking cookies.</p>
 
             <h2>5. Managing Cookies</h2>
+            
+            <!-- Cookie Preference Button -->
+            <div style="background: var(--bg-light); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; text-align: center;">
+                <p style="margin-bottom: 1rem; color: var(--text-dark); font-weight: 500;">You can manage your cookie preferences at any time:</p>
+                <button onclick="CookieConsent.openSettings()" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; font-size: 1rem; cursor: pointer;">
+                    <i class="fas fa-cog"></i>
+                    Manage Cookie Preferences
+                </button>
+            </div>
+            
             <h3>5.1 Browser Settings</h3>
             <p>Most web browsers allow you to control cookies through their settings. You can:</p>
             <ul>
@@ -360,5 +370,6 @@
     </footer>
 
     <script src="js/main.js"></script>
+    <script src="js/cookie-consent.js"></script>
 </body>
 </html>

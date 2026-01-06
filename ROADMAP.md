@@ -657,9 +657,9 @@ CREATE TABLE drafts (
 9. Policy Updates
 
 **PIPEDA Requirements:**
-- [ ] Consent for data collection
+- [x] Consent for data collection (Cookie Consent Banner)
 - [ ] Purpose limitation
-- [ ] Access rights
+- [x] Access rights
 - [ ] Correction rights
 - [ ] Complaint process
 

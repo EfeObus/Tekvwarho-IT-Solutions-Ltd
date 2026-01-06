@@ -5,7 +5,7 @@ A comprehensive IT solutions website with integrated admin dashboard, live chat,
 ![License](https://img.shields.io/badge/license-Proprietary-blue)
 ![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14%2B-blue)
-![Version](https://img.shields.io/badge/version-1.2.0-orange)
+![Version](https://img.shields.io/badge/version-1.3.0-orange)
 
 ## 🏢 Company Information
 
@@ -217,9 +217,12 @@ tekvwarho-it-solutions/
 │   └── styles.css                 # Main stylesheet
 │
 ├── 📂 js/                         # Public website JavaScript
+├── 📂 js/                         # Frontend JavaScript
 │   ├── main.js                    # Core functionality
 │   ├── chat-widget.js             # Live chat widget
-│   └── booking.js                 # Consultation booking
+│   ├── booking.js                 # Consultation booking
+│   ├── cookie-consent.js          # GDPR cookie consent manager
+│   └── tracking.js                # Analytics tracking
 │
 ├── 📂 img/                        # Images and assets
 │
@@ -648,7 +651,21 @@ curl -X GET http://localhost:5500/api/messages \
 - ✅ Security policy
 - ✅ Backup and recovery plan
 
-### v1.1.0 (January 2026)
+### v1.3.0 (January 2026)
+
+#### Cookie Consent & Privacy
+- ✅ GDPR/CCPA compliant cookie consent banner
+- ✅ Cookie preference management (Analytics, Marketing, Functional)
+- ✅ Persistent consent storage with 365-day expiry
+- ✅ Cookie settings modal with toggle switches
+- ✅ "Manage Cookie Preferences" button on Cookie Policy page
+- ✅ Cookie consent notifications
+
+#### UI Improvements
+- ✅ Updated footer links across all pages
+- ✅ Added Cookie Policy link to footer navigation
+
+### v1.2.0 (January 2026)
 
 - ✅ Legal pages (Privacy Policy, Terms of Service, Cookie Policy)
 - ✅ Enhanced audit logging
