@@ -48,24 +48,24 @@ const Chat = {
         `;
         const params = [];
         const conditions = [];
-        
+
         if (status) {
             conditions.push(`cs.status = $${params.length + 1}`);
             params.push(status);
         }
-        
+
         if (assignedTo) {
             conditions.push(`cs.assigned_to = $${params.length + 1}`);
             params.push(assignedTo);
         }
-        
+
         if (conditions.length > 0) {
             query += ' WHERE ' + conditions.join(' AND ');
         }
-        
+
         query += ' ORDER BY cs.started_at DESC LIMIT $' + (params.length + 1) + ' OFFSET $' + (params.length + 2);
         params.push(limit, offset);
-        
+
         const result = await db.query(query, params);
         return result.rows;
     },
@@ -104,7 +104,7 @@ const Chat = {
      */
     async closeSession(id) {
         const result = await db.query(
-            `UPDATE chat_sessions 
+            `UPDATE chat_sessions
              SET status = 'closed', ended_at = CURRENT_TIMESTAMP
              WHERE id = $1
              RETURNING *`,
@@ -118,7 +118,7 @@ const Chat = {
      */
     async assignSession(id, staffId) {
         const result = await db.query(
-            `UPDATE chat_sessions 
+            `UPDATE chat_sessions
              SET assigned_to = $1
              WHERE id = $2
              RETURNING *`,
@@ -132,7 +132,7 @@ const Chat = {
      */
     async markMessagesAsRead(sessionId, senderType) {
         await db.query(
-            `UPDATE chat_messages 
+            `UPDATE chat_messages
              SET read_at = CURRENT_TIMESTAMP
              WHERE session_id = $1 AND sender_type = $2 AND read_at IS NULL`,
             [sessionId, senderType]

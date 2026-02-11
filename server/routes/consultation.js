@@ -34,10 +34,10 @@ router.post('/book', bookingValidation, async (req, res) => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return res.status(400).json({ 
+            return res.status(400).json({
                 success: false,
                 message: errors.array()[0].msg,
-                errors: errors.array() 
+                errors: errors.array()
             });
         }
 
@@ -49,8 +49,12 @@ router.post('/book', bookingValidation, async (req, res) => {
             const [time, period] = booking_time.split(' ');
             let [hours, minutes] = time.split(':');
             hours = parseInt(hours);
-            if (period === 'PM' && hours !== 12) hours += 12;
-            if (period === 'AM' && hours === 12) hours = 0;
+            if (period === 'PM' && hours !== 12) {
+                hours += 12;
+            }
+            if (period === 'AM' && hours === 12) {
+                hours = 0;
+            }
             timeForDb = `${String(hours).padStart(2, '0')}:${minutes}:00`;
         }
 
@@ -117,9 +121,9 @@ router.post('/book', bookingValidation, async (req, res) => {
         });
     } catch (error) {
         console.error('Booking error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: 'Failed to book consultation. Please try again.' 
+            message: 'Failed to book consultation. Please try again.'
         });
     }
 });
@@ -142,13 +146,13 @@ router.get('/stats', async (req, res) => {
     try {
         const { assigned_to } = req.query;
         const today = new Date().toISOString().split('T')[0];
-        
+
         // Get counts by status for the assigned staff member
-        let baseCondition = assigned_to ? 'WHERE assigned_to = $1' : 'WHERE 1=1';
+        const baseCondition = assigned_to ? 'WHERE assigned_to = $1' : 'WHERE 1=1';
         const params = assigned_to ? [assigned_to] : [];
-        
+
         const statsQuery = `
-            SELECT 
+            SELECT
                 COUNT(*) FILTER (WHERE status = 'pending') as pending,
                 COUNT(*) FILTER (WHERE status = 'confirmed') as confirmed,
                 COUNT(*) FILTER (WHERE status = 'completed') as completed,
@@ -157,12 +161,12 @@ router.get('/stats', async (req, res) => {
             ${baseCondition}
         `;
         params.push(today);
-        
+
         const result = await db.query(statsQuery, params);
         const stats = result.rows[0] || { pending: 0, confirmed: 0, completed: 0, today: 0 };
-        
-        res.json({ 
-            success: true, 
+
+        res.json({
+            success: true,
             stats: {
                 pending: parseInt(stats.pending) || 0,
                 confirmed: parseInt(stats.confirmed) || 0,
@@ -172,9 +176,9 @@ router.get('/stats', async (req, res) => {
         });
     } catch (error) {
         console.error('Get consultation stats error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: 'Failed to retrieve stats' 
+            message: 'Failed to retrieve stats'
         });
     }
 });
@@ -186,7 +190,7 @@ router.get('/stats', async (req, res) => {
 router.get('/slots', async (req, res) => {
     try {
         const { date } = req.query;
-        
+
         if (!date) {
             return res.status(400).json({
                 success: false,
@@ -210,7 +214,7 @@ router.get('/slots', async (req, res) => {
 
         // Get booked slots for this date
         const bookedResult = await db.query(
-            `SELECT booking_time FROM consultations 
+            `SELECT booking_time FROM consultations
              WHERE booking_date = $1 AND status != 'cancelled'`,
             [date]
         );
@@ -222,8 +226,12 @@ router.get('/slots', async (req, res) => {
                 let [hours, minutes] = time.split(':');
                 hours = parseInt(hours);
                 const period = hours >= 12 ? 'PM' : 'AM';
-                if (hours > 12) hours -= 12;
-                if (hours === 0) hours = 12;
+                if (hours > 12) {
+                    hours -= 12;
+                }
+                if (hours === 0) {
+                    hours = 12;
+                }
                 return `${String(hours).padStart(2, '0')}:${minutes.substring(0, 2)} ${period}`;
             }
             return time;
@@ -232,9 +240,9 @@ router.get('/slots', async (req, res) => {
         res.json({ success: true, data: [], bookedSlots });
     } catch (error) {
         console.error('Get slots error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: 'Failed to retrieve available slots' 
+            message: 'Failed to retrieve available slots'
         });
     }
 });
@@ -246,20 +254,20 @@ router.get('/slots', async (req, res) => {
 router.get('/', async (req, res) => {
     try {
         const { status, startDate, endDate, limit, offset, assigned_to, date_from, date_to } = req.query;
-        const consultations = await Consultation.findAll({ 
-            status, 
+        const consultations = await Consultation.findAll({
+            status,
             startDate: startDate || date_from,
             endDate: endDate || date_to,
             assignedTo: assigned_to,
-            limit: parseInt(limit) || 50, 
-            offset: parseInt(offset) || 0 
+            limit: parseInt(limit) || 50,
+            offset: parseInt(offset) || 0
         });
         res.json({ success: true, data: consultations, consultations: consultations });
     } catch (error) {
         console.error('Get consultations error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: 'Failed to retrieve consultations' 
+            message: 'Failed to retrieve consultations'
         });
     }
 });
@@ -275,9 +283,9 @@ router.get('/upcoming', async (req, res) => {
         res.json({ success: true, data: consultations });
     } catch (error) {
         console.error('Get upcoming error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: 'Failed to retrieve upcoming consultations' 
+            message: 'Failed to retrieve upcoming consultations'
         });
     }
 });
@@ -290,17 +298,17 @@ router.get('/:id', async (req, res) => {
     try {
         const consultation = await Consultation.findById(req.params.id);
         if (!consultation) {
-            return res.status(404).json({ 
+            return res.status(404).json({
                 success: false,
-                message: 'Consultation not found' 
+                message: 'Consultation not found'
             });
         }
         res.json({ success: true, data: consultation });
     } catch (error) {
         console.error('Get consultation error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: 'Failed to retrieve consultation' 
+            message: 'Failed to retrieve consultation'
         });
     }
 });
@@ -313,12 +321,12 @@ router.patch('/:id', async (req, res) => {
     try {
         const consultation = await Consultation.update(req.params.id, req.body);
         if (!consultation) {
-            return res.status(404).json({ 
+            return res.status(404).json({
                 success: false,
-                message: 'Consultation not found' 
+                message: 'Consultation not found'
             });
         }
-        
+
         // Log update if staffId is provided
         if (req.body.staffId) {
             await AuditService.log({
@@ -330,13 +338,13 @@ router.patch('/:id', async (req, res) => {
                 ipAddress: req.ip
             });
         }
-        
+
         res.json({ success: true, data: consultation });
     } catch (error) {
         console.error('Update consultation error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: 'Failed to update consultation' 
+            message: 'Failed to update consultation'
         });
     }
 });
@@ -349,29 +357,29 @@ router.patch('/:id/status', async (req, res) => {
     try {
         const { status, assignedTo, staffId } = req.body;
         const validStatuses = ['pending', 'confirmed', 'completed', 'cancelled'];
-        
+
         if (!validStatuses.includes(status)) {
-            return res.status(400).json({ 
+            return res.status(400).json({
                 success: false,
-                message: 'Invalid status' 
+                message: 'Invalid status'
             });
         }
 
         // Get old consultation for audit
         const oldConsultation = await Consultation.findById(req.params.id);
-        
+
         const consultation = await Consultation.updateStatus(req.params.id, status, assignedTo);
         if (!consultation) {
-            return res.status(404).json({ 
+            return res.status(404).json({
                 success: false,
-                message: 'Consultation not found' 
+                message: 'Consultation not found'
             });
         }
 
         // Log status change
         if (staffId) {
             await AuditService.logStatusChange(staffId, 'consultation', req.params.id, oldConsultation?.status, status, req.ip);
-            
+
             // Log assignment if different
             if (assignedTo && assignedTo !== oldConsultation?.assigned_to) {
                 await AuditService.logAssignment(staffId, 'consultation', req.params.id, assignedTo, req.ip);
@@ -381,9 +389,9 @@ router.patch('/:id/status', async (req, res) => {
         res.json({ success: true, data: consultation });
     } catch (error) {
         console.error('Update status error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: 'Failed to update status' 
+            message: 'Failed to update status'
         });
     }
 });

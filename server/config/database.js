@@ -10,16 +10,16 @@ const { Pool } = require('pg');
 const isRailway = process.env.DATABASE_URL && process.env.DATABASE_URL.includes('railway');
 
 // Configure pool - prefer DATABASE_URL for Railway/cloud deployments
-const poolConfig = process.env.DATABASE_URL 
+const poolConfig = process.env.DATABASE_URL
     ? {
         connectionString: process.env.DATABASE_URL,
         // Always use SSL for Railway, regardless of NODE_ENV
-        ssl: isRailway || process.env.NODE_ENV === 'production' 
-            ? { rejectUnauthorized: false } 
+        ssl: isRailway || process.env.NODE_ENV === 'production'
+            ? { rejectUnauthorized: false }
             : false,
         max: 20,
         idleTimeoutMillis: 30000,
-        connectionTimeoutMillis: 10000,
+        connectionTimeoutMillis: 10000
     }
     : {
         host: process.env.DB_HOST || 'localhost',
@@ -29,7 +29,7 @@ const poolConfig = process.env.DATABASE_URL
         password: process.env.DB_PASSWORD || '',
         max: 20,
         idleTimeoutMillis: 30000,
-        connectionTimeoutMillis: 10000,
+        connectionTimeoutMillis: 10000
     };
 
 const pool = new Pool(poolConfig);

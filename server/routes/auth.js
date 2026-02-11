@@ -79,9 +79,9 @@ router.post('/logout', authMiddleware, asyncHandler(async (req, res) => {
             const crypto = require('crypto');
             const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
             const db = require('../config/database');
-            
+
             const result = await db.query(
-                `SELECT id FROM refresh_tokens WHERE token_hash = $1 AND user_id = $2`,
+                'SELECT id FROM refresh_tokens WHERE token_hash = $1 AND user_id = $2',
                 [tokenHash, req.user.id]
             );
 
@@ -218,24 +218,36 @@ router.get('/verify', authMiddleware, asyncHandler(async (req, res) => {
  * Parse user agent string for display
  */
 function parseUserAgent(userAgent) {
-    if (!userAgent) return 'Unknown Device';
-    
-    let device = 'Unknown Device';
+    if (!userAgent) {
+        return 'Unknown Device';
+    }
+
     let browser = 'Unknown Browser';
     let os = 'Unknown OS';
 
     // Detect OS
-    if (userAgent.includes('Windows')) os = 'Windows';
-    else if (userAgent.includes('Mac')) os = 'macOS';
-    else if (userAgent.includes('Linux')) os = 'Linux';
-    else if (userAgent.includes('Android')) os = 'Android';
-    else if (userAgent.includes('iPhone') || userAgent.includes('iPad')) os = 'iOS';
+    if (userAgent.includes('Windows')) {
+        os = 'Windows';
+    } else if (userAgent.includes('Mac')) {
+        os = 'macOS';
+    } else if (userAgent.includes('Linux')) {
+        os = 'Linux';
+    } else if (userAgent.includes('Android')) {
+        os = 'Android';
+    } else if (userAgent.includes('iPhone') || userAgent.includes('iPad')) {
+        os = 'iOS';
+    }
 
     // Detect browser
-    if (userAgent.includes('Chrome')) browser = 'Chrome';
-    else if (userAgent.includes('Firefox')) browser = 'Firefox';
-    else if (userAgent.includes('Safari')) browser = 'Safari';
-    else if (userAgent.includes('Edge')) browser = 'Edge';
+    if (userAgent.includes('Chrome')) {
+        browser = 'Chrome';
+    } else if (userAgent.includes('Firefox')) {
+        browser = 'Firefox';
+    } else if (userAgent.includes('Safari')) {
+        browser = 'Safari';
+    } else if (userAgent.includes('Edge')) {
+        browser = 'Edge';
+    }
 
     return `${browser} on ${os}`;
 }
@@ -289,8 +301,8 @@ router.post('/forgot-password', passwordResetLimiter, [
 
         // Invalidate any existing reset tokens for this user
         await db.query(
-            `UPDATE password_reset_tokens 
-             SET used_at = NOW() 
+            `UPDATE password_reset_tokens
+             SET used_at = NOW()
              WHERE user_id = $1 AND used_at IS NULL`,
             [user.id]
         );
@@ -351,8 +363,8 @@ router.post('/reset-password', passwordResetLimiter, [
             `SELECT prt.id, prt.user_id, prt.expires_at, s.email, s.name
              FROM password_reset_tokens prt
              JOIN staff s ON prt.user_id = s.id
-             WHERE prt.token_hash = $1 
-               AND prt.used_at IS NULL 
+             WHERE prt.token_hash = $1
+               AND prt.used_at IS NULL
                AND prt.expires_at > NOW()`,
             [tokenHash]
         );
@@ -371,8 +383,8 @@ router.post('/reset-password', passwordResetLimiter, [
 
         // Update user password and increment token version to invalidate existing sessions
         await db.query(
-            `UPDATE staff 
-             SET password_hash = $1, 
+            `UPDATE staff
+             SET password_hash = $1,
                  must_change_password = false,
                  token_version = token_version + 1,
                  updated_at = NOW()
@@ -382,16 +394,16 @@ router.post('/reset-password', passwordResetLimiter, [
 
         // Mark token as used
         await db.query(
-            `UPDATE password_reset_tokens 
-             SET used_at = NOW() 
+            `UPDATE password_reset_tokens
+             SET used_at = NOW()
              WHERE id = $1`,
             [resetData.id]
         );
 
         // Revoke all existing refresh tokens for this user for security
         await db.query(
-            `UPDATE refresh_tokens 
-             SET revoked_at = NOW() 
+            `UPDATE refresh_tokens
+             SET revoked_at = NOW()
              WHERE user_id = $1 AND revoked_at IS NULL`,
             [resetData.user_id]
         );
@@ -436,7 +448,7 @@ router.get('/verify-reset-token', asyncHandler(async (req, res) => {
     const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
 
     const tokenResult = await db.query(
-        `SELECT id, expires_at FROM password_reset_tokens 
+        `SELECT id, expires_at FROM password_reset_tokens
          WHERE token_hash = $1 AND used_at IS NULL AND expires_at > NOW()`,
         [tokenHash]
     );

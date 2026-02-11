@@ -28,11 +28,11 @@ router.post('/track', async (req, res) => {
                 'SELECT id FROM visitors WHERE id = $1',
                 [visitorId]
             );
-            
+
             if (existingVisitor.rows.length > 0) {
                 // Visitor exists - update last visit
                 await db.query(
-                    `UPDATE visitors SET last_visit = CURRENT_TIMESTAMP, page_views = page_views + 1 WHERE id = $1`,
+                    'UPDATE visitors SET last_visit = CURRENT_TIMESTAMP, page_views = page_views + 1 WHERE id = $1',
                     [visitorId]
                 );
             } else {
@@ -41,7 +41,7 @@ router.post('/track', async (req, res) => {
                 actualVisitorId = null;
             }
         }
-        
+
         // Create new visitor if needed
         if (!actualVisitorId) {
             const visitorResult = await db.query(
@@ -84,9 +84,9 @@ router.get('/visitor', async (req, res) => {
             [uuidv4(), ipAddress, userAgent, referrer]
         );
 
-        res.json({ 
-            success: true, 
-            visitorId: visitorResult.rows[0].id 
+        res.json({
+            success: true,
+            visitorId: visitorResult.rows[0].id
         });
     } catch (error) {
         console.error('Create visitor error:', error);
@@ -101,11 +101,11 @@ router.get('/visitor', async (req, res) => {
 router.get('/', authMiddleware, async (req, res) => {
     try {
         const { startDate, endDate, period } = req.query;
-        
+
         // Calculate date range based on period
         let start, end;
         const now = new Date();
-        
+
         if (period) {
             const days = parseInt(period) || 30;
             end = now.toISOString().split('T')[0];
@@ -161,8 +161,8 @@ router.get('/', authMiddleware, async (req, res) => {
 
         // Get traffic sources (referrers)
         const referrersResult = await db.query(`
-            SELECT 
-                CASE 
+            SELECT
+                CASE
                     WHEN referrer IS NULL OR referrer = '' OR referrer = 'direct' THEN 'Direct'
                     WHEN referrer LIKE '%google%' THEN 'Google'
                     WHEN referrer LIKE '%facebook%' THEN 'Facebook'
@@ -180,8 +180,8 @@ router.get('/', authMiddleware, async (req, res) => {
 
         // Get device/browser breakdown
         const devicesResult = await db.query(`
-            SELECT 
-                CASE 
+            SELECT
+                CASE
                     WHEN v.user_agent LIKE '%Mobile%' OR v.user_agent LIKE '%Android%' OR v.user_agent LIKE '%iPhone%' THEN 'Mobile'
                     WHEN v.user_agent LIKE '%Tablet%' OR v.user_agent LIKE '%iPad%' THEN 'Tablet'
                     ELSE 'Desktop'
@@ -241,7 +241,7 @@ router.get('/', authMiddleware, async (req, res) => {
 
         // Get new vs returning visitors
         const visitorTypesResult = await db.query(`
-            SELECT 
+            SELECT
                 CASE WHEN v.page_views = 1 THEN 'New' ELSE 'Returning' END as visitor_type,
                 COUNT(DISTINCT e.visitor_id) as count
             FROM analytics_events e
@@ -254,19 +254,19 @@ router.get('/', authMiddleware, async (req, res) => {
         // Calculate metrics
         const currentVisitors = parseInt(currentVisitorsResult.rows[0]?.unique_visitors || 0);
         const prevVisitors = parseInt(prevVisitorsResult.rows[0]?.unique_visitors || 0);
-        const visitorChange = prevVisitors > 0 
-            ? Math.round(((currentVisitors - prevVisitors) / prevVisitors) * 100) 
+        const visitorChange = prevVisitors > 0
+            ? Math.round(((currentVisitors - prevVisitors) / prevVisitors) * 100)
             : 100;
 
         const currentPageViews = parseInt(currentVisitorsResult.rows[0]?.total_page_views || 0);
         const prevPageViews = parseInt(prevVisitorsResult.rows[0]?.total_page_views || 0);
-        const pageViewChange = prevPageViews > 0 
-            ? Math.round(((currentPageViews - prevPageViews) / prevPageViews) * 100) 
+        const pageViewChange = prevPageViews > 0
+            ? Math.round(((currentPageViews - prevPageViews) / prevPageViews) * 100)
             : 100;
 
         // Average session duration (estimate based on page views)
-        const avgPagesPerSession = currentVisitors > 0 
-            ? (currentPageViews / currentVisitors).toFixed(1) 
+        const avgPagesPerSession = currentVisitors > 0
+            ? (currentPageViews / currentVisitors).toFixed(1)
             : 0;
 
         res.json({
@@ -295,9 +295,9 @@ router.get('/', authMiddleware, async (req, res) => {
         });
     } catch (error) {
         console.error('Get analytics error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: 'Failed to retrieve analytics' 
+            message: 'Failed to retrieve analytics'
         });
     }
 });
@@ -311,10 +311,10 @@ router.get('/summary', authMiddleware, async (req, res) => {
         const today = new Date().toISOString().split('T')[0];
         const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
         const monthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-        
+
         // Today's stats
         const todayStats = await db.query(`
-            SELECT 
+            SELECT
                 COUNT(*) FILTER (WHERE event_type = 'page_view') as page_views,
                 COUNT(DISTINCT visitor_id) as unique_visitors
             FROM analytics_events
@@ -323,7 +323,7 @@ router.get('/summary', authMiddleware, async (req, res) => {
 
         // This week's stats
         const weekStats = await db.query(`
-            SELECT 
+            SELECT
                 COUNT(*) FILTER (WHERE event_type = 'page_view') as page_views,
                 COUNT(DISTINCT visitor_id) as unique_visitors
             FROM analytics_events
@@ -332,7 +332,7 @@ router.get('/summary', authMiddleware, async (req, res) => {
 
         // Total counts
         const totalsResult = await db.query(`
-            SELECT 
+            SELECT
                 (SELECT COUNT(*) FROM visitors) as total_visitors,
                 (SELECT COUNT(*) FROM messages) as total_messages,
                 (SELECT COUNT(*) FROM messages WHERE status = 'new') as new_messages,
@@ -344,7 +344,7 @@ router.get('/summary', authMiddleware, async (req, res) => {
 
         // Get conversion rate (bookings per visitor)
         const conversionResult = await db.query(`
-            SELECT 
+            SELECT
                 COUNT(DISTINCT e.visitor_id) as visitors_with_action
             FROM analytics_events e
             WHERE e.event_type IN ('form_submit', 'booking', 'chat_start')
@@ -363,21 +363,21 @@ router.get('/summary', authMiddleware, async (req, res) => {
 
         // Recent activity (last 10 events)
         const recentActivity = await db.query(`
-            SELECT 
+            SELECT
                 'message' as type,
                 m.name as title,
                 m.service as details,
                 m.created_at
             FROM messages m
             UNION ALL
-            SELECT 
+            SELECT
                 'consultation' as type,
                 c.name as title,
                 c.service as details,
                 c.created_at
             FROM consultations c
             UNION ALL
-            SELECT 
+            SELECT
                 'chat' as type,
                 cs.visitor_name as title,
                 'Chat session' as details,
@@ -399,9 +399,9 @@ router.get('/summary', authMiddleware, async (req, res) => {
         });
     } catch (error) {
         console.error('Get summary error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: 'Failed to retrieve summary' 
+            message: 'Failed to retrieve summary'
         });
     }
 });
@@ -414,9 +414,9 @@ router.get('/realtime', authMiddleware, async (req, res) => {
     try {
         // Get visitors in the last 5 minutes
         const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-        
+
         const activeVisitorsResult = await db.query(`
-            SELECT 
+            SELECT
                 COUNT(DISTINCT visitor_id) as active_visitors,
                 COUNT(*) as page_views
             FROM analytics_events
@@ -443,9 +443,9 @@ router.get('/realtime', authMiddleware, async (req, res) => {
         });
     } catch (error) {
         console.error('Get realtime error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: 'Failed to retrieve realtime data' 
+            message: 'Failed to retrieve realtime data'
         });
     }
 });

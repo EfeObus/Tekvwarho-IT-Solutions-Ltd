@@ -1,7 +1,7 @@
 /**
  * Email Service
  * Handles sending email notifications using Nodemailer
- * 
+ *
  * SUPPORTED SMTP PROVIDERS:
  * - Gmail: Set SMTP_HOST=smtp.gmail.com, use App Password
  * - Outlook: Requires OAuth2 (basic auth disabled)
@@ -14,7 +14,7 @@ const nodemailer = require('nodemailer');
 const createTransporter = () => {
     const host = process.env.SMTP_HOST || 'smtp.gmail.com';
     const isGmail = host.includes('gmail');
-    
+
     const config = {
         host,
         port: parseInt(process.env.SMTP_PORT) || 587,
@@ -24,12 +24,12 @@ const createTransporter = () => {
             pass: process.env.SMTP_PASS
         }
     };
-    
+
     // Gmail requires special settings
     if (isGmail) {
         config.service = 'gmail';
     }
-    
+
     return nodemailer.createTransport(config);
 };
 
@@ -39,7 +39,7 @@ const createTransporter = () => {
 const sendEmail = async ({ to, subject, html, text }) => {
     try {
         const transporter = createTransporter();
-        
+
         const mailOptions = {
             from: `"Tekvwarho IT Solutions" <${process.env.EMAIL_FROM || process.env.SMTP_USER}>`,
             to,
@@ -62,7 +62,7 @@ const sendEmail = async ({ to, subject, html, text }) => {
  */
 const sendContactNotification = async (message) => {
     const subject = `New Contact Form Submission - ${message.service || 'General Inquiry'}`;
-    
+
     const html = `
         <h2>New Contact Form Submission</h2>
         <table style="border-collapse: collapse; width: 100%; max-width: 600px;">
@@ -92,7 +92,7 @@ const sendContactNotification = async (message) => {
             </tr>
         </table>
         <p style="margin-top: 20px;">
-            <a href="${process.env.SITE_URL || 'http://localhost:3000'}/admin/messages.html" 
+            <a href="${process.env.SITE_URL || 'http://localhost:3000'}/admin/messages.html"
                style="background-color: #0066CC; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
                 View in Dashboard
             </a>
@@ -259,7 +259,7 @@ const sendBookingNotification = async (consultation) => {
             ` : ''}
         </table>
         <p style="margin-top: 20px;">
-            <a href="${process.env.SITE_URL || 'http://localhost:3000'}/admin/consultations.html" 
+            <a href="${process.env.SITE_URL || 'http://localhost:3000'}/admin/consultations.html"
                style="background-color: #0066CC; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
                 View in Dashboard
             </a>
@@ -276,13 +276,13 @@ const sendBookingNotification = async (consultation) => {
 /**
  * Send missed chat response to visitor's email
  */
-const sendMissedChatResponse = async (visitorEmail, visitorName, messages, sessionId) => {
+const sendMissedChatResponse = async (visitorEmail, visitorName, messages, _sessionId) => {
     // Format the conversation
     const conversationHtml = messages.map(msg => {
         const sender = msg.sender_type === 'agent' ? 'Our Team' : visitorName;
         const time = new Date(msg.created_at).toLocaleString();
         const bgColor = msg.sender_type === 'agent' ? '#e3f2fd' : '#f5f5f5';
-        
+
         return `
             <div style="background: ${bgColor}; padding: 12px; border-radius: 8px; margin-bottom: 10px;">
                 <div style="font-weight: bold; color: #333; margin-bottom: 4px;">${sender}</div>
@@ -295,23 +295,23 @@ const sendMissedChatResponse = async (visitorEmail, visitorName, messages, sessi
     const html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #0066CC;">Response to Your Chat with Tekvwarho IT Solutions</h2>
-            
+
             <p>Hi ${visitorName},</p>
-            
+
             <p>We're sorry we missed you! Here's a summary of your chat conversation with our team:</p>
-            
+
             <div style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin: 20px 0;">
                 <h4 style="margin-top: 0; color: #333;">Chat Conversation</h4>
                 ${conversationHtml}
             </div>
-            
+
             <p>If you need further assistance, please feel free to:</p>
             <ul>
                 <li>Reply to this email</li>
                 <li>Start a new live chat on our website</li>
                 <li>Book a consultation at <a href="${process.env.SITE_URL || 'http://localhost:3000'}/book-consultation.html">our booking page</a></li>
             </ul>
-            
+
             <p>Best regards,<br>Tekvwarho IT Solutions Team</p>
         </div>
     `;
@@ -328,7 +328,7 @@ const sendMissedChatResponse = async (visitorEmail, visitorName, messages, sessi
  */
 const sendPasswordResetEmail = async (email, name, resetToken) => {
     const resetUrl = `${process.env.SITE_URL || 'http://localhost:5500'}/admin/reset-password.html?token=${resetToken}`;
-    
+
     const html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #0066CC;">Password Reset Request</h2>
@@ -336,7 +336,7 @@ const sendPasswordResetEmail = async (email, name, resetToken) => {
             <p>We received a request to reset your password for your Tekvwarho admin account.</p>
             <p>Click the button below to reset your password:</p>
             <div style="text-align: center; margin: 30px 0;">
-                <a href="${resetUrl}" 
+                <a href="${resetUrl}"
                    style="background-color: #0066CC; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-size: 16px;">
                     Reset Password
                 </a>

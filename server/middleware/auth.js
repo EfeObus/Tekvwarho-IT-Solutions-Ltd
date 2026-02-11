@@ -12,20 +12,20 @@ const authMiddleware = (req, res, next) => {
     try {
         // Get token from header
         const authHeader = req.headers.authorization;
-        
+
         if (!authHeader) {
-            return res.status(401).json({ 
+            return res.status(401).json({
                 success: false,
-                message: 'No token provided' 
+                message: 'No token provided'
             });
         }
 
         // Check Bearer format
         const parts = authHeader.split(' ');
         if (parts.length !== 2 || parts[0] !== 'Bearer') {
-            return res.status(401).json({ 
+            return res.status(401).json({
                 success: false,
-                message: 'Invalid token format' 
+                message: 'Invalid token format'
             });
         }
 
@@ -33,7 +33,7 @@ const authMiddleware = (req, res, next) => {
 
         // Verify token
         const decoded = jwt.verify(
-            token, 
+            token,
             process.env.JWT_SECRET || 'your-secret-key'
         );
 
@@ -42,7 +42,7 @@ const authMiddleware = (req, res, next) => {
         next();
     } catch (error) {
         if (error.name === 'TokenExpiredError') {
-            return res.status(401).json({ 
+            return res.status(401).json({
                 success: false,
                 message: 'Token expired',
                 error: {
@@ -51,8 +51,8 @@ const authMiddleware = (req, res, next) => {
                 }
             });
         }
-        
-        return res.status(401).json({ 
+
+        return res.status(401).json({
             success: false,
             message: 'Invalid token',
             error: {
@@ -68,9 +68,9 @@ const authMiddleware = (req, res, next) => {
  */
 const adminOnly = (req, res, next) => {
     if (req.user.role !== 'admin') {
-        return res.status(403).json({ 
+        return res.status(403).json({
             success: false,
-            message: 'Admin access required' 
+            message: 'Admin access required'
         });
     }
     next();
@@ -102,9 +102,9 @@ const hasPermission = (permission) => {
         };
 
         if (!permissionMap[permission]) {
-            return res.status(403).json({ 
+            return res.status(403).json({
                 success: false,
-                message: `You don't have permission to access this resource` 
+                message: 'You don\'t have permission to access this resource'
             });
         }
         next();

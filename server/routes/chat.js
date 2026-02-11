@@ -21,9 +21,9 @@ router.post('/start', [
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return res.status(400).json({ 
+            return res.status(400).json({
                 success: false,
-                errors: errors.array() 
+                errors: errors.array()
             });
         }
 
@@ -62,9 +62,9 @@ router.post('/start', [
         });
     } catch (error) {
         console.error('Start chat error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: 'Failed to start chat' 
+            message: 'Failed to start chat'
         });
     }
 });
@@ -76,18 +76,18 @@ router.post('/start', [
 router.get('/sessions', async (req, res) => {
     try {
         const { status, limit, offset, assigned_to } = req.query;
-        const sessions = await Chat.getAllSessions({ 
-            status, 
+        const sessions = await Chat.getAllSessions({
+            status,
             assignedTo: assigned_to,
-            limit: parseInt(limit) || 50, 
-            offset: parseInt(offset) || 0 
+            limit: parseInt(limit) || 50,
+            offset: parseInt(offset) || 0
         });
         res.json({ success: true, data: sessions, sessions: sessions });
     } catch (error) {
         console.error('Get sessions error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: 'Failed to retrieve sessions' 
+            message: 'Failed to retrieve sessions'
         });
     }
 });
@@ -100,23 +100,23 @@ router.get('/sessions/:id', async (req, res) => {
     try {
         const session = await Chat.getSession(req.params.id);
         if (!session) {
-            return res.status(404).json({ 
+            return res.status(404).json({
                 success: false,
-                message: 'Session not found' 
+                message: 'Session not found'
             });
         }
 
         const messages = await Chat.getMessages(req.params.id);
-        
-        res.json({ 
-            success: true, 
-            data: { ...session, messages } 
+
+        res.json({
+            success: true,
+            data: { ...session, messages }
         });
     } catch (error) {
         console.error('Get session error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: 'Failed to retrieve session' 
+            message: 'Failed to retrieve session'
         });
     }
 });
@@ -131,9 +131,9 @@ router.get('/sessions/:id/messages', async (req, res) => {
         res.json({ success: true, data: messages });
     } catch (error) {
         console.error('Get messages error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: 'Failed to retrieve messages' 
+            message: 'Failed to retrieve messages'
         });
     }
 });
@@ -149,14 +149,14 @@ router.post('/sessions/:id/messages', [
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return res.status(400).json({ 
+            return res.status(400).json({
                 success: false,
-                errors: errors.array() 
+                errors: errors.array()
             });
         }
 
         const { content, senderType, senderId } = req.body;
-        
+
         const message = await Chat.addMessage({
             sessionId: req.params.id,
             senderType,
@@ -172,9 +172,9 @@ router.post('/sessions/:id/messages', [
         res.status(201).json({ success: true, data: message });
     } catch (error) {
         console.error('Add message error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: 'Failed to send message' 
+            message: 'Failed to send message'
         });
     }
 });
@@ -188,23 +188,23 @@ router.patch('/sessions/:id/close', async (req, res) => {
         const { staffId } = req.body;
         const session = await Chat.closeSession(req.params.id);
         if (!session) {
-            return res.status(404).json({ 
+            return res.status(404).json({
                 success: false,
-                message: 'Session not found' 
+                message: 'Session not found'
             });
         }
-        
+
         // Log session closure
         if (staffId) {
             await AuditService.logStatusChange(staffId, 'chat', req.params.id, 'active', 'closed', req.ip);
         }
-        
+
         res.json({ success: true, data: session });
     } catch (error) {
         console.error('Close session error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: 'Failed to close session' 
+            message: 'Failed to close session'
         });
     }
 });
@@ -219,9 +219,9 @@ router.get('/unread-count', async (req, res) => {
         res.json({ success: true, data: { count } });
     } catch (error) {
         console.error('Get unread count error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: 'Failed to get unread count' 
+            message: 'Failed to get unread count'
         });
     }
 });

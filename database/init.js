@@ -35,7 +35,7 @@ async function initDatabase() {
 
         try {
             const dbCheck = await adminPool.query(
-                "SELECT 1 FROM pg_database WHERE datname = $1",
+                'SELECT 1 FROM pg_database WHERE datname = $1',
                 [dbName]
             );
 
@@ -58,7 +58,7 @@ async function initDatabase() {
             port: process.env.DB_PORT || 5432,
             database: dbName,
             user: process.env.DB_USER || 'postgres',
-            password: process.env.DB_PASSWORD || '',
+            password: process.env.DB_PASSWORD || ''
         });
     }
 
@@ -68,7 +68,7 @@ async function initDatabase() {
         // Read and execute schema
         const schemaPath = path.join(__dirname, 'schema.sql');
         const schema = fs.readFileSync(schemaPath, 'utf8');
-        
+
         await pool.query(schema);
         console.log('Schema created successfully');
 
@@ -87,15 +87,15 @@ async function initDatabase() {
         if (existingAdmin.rows.length === 0) {
             await pool.query(
                 `INSERT INTO staff (
-                    email, password_hash, name, role, 
+                    email, password_hash, name, role,
                     must_change_password, is_active,
-                    can_manage_messages, can_manage_consultations, 
+                    can_manage_messages, can_manage_consultations,
                     can_manage_chats, can_view_analytics
                 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
                 [
-                    adminEmail, 
-                    hashedPassword, 
-                    adminName, 
+                    adminEmail,
+                    hashedPassword,
+                    adminName,
                     'admin',
                     false, // Admin doesn't need to change password
                     true,
@@ -107,8 +107,8 @@ async function initDatabase() {
         } else {
             // Update admin password in case it changed in .env
             await pool.query(
-                `UPDATE staff SET 
-                    password_hash = $1, 
+                `UPDATE staff SET
+                    password_hash = $1,
                     name = $2,
                     must_change_password = false,
                     can_manage_messages = true,
@@ -127,7 +127,7 @@ async function initDatabase() {
         console.log(`Admin Email: ${adminEmail}`);
         console.log(`Admin Password: ${adminPassword}`);
         console.log('===========================================\n');
-        
+
     } catch (error) {
         console.error('Database initialization failed:', error);
         process.exit(1);

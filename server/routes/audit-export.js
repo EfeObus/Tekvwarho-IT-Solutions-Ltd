@@ -20,7 +20,7 @@ const AuditService = require('../services/auditService');
 router.get('/', authMiddleware, adminOnly, async (req, res) => {
     try {
         const { staffId, action, entityType, startDate, endDate, limit, offset } = req.query;
-        
+
         const logs = await AuditService.findAll({
             staffId,
             action,
@@ -30,7 +30,7 @@ router.get('/', authMiddleware, adminOnly, async (req, res) => {
             limit: parseInt(limit) || 100,
             offset: parseInt(offset) || 0
         });
-        
+
         res.json({ success: true, data: logs });
     } catch (error) {
         console.error('Get audit logs error:', error);
@@ -45,12 +45,12 @@ router.get('/', authMiddleware, adminOnly, async (req, res) => {
 router.get('/summary', authMiddleware, adminOnly, async (req, res) => {
     try {
         const { startDate, endDate } = req.query;
-        
+
         const start = startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
         const end = endDate || new Date().toISOString().split('T')[0];
-        
+
         const summary = await AuditService.getActivitySummary(start, end);
-        
+
         res.json({ success: true, data: summary });
     } catch (error) {
         console.error('Get audit summary error:', error);
@@ -68,9 +68,9 @@ router.get('/staff/:staffId', authMiddleware, async (req, res) => {
         if (req.user.role !== 'admin' && req.user.id !== req.params.staffId) {
             return res.status(403).json({ success: false, message: 'Access denied' });
         }
-        
+
         const logs = await AuditService.getStaffActivity(req.params.staffId, 50);
-        
+
         res.json({ success: true, data: logs });
     } catch (error) {
         console.error('Get staff activity error:', error);
@@ -89,7 +89,7 @@ router.get('/staff/:staffId', authMiddleware, async (req, res) => {
 router.get('/messages', authMiddleware, async (req, res) => {
     try {
         const { status, startDate, endDate } = req.query;
-        
+
         let query = `
             SELECT m.id, m.name, m.email, m.company, m.service, m.message, m.status,
                    m.created_at, s.name as assigned_to
@@ -99,38 +99,38 @@ router.get('/messages', authMiddleware, async (req, res) => {
         `;
         const params = [];
         let paramIndex = 1;
-        
+
         if (status) {
             query += ` AND m.status = $${paramIndex}`;
             params.push(status);
             paramIndex++;
         }
-        
+
         if (startDate) {
             query += ` AND m.created_at >= $${paramIndex}`;
             params.push(startDate);
             paramIndex++;
         }
-        
+
         if (endDate) {
             query += ` AND m.created_at <= $${paramIndex}::date + interval '1 day'`;
             params.push(endDate);
             paramIndex++;
         }
-        
+
         query += ' ORDER BY m.created_at DESC';
-        
+
         const result = await db.query(query, params);
-        
+
         // Convert to CSV
         const csv = convertToCSV(result.rows, [
             'id', 'name', 'email', 'company', 'service', 'message', 'status', 'assigned_to', 'created_at'
         ]);
-        
+
         res.setHeader('Content-Type', 'text/csv');
         res.setHeader('Content-Disposition', 'attachment; filename=messages-export.csv');
         res.send(csv);
-        
+
         // Log export
         await AuditService.log({
             staffId: req.user.id,
@@ -152,9 +152,9 @@ router.get('/messages', authMiddleware, async (req, res) => {
 router.get('/consultations', authMiddleware, async (req, res) => {
     try {
         const { status, startDate, endDate } = req.query;
-        
+
         let query = `
-            SELECT c.id, c.name, c.email, c.phone, c.company, c.service, 
+            SELECT c.id, c.name, c.email, c.phone, c.company, c.service,
                    c.booking_date, c.booking_time, c.status, c.notes,
                    c.created_at, s.name as assigned_to
             FROM consultations c
@@ -163,38 +163,38 @@ router.get('/consultations', authMiddleware, async (req, res) => {
         `;
         const params = [];
         let paramIndex = 1;
-        
+
         if (status) {
             query += ` AND c.status = $${paramIndex}`;
             params.push(status);
             paramIndex++;
         }
-        
+
         if (startDate) {
             query += ` AND c.booking_date >= $${paramIndex}`;
             params.push(startDate);
             paramIndex++;
         }
-        
+
         if (endDate) {
             query += ` AND c.booking_date <= $${paramIndex}`;
             params.push(endDate);
             paramIndex++;
         }
-        
+
         query += ' ORDER BY c.booking_date DESC, c.booking_time DESC';
-        
+
         const result = await db.query(query, params);
-        
+
         const csv = convertToCSV(result.rows, [
-            'id', 'name', 'email', 'phone', 'company', 'service', 
+            'id', 'name', 'email', 'phone', 'company', 'service',
             'booking_date', 'booking_time', 'status', 'assigned_to', 'notes', 'created_at'
         ]);
-        
+
         res.setHeader('Content-Type', 'text/csv');
         res.setHeader('Content-Disposition', 'attachment; filename=consultations-export.csv');
         res.send(csv);
-        
+
         await AuditService.log({
             staffId: req.user.id,
             action: 'export',
@@ -215,7 +215,7 @@ router.get('/consultations', authMiddleware, async (req, res) => {
 router.get('/visitors', authMiddleware, async (req, res) => {
     try {
         const { startDate, endDate } = req.query;
-        
+
         let query = `
             SELECT id, name, email, source, page_views, first_visit, last_visit
             FROM visitors
@@ -223,31 +223,31 @@ router.get('/visitors', authMiddleware, async (req, res) => {
         `;
         const params = [];
         let paramIndex = 1;
-        
+
         if (startDate) {
             query += ` AND created_at >= $${paramIndex}`;
             params.push(startDate);
             paramIndex++;
         }
-        
+
         if (endDate) {
             query += ` AND created_at <= $${paramIndex}::date + interval '1 day'`;
             params.push(endDate);
             paramIndex++;
         }
-        
+
         query += ' ORDER BY last_visit DESC';
-        
+
         const result = await db.query(query, params);
-        
+
         const csv = convertToCSV(result.rows, [
             'id', 'name', 'email', 'source', 'page_views', 'first_visit', 'last_visit'
         ]);
-        
+
         res.setHeader('Content-Type', 'text/csv');
         res.setHeader('Content-Disposition', 'attachment; filename=visitors-export.csv');
         res.send(csv);
-        
+
         await AuditService.log({
             staffId: req.user.id,
             action: 'export',
@@ -270,10 +270,10 @@ router.get('/report', authMiddleware, adminOnly, async (req, res) => {
         const { month, year } = req.query;
         const reportMonth = parseInt(month) || new Date().getMonth() + 1;
         const reportYear = parseInt(year) || new Date().getFullYear();
-        
+
         const startDate = `${reportYear}-${String(reportMonth).padStart(2, '0')}-01`;
         const endDate = new Date(reportYear, reportMonth, 0).toISOString().split('T')[0];
-        
+
         // Gather all stats
         const [
             messagesResult,
@@ -283,7 +283,7 @@ router.get('/report', authMiddleware, adminOnly, async (req, res) => {
             staffPerformance
         ] = await Promise.all([
             db.query(`
-                SELECT 
+                SELECT
                     COUNT(*) as total,
                     COUNT(*) FILTER (WHERE status = 'new') as new,
                     COUNT(*) FILTER (WHERE status = 'in_progress') as in_progress,
@@ -291,33 +291,33 @@ router.get('/report', authMiddleware, adminOnly, async (req, res) => {
                 FROM messages
                 WHERE created_at >= $1 AND created_at <= $2::date + interval '1 day'
             `, [startDate, endDate]),
-            
+
             db.query(`
-                SELECT 
+                SELECT
                     COUNT(*) as total,
                     COUNT(*) FILTER (WHERE status = 'completed') as completed,
                     COUNT(*) FILTER (WHERE status = 'cancelled') as cancelled
                 FROM consultations
                 WHERE created_at >= $1 AND created_at <= $2::date + interval '1 day'
             `, [startDate, endDate]),
-            
+
             db.query(`
                 SELECT COUNT(*) as total
                 FROM chat_sessions
                 WHERE created_at >= $1 AND created_at <= $2::date + interval '1 day'
             `, [startDate, endDate]),
-            
+
             db.query(`
-                SELECT 
+                SELECT
                     COUNT(*) as total,
                     COUNT(DISTINCT email) as unique_with_email
                 FROM visitors
                 WHERE created_at >= $1 AND created_at <= $2::date + interval '1 day'
             `, [startDate, endDate]),
-            
+
             AuditService.getActivitySummary(startDate, endDate)
         ]);
-        
+
         const report = {
             period: {
                 month: reportMonth,
@@ -333,7 +333,7 @@ router.get('/report', authMiddleware, adminOnly, async (req, res) => {
             },
             staffPerformance
         };
-        
+
         res.json({ success: true, data: report });
     } catch (error) {
         console.error('Generate report error:', error);
@@ -345,22 +345,26 @@ router.get('/report', authMiddleware, adminOnly, async (req, res) => {
  * Helper: Convert array of objects to CSV
  */
 function convertToCSV(data, columns) {
-    if (!data.length) return '';
-    
+    if (!data.length) {
+        return '';
+    }
+
     const escapeCSV = (val) => {
-        if (val === null || val === undefined) return '';
+        if (val === null || val === undefined) {
+            return '';
+        }
         const str = String(val);
         if (str.includes(',') || str.includes('"') || str.includes('\n')) {
             return `"${str.replace(/"/g, '""')}"`;
         }
         return str;
     };
-    
+
     const header = columns.join(',');
-    const rows = data.map(row => 
+    const rows = data.map(row =>
         columns.map(col => escapeCSV(row[col])).join(',')
     );
-    
+
     return [header, ...rows].join('\n');
 }
 

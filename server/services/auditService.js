@@ -87,9 +87,9 @@ const AuditService = {
      */
     async getStaffActivity(staffId, limit = 20) {
         const result = await db.query(
-            `SELECT * FROM audit_logs 
-             WHERE staff_id = $1 
-             ORDER BY created_at DESC 
+            `SELECT * FROM audit_logs
+             WHERE staff_id = $1
+             ORDER BY created_at DESC
              LIMIT $2`,
             [staffId, limit]
         );
@@ -101,7 +101,7 @@ const AuditService = {
      */
     async getActivitySummary(startDate, endDate) {
         const result = await db.query(`
-            SELECT 
+            SELECT
                 s.id as staff_id,
                 s.name as staff_name,
                 COUNT(*) FILTER (WHERE al.action = 'reply') as replies_sent,
@@ -110,8 +110,8 @@ const AuditService = {
                 COUNT(*) FILTER (WHERE al.action = 'login') as logins,
                 COUNT(*) as total_actions
             FROM staff s
-            LEFT JOIN audit_logs al ON s.id = al.staff_id 
-                AND al.created_at >= $1 
+            LEFT JOIN audit_logs al ON s.id = al.staff_id
+                AND al.created_at >= $1
                 AND al.created_at <= $2::date + interval '1 day'
             WHERE s.is_active = true
             GROUP BY s.id, s.name

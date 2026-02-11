@@ -31,15 +31,15 @@ const Message = {
             LEFT JOIN staff s ON m.assigned_to = s.id
         `;
         const params = [];
-        
+
         if (status) {
             query += ' WHERE m.status = $1';
             params.push(status);
         }
-        
+
         query += ' ORDER BY m.created_at DESC LIMIT $' + (params.length + 1) + ' OFFSET $' + (params.length + 2);
         params.push(limit, offset);
-        
+
         const result = await db.query(query, params);
         return result.rows;
     },
@@ -63,7 +63,7 @@ const Message = {
      */
     async updateStatus(id, status, assignedTo = null) {
         const result = await db.query(
-            `UPDATE messages 
+            `UPDATE messages
              SET status = $1, assigned_to = COALESCE($2, assigned_to)
              WHERE id = $3
              RETURNING *`,
@@ -118,7 +118,7 @@ const Message = {
      */
     async getRecent(limit = 5) {
         const result = await db.query(
-            `SELECT * FROM messages ORDER BY created_at DESC LIMIT $1`,
+            'SELECT * FROM messages ORDER BY created_at DESC LIMIT $1',
             [limit]
         );
         return result.rows;
@@ -129,7 +129,7 @@ const Message = {
      */
     async assign(id, staffId) {
         const result = await db.query(
-            `UPDATE messages 
+            `UPDATE messages
              SET assigned_to = $1, updated_at = CURRENT_TIMESTAMP
              WHERE id = $2
              RETURNING *`,

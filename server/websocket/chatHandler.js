@@ -21,10 +21,10 @@ const sessionAssignments = new Map(); // sessionId -> { staffId, staffName, assi
 const getChatSettings = async () => {
     try {
         const result = await db.query(
-            `SELECT setting_key, setting_value, setting_type FROM system_settings 
+            `SELECT setting_key, setting_value, setting_type FROM system_settings
              WHERE setting_key IN ('chat_auto_reply_enabled', 'chat_auto_reply')`
         );
-        
+
         const settings = {};
         result.rows.forEach(row => {
             let value = row.setting_value;
@@ -33,7 +33,7 @@ const getChatSettings = async () => {
             }
             settings[row.setting_key] = value;
         });
-        
+
         return settings;
     } catch (error) {
         console.error('Failed to get chat settings:', error);
@@ -50,11 +50,11 @@ const getChatSettings = async () => {
 const sendAutoReply = async (ws, sessionId) => {
     try {
         const settings = await getChatSettings();
-        
+
         if (!settings.chat_auto_reply_enabled) {
             return;
         }
-        
+
         // Store auto-reply as a system message
         const autoReplyMessage = await Chat.addMessage({
             sessionId: sessionId,
@@ -62,7 +62,7 @@ const sendAutoReply = async (ws, sessionId) => {
             senderId: null, // null means system message
             content: settings.chat_auto_reply
         });
-        
+
         // Send to visitor
         ws.send(JSON.stringify({
             type: 'message',
@@ -95,7 +95,7 @@ const getOnlineStaffIds = () => {
 const initChatHandler = (wss) => {
     wss.on('connection', (ws, req) => {
         console.log('New WebSocket connection');
-        
+
         // Parse URL to determine connection type
         const url = new URL(req.url, `http://${req.headers.host}`);
         const type = url.searchParams.get('type') || 'visitor';
@@ -148,12 +148,12 @@ const handleAdminConnection = (ws) => {
  */
 const handleVisitorConnection = async (ws, sessionId) => {
     ws.sessionId = sessionId;
-    
+
     // If visitor has an existing session, restore it
     if (sessionId) {
         await restoreVisitorSession(ws, sessionId);
     }
-    
+
     ws.on('message', async (data) => {
         try {
             const message = JSON.parse(data);
@@ -172,7 +172,7 @@ const restoreVisitorSession = async (ws, sessionId) => {
     try {
         // Check if session exists in database
         const session = await Chat.getSession(sessionId);
-        
+
         if (!session || session.status !== 'active') {
             // Session doesn't exist or is closed
             ws.send(JSON.stringify({
@@ -182,19 +182,19 @@ const restoreVisitorSession = async (ws, sessionId) => {
             ws.sessionId = null;
             return;
         }
-        
+
         // Re-add visitor to connections map
         if (!connections.has(sessionId)) {
             connections.set(sessionId, { visitor: null, admin: null, staffId: null });
         }
         connections.get(sessionId).visitor = ws;
-        
+
         // Load previous messages
         const messages = await Chat.getMessages(sessionId);
-        
+
         // Get assignment info
         const assignment = sessionAssignments.get(sessionId);
-        
+
         // Notify visitor that session is restored
         ws.send(JSON.stringify({
             type: 'session_restored',
@@ -204,9 +204,9 @@ const restoreVisitorSession = async (ws, sessionId) => {
             assignedTo: assignment?.staffName || null,
             message: 'Your chat session has been restored.'
         }));
-        
+
         console.log(`Visitor session ${sessionId} restored`);
-        
+
     } catch (error) {
         console.error('Restore session error:', error);
         ws.send(JSON.stringify({
@@ -225,31 +225,31 @@ const handleAdminMessage = async (ws, message) => {
             // Set staff identity for this connection
             await authenticateStaff(ws, message);
             break;
-            
+
         case 'join_session':
             await joinSession(ws, message.sessionId);
             break;
-            
+
         case 'send_message':
             await sendAdminMessage(ws, message);
             break;
-            
+
         case 'close_session':
             await closeSession(message.sessionId);
             break;
-            
+
         case 'get_sessions':
             await sendPendingSessions(ws);
             break;
-            
+
         case 'transfer_session':
             await transferSession(ws, message);
             break;
-            
+
         case 'release_session':
             await releaseSession(ws, message.sessionId);
             break;
-            
+
         default:
             ws.send(JSON.stringify({ type: 'error', message: 'Unknown message type' }));
     }
@@ -263,15 +263,15 @@ const handleVisitorMessage = async (ws, message) => {
         case 'start_chat':
             await startChat(ws, message);
             break;
-            
+
         case 'send_message':
             await sendVisitorMessage(ws, message);
             break;
-            
+
         case 'typing':
             notifyTyping(ws.sessionId, 'visitor');
             break;
-            
+
         default:
             ws.send(JSON.stringify({ type: 'error', message: 'Unknown message type' }));
     }
@@ -295,7 +295,7 @@ const startChat = async (ws, data) => {
             visitorName: data.name,
             visitorEmail: data.email
         });
-        
+
         ws.sessionId = session.id;
         ws.visitorId = visitor.id;
 
@@ -308,17 +308,17 @@ const startChat = async (ws, data) => {
         // Auto-assign to available staff (prefer online staff)
         let assignedStaff = null;
         const onlineStaffIds = getOnlineStaffIds();
-        
+
         if (onlineStaffIds.length > 0) {
             // Try to assign to an online staff member first
             assignedStaff = await Staff.getNextAvailableForChats(onlineStaffIds);
         }
-        
+
         if (!assignedStaff) {
             // Fall back to any available staff with chat permission
             assignedStaff = await Staff.getNextAvailableForChats();
         }
-        
+
         // If still no staff available, assign to admin
         if (!assignedStaff) {
             // Find an admin user
@@ -328,22 +328,22 @@ const startChat = async (ws, data) => {
                 console.log(`No staff available, falling back to admin: ${adminUser.name}`);
             }
         }
-        
+
         if (assignedStaff) {
             // Assign session in database
             await Chat.assignSession(session.id, assignedStaff.id);
-            
+
             // Track assignment in memory
             sessionAssignments.set(session.id, {
                 staffId: assignedStaff.id,
                 staffName: assignedStaff.name,
                 assignedAt: new Date()
             });
-            
+
             connections.get(session.id).staffId = assignedStaff.id;
-            
+
             console.log(`Chat ${session.id} auto-assigned to ${assignedStaff.name}`);
-            
+
             // Notify the assigned staff specifically
             for (const [adminWs, staffInfo] of adminConnections) {
                 if (staffInfo.staffId === assignedStaff.id && adminWs.readyState === WebSocket.OPEN) {
@@ -360,7 +360,7 @@ const startChat = async (ws, data) => {
                     }));
                 }
             }
-            
+
             // Update session info for visitor
             ws.send(JSON.stringify({
                 type: 'session_started',
@@ -368,7 +368,7 @@ const startChat = async (ws, data) => {
                 assignedTo: assignedStaff.name,
                 message: `Connected to support. ${assignedStaff.name} will be with you shortly.`
             }));
-            
+
             // Send auto-reply
             await sendAutoReply(ws, session.id);
         } else {
@@ -378,7 +378,7 @@ const startChat = async (ws, data) => {
                 sessionId: session.id,
                 message: 'Connected to support. An agent will be with you shortly.'
             }));
-            
+
             // Send auto-reply
             await sendAutoReply(ws, session.id);
         }
@@ -394,7 +394,7 @@ const startChat = async (ws, data) => {
                 assigned_to_name: assignedStaff?.name || null
             }
         });
-        
+
         // Send special admin notification for record keeping
         for (const [adminWs, staffInfo] of adminConnections) {
             if (staffInfo.role === 'admin' && adminWs.readyState === WebSocket.OPEN) {
@@ -408,7 +408,7 @@ const startChat = async (ws, data) => {
                         assigned_to: assignedStaff?.id || null,
                         assigned_to_name: assignedStaff?.name || 'Unassigned'
                     },
-                    message: assignedStaff 
+                    message: assignedStaff
                         ? `New chat from ${data.name} assigned to ${assignedStaff.name}`
                         : `New chat from ${data.name} - NO STAFF AVAILABLE`
                 }));
@@ -472,15 +472,15 @@ const sendVisitorMessage = async (ws, data) => {
  */
 const authenticateStaff = async (ws, data) => {
     const { staffId, staffName, role } = data;
-    
+
     if (!staffId) {
         ws.send(JSON.stringify({ type: 'error', message: 'Staff ID required' }));
         return;
     }
-    
+
     adminConnections.set(ws, { staffId, staffName, role });
     console.log(`Staff authenticated: ${staffName} (ID: ${staffId})`);
-    
+
     ws.send(JSON.stringify({
         type: 'authenticated',
         message: 'Successfully authenticated'
@@ -496,10 +496,10 @@ const joinSession = async (ws, sessionId) => {
         const staffId = staffInfo?.staffId;
         const staffName = staffInfo?.staffName;
         const role = staffInfo?.role;
-        
+
         // Check if session is already assigned to another staff
         const existingAssignment = sessionAssignments.get(sessionId);
-        
+
         if (existingAssignment && existingAssignment.staffId !== staffId) {
             // Admin can view any session, staff cannot
             if (role !== 'admin') {
@@ -517,11 +517,11 @@ const joinSession = async (ws, sessionId) => {
                 message: `Note: This chat is assigned to ${existingAssignment.staffName}`
             }));
         }
-        
+
         if (!connections.has(sessionId)) {
             connections.set(sessionId, { visitor: null, admin: null, staffId: null });
         }
-        
+
         const sessionConn = connections.get(sessionId);
         sessionConn.admin = ws;
         sessionConn.staffId = staffId;
@@ -534,10 +534,10 @@ const joinSession = async (ws, sessionId) => {
                 staffName: staffName || 'Staff',
                 assignedAt: new Date()
             });
-            
+
             // Update database
             await Chat.assignSession(sessionId, staffId);
-            
+
             // Notify all admins that session is now claimed
             broadcastToAdmins({
                 type: 'session_claimed',
@@ -583,37 +583,37 @@ const transferSession = async (ws, data) => {
     try {
         const { sessionId, toStaffId, toStaffName } = data;
         const fromStaffInfo = adminConnections.get(ws);
-        
+
         if (!fromStaffInfo?.staffId) {
             ws.send(JSON.stringify({ type: 'error', message: 'You must be authenticated to transfer' }));
             return;
         }
-        
+
         const existingAssignment = sessionAssignments.get(sessionId);
-        
+
         // Only the assigned staff or admin can transfer
         if (existingAssignment && existingAssignment.staffId !== fromStaffInfo.staffId && fromStaffInfo.role !== 'admin') {
             ws.send(JSON.stringify({ type: 'error', message: 'Only the assigned staff or admin can transfer this chat' }));
             return;
         }
-        
+
         // Update assignment
         sessionAssignments.set(sessionId, {
             staffId: toStaffId,
             staffName: toStaffName || 'Staff',
             assignedAt: new Date()
         });
-        
+
         // Update database
         await Chat.assignSession(sessionId, toStaffId);
-        
+
         // Clear current connection's session
         const sessionConn = connections.get(sessionId);
         if (sessionConn) {
             sessionConn.admin = null;
             sessionConn.staffId = toStaffId;
         }
-        
+
         // Notify all admins about transfer
         broadcastToAdmins({
             type: 'session_transferred',
@@ -623,13 +623,13 @@ const transferSession = async (ws, data) => {
             toStaffId,
             toStaffName
         });
-        
+
         ws.send(JSON.stringify({
             type: 'transfer_success',
             sessionId,
             message: `Chat transferred to ${toStaffName}`
         }));
-        
+
     } catch (error) {
         console.error('Transfer session error:', error);
         ws.send(JSON.stringify({ type: 'error', message: 'Failed to transfer session' }));
@@ -643,25 +643,25 @@ const releaseSession = async (ws, sessionId) => {
     try {
         const staffInfo = adminConnections.get(ws);
         const existingAssignment = sessionAssignments.get(sessionId);
-        
+
         if (!existingAssignment || existingAssignment.staffId !== staffInfo?.staffId) {
             ws.send(JSON.stringify({ type: 'error', message: 'You are not assigned to this session' }));
             return;
         }
-        
+
         // Remove assignment
         sessionAssignments.delete(sessionId);
-        
+
         // Update database
         await Chat.assignSession(sessionId, null);
-        
+
         // Clear connection
         const sessionConn = connections.get(sessionId);
         if (sessionConn) {
             sessionConn.admin = null;
             sessionConn.staffId = null;
         }
-        
+
         // Notify all admins
         broadcastToAdmins({
             type: 'session_released',
@@ -669,13 +669,13 @@ const releaseSession = async (ws, sessionId) => {
             staffId: staffInfo.staffId,
             staffName: staffInfo.staffName
         });
-        
+
         ws.send(JSON.stringify({
             type: 'release_success',
             sessionId,
             message: 'Chat released and available for other staff'
         }));
-        
+
     } catch (error) {
         console.error('Release session error:', error);
         ws.send(JSON.stringify({ type: 'error', message: 'Failed to release session' }));
@@ -690,18 +690,18 @@ const sendAdminMessage = async (ws, data) => {
         const sessionId = data.sessionId || ws.currentSessionId;
         const staffInfo = adminConnections.get(ws);
         const staffId = staffInfo?.staffId || null;
-        
+
         if (!sessionId) {
             ws.send(JSON.stringify({ type: 'error', message: 'No session selected' }));
             return;
         }
-        
+
         // Verify staff is assigned to this session (unless admin)
         const assignment = sessionAssignments.get(sessionId);
         if (assignment && assignment.staffId !== staffId && staffInfo?.role !== 'admin') {
-            ws.send(JSON.stringify({ 
-                type: 'error', 
-                message: 'You are not assigned to this chat' 
+            ws.send(JSON.stringify({
+                type: 'error',
+                message: 'You are not assigned to this chat'
             }));
             return;
         }
@@ -722,7 +722,7 @@ const sendAdminMessage = async (ws, data) => {
         // Forward to visitor
         const sessionConn = connections.get(sessionId);
         const visitorConnected = sessionConn && sessionConn.visitor && sessionConn.visitor.readyState === WebSocket.OPEN;
-        
+
         if (visitorConnected) {
             sessionConn.visitor.send(JSON.stringify({
                 type: 'new_message',
@@ -768,7 +768,7 @@ const closeSession = async (sessionId) => {
         await Chat.closeSession(sessionId);
 
         const sessionConn = connections.get(sessionId);
-        
+
         // Notify visitor
         if (sessionConn && sessionConn.visitor) {
             sessionConn.visitor.send(JSON.stringify({
@@ -795,7 +795,9 @@ const closeSession = async (sessionId) => {
  */
 const notifyTyping = (sessionId, sender) => {
     const sessionConn = connections.get(sessionId);
-    if (!sessionConn) return;
+    if (!sessionConn) {
+        return;
+    }
 
     if (sender === 'visitor' && sessionConn.admin) {
         sessionConn.admin.send(JSON.stringify({
@@ -831,7 +833,7 @@ const sendPendingSessions = async (ws) => {
  */
 const broadcastToAdmins = (message) => {
     const data = JSON.stringify(message);
-    for (const [ws, staffInfo] of adminConnections) {
+    for (const [ws] of adminConnections) {
         if (ws.readyState === WebSocket.OPEN) {
             ws.send(data);
         }
@@ -845,7 +847,7 @@ const handleDisconnect = (ws, type, sessionId) => {
     if (type === 'admin') {
         adminConnections.delete(ws);
         console.log('Admin disconnected. Total admins:', adminConnections.size);
-        
+
         // Remove from any session
         if (ws.currentSessionId) {
             const sessionConn = connections.get(ws.currentSessionId);
@@ -860,7 +862,7 @@ const handleDisconnect = (ws, type, sessionId) => {
             const sessionConn = connections.get(sid);
             if (sessionConn) {
                 sessionConn.visitor = null;
-                
+
                 // Notify admin
                 if (sessionConn.admin) {
                     sessionConn.admin.send(JSON.stringify({

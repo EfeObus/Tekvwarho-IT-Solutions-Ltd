@@ -28,7 +28,7 @@ const securityHeaders = (req, res, next) => {
     res.setHeader('X-XSS-Protection', '1; mode=block');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=(), payment=(), usb=()');
-    
+
     // HSTS (uncomment in production with HTTPS)
     // res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
 
@@ -44,13 +44,15 @@ const securityHeaders = (req, res, next) => {
 const corsOptions = {
     origin: (origin, callback) => {
         // Allow requests with no origin (mobile apps, curl, etc.)
-        if (!origin) return callback(null, true);
-        
+        if (!origin) {
+            return callback(null, true);
+        }
+
         // In development, allow all origins
         if (process.env.NODE_ENV !== 'production') {
             return callback(null, true);
         }
-        
+
         // Production: whitelist specific origins
         const allowedOrigins = [
             process.env.FRONTEND_URL,
@@ -59,7 +61,7 @@ const corsOptions = {
             'https://www.tekvwarho.com',
             'https://tekvwarho-it-solutions-ltd-production.up.railway.app'
         ].filter(Boolean);
-        
+
         if (allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
@@ -80,7 +82,7 @@ const corsOptions = {
 const botProtection = (req, res, next) => {
     const userAgent = req.get('User-Agent') || '';
     const referer = req.get('Referer') || '';
-    
+
     // Block requests without User-Agent (except for specific paths)
     const exemptPaths = ['/api/health', '/api/webhook'];
     if (!userAgent && !exemptPaths.includes(req.path)) {
@@ -92,7 +94,7 @@ const botProtection = (req, res, next) => {
             }
         });
     }
-    
+
     // Block known bad bots (add more as needed)
     const blockedBots = [
         'python-requests',
@@ -103,15 +105,15 @@ const botProtection = (req, res, next) => {
         'Java/',
         'libwww-perl'
     ];
-    
+
     // Only block in production and for sensitive endpoints
     const sensitiveEndpoints = ['/api/admin/login', '/api/contact', '/api/newsletter'];
-    if (process.env.NODE_ENV === 'production' && 
+    if (process.env.NODE_ENV === 'production' &&
         sensitiveEndpoints.some(ep => req.path.startsWith(ep))) {
-        const isBlockedBot = blockedBots.some(bot => 
+        const isBlockedBot = blockedBots.some(bot =>
             userAgent.toLowerCase().includes(bot.toLowerCase())
         );
-        
+
         if (isBlockedBot) {
             return res.status(403).json({
                 success: false,
@@ -122,7 +124,7 @@ const botProtection = (req, res, next) => {
             });
         }
     }
-    
+
     next();
 };
 
@@ -138,12 +140,12 @@ const honeypotCheck = (fieldName = 'website_url') => {
             console.log(`Honeypot triggered from IP: ${req.ip}`);
             return res.json({ success: true, message: 'Thank you for your submission.' });
         }
-        
+
         // Remove honeypot field from body
         if (req.body) {
             delete req.body[fieldName];
         }
-        
+
         next();
     };
 };
@@ -155,12 +157,12 @@ const honeypotCheck = (fieldName = 'website_url') => {
 const formTimingCheck = (minSeconds = 3) => {
     return (req, res, next) => {
         const submittedAt = req.body._form_timestamp;
-        
+
         if (submittedAt) {
             const now = Date.now();
             const submitted = parseInt(submittedAt, 10);
             const elapsed = (now - submitted) / 1000;
-            
+
             if (elapsed < minSeconds) {
                 console.log(`Form submitted too quickly (${elapsed}s) from IP: ${req.ip}`);
                 return res.status(400).json({
@@ -172,12 +174,12 @@ const formTimingCheck = (minSeconds = 3) => {
                 });
             }
         }
-        
+
         // Remove timing field from body
         if (req.body) {
             delete req.body._form_timestamp;
         }
-        
+
         next();
     };
 };

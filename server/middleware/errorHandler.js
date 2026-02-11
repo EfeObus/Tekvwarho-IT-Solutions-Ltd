@@ -15,7 +15,7 @@ class AppError extends Error {
         this.statusCode = statusCode;
         this.details = details;
         this.isOperational = true;
-        
+
         Error.captureStackTrace(this, this.constructor);
     }
 }
@@ -166,7 +166,7 @@ const Logger = {
         };
 
         const output = JSON.stringify(logEntry);
-        
+
         if (level === 'error') {
             console.error(output);
         } else if (level === 'warn') {
@@ -198,9 +198,9 @@ const Logger = {
 
         res.on('finish', () => {
             const duration = Date.now() - start;
-            const logLevel = res.statusCode >= 500 ? 'error' : 
-                            res.statusCode >= 400 ? 'warn' : 'info';
-            
+            const logLevel = res.statusCode >= 500 ? 'error' :
+                res.statusCode >= 400 ? 'warn' : 'info';
+
             Logger._log(logLevel, 'HTTP Request', {
                 requestId: req.requestId,
                 method: req.method,

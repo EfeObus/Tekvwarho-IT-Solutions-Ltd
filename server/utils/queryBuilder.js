@@ -32,7 +32,7 @@ class QueryBuilder {
         if (value === undefined || value === null || value === '') {
             return this;
         }
-        
+
         this.whereConditions.push({
             column,
             operator,
@@ -54,7 +54,9 @@ class QueryBuilder {
      * Add WHERE column LIKE value
      */
     whereLike(column, value) {
-        if (!value) return this;
+        if (!value) {
+            return this;
+        }
         return this.where(column, 'ILIKE', `%${value}%`);
     }
 
@@ -65,7 +67,7 @@ class QueryBuilder {
         if (!values || !Array.isArray(values) || values.length === 0) {
             return this;
         }
-        
+
         const placeholders = values.map((_, i) => `$${this.paramIndex + i}`).join(', ');
         this.whereConditions.push({
             type: 'in',
@@ -81,8 +83,10 @@ class QueryBuilder {
      * Add WHERE column BETWEEN start AND end
      */
     whereBetween(column, start, end) {
-        if (!start && !end) return this;
-        
+        if (!start && !end) {
+            return this;
+        }
+
         if (start && end) {
             this.whereConditions.push({
                 type: 'between',
@@ -120,8 +124,10 @@ class QueryBuilder {
      * Add full-text search across multiple columns
      */
     search(term, columns) {
-        if (!term || term.trim() === '') return this;
-        
+        if (!term || term.trim() === '') {
+            return this;
+        }
+
         this.searchTerm = term.trim();
         this.searchColumns = columns;
         return this;
@@ -139,15 +145,15 @@ class QueryBuilder {
             column = column.slice(1);
             direction = 'ASC';
         }
-        
+
         // Validate direction
         direction = direction.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
-        
+
         // Prevent SQL injection - only allow alphanumeric and underscore
         if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(column)) {
             throw new Error('Invalid column name for ORDER BY');
         }
-        
+
         this.orderByColumns.push({ column, direction });
         return this;
     }
@@ -174,7 +180,7 @@ class QueryBuilder {
     paginate(page = 1, perPage = 20) {
         page = Math.max(1, parseInt(page, 10) || 1);
         perPage = Math.min(100, Math.max(1, parseInt(perPage, 10) || 20));
-        
+
         this.limitValue = perPage;
         this.offsetValue = (page - 1) * perPage;
         this._page = page;
@@ -187,7 +193,7 @@ class QueryBuilder {
      */
     _buildWhereClause() {
         const conditions = [];
-        
+
         // Regular conditions
         for (const cond of this.whereConditions) {
             if (cond.type === 'in') {
@@ -198,17 +204,17 @@ class QueryBuilder {
                 conditions.push(`${cond.column} ${cond.operator} $${cond.paramIndex}`);
             }
         }
-        
+
         // Search conditions
         if (this.searchTerm && this.searchColumns.length > 0) {
-            const searchConditions = this.searchColumns.map(col => 
+            const searchConditions = this.searchColumns.map(col =>
                 `${col} ILIKE $${this.paramIndex}`
             ).join(' OR ');
             conditions.push(`(${searchConditions})`);
             this.params.push(`%${this.searchTerm}%`);
             this.paramIndex++;
         }
-        
+
         return conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
     }
 
@@ -219,28 +225,28 @@ class QueryBuilder {
         const select = `SELECT ${this.selectColumns.join(', ')}`;
         const from = `FROM ${this.tableName}`;
         const where = this._buildWhereClause();
-        
+
         let orderBy = '';
         if (this.orderByColumns.length > 0) {
             orderBy = 'ORDER BY ' + this.orderByColumns
                 .map(o => `${o.column} ${o.direction}`)
                 .join(', ');
         }
-        
+
         let limit = '';
         if (this.limitValue !== null) {
             limit = `LIMIT ${this.limitValue}`;
         }
-        
+
         let offset = '';
         if (this.offsetValue !== null && this.offsetValue > 0) {
             offset = `OFFSET ${this.offsetValue}`;
         }
-        
+
         const query = [select, from, where, orderBy, limit, offset]
             .filter(Boolean)
             .join(' ');
-        
+
         return {
             query,
             params: this.params,
@@ -252,12 +258,12 @@ class QueryBuilder {
      * Build a COUNT query for pagination
      */
     buildCount() {
-        const select = `SELECT COUNT(*) as total`;
+        const select = 'SELECT COUNT(*) as total';
         const from = `FROM ${this.tableName}`;
         const where = this._buildWhereClause();
-        
+
         const query = [select, from, where].filter(Boolean).join(' ');
-        
+
         return {
             query,
             params: this.params
@@ -287,7 +293,7 @@ class QueryBuilder {
      */
     static buildPaginationResponse(data, total, page, perPage) {
         const totalPages = Math.ceil(total / perPage);
-        
+
         return {
             data,
             pagination: {

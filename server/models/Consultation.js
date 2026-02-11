@@ -13,7 +13,7 @@ const Consultation = {
     async create({ name, email, phone, company, service, bookingDate, bookingTime, timezone, notes, visitorId }) {
         const id = uuidv4();
         const result = await db.query(
-            `INSERT INTO consultations 
+            `INSERT INTO consultations
              (id, visitor_id, name, email, phone, company, service, booking_date, booking_time, timezone, notes)
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
              RETURNING *`,
@@ -34,34 +34,34 @@ const Consultation = {
         `;
         const params = [];
         let paramIndex = 1;
-        
+
         if (status) {
             query += ` AND c.status = $${paramIndex}`;
             params.push(status);
             paramIndex++;
         }
-        
+
         if (startDate) {
             query += ` AND c.booking_date >= $${paramIndex}`;
             params.push(startDate);
             paramIndex++;
         }
-        
+
         if (endDate) {
             query += ` AND c.booking_date <= $${paramIndex}`;
             params.push(endDate);
             paramIndex++;
         }
-        
+
         if (assignedTo) {
             query += ` AND c.assigned_to = $${paramIndex}`;
             params.push(assignedTo);
             paramIndex++;
         }
-        
+
         query += ` ORDER BY c.booking_date ASC, c.booking_time ASC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
         params.push(limit, offset);
-        
+
         const result = await db.query(query, params);
         return result.rows;
     },
@@ -85,7 +85,7 @@ const Consultation = {
      */
     async updateStatus(id, status, assignedTo = null) {
         const result = await db.query(
-            `UPDATE consultations 
+            `UPDATE consultations
              SET status = $1, assigned_to = COALESCE($2, assigned_to)
              WHERE id = $3
              RETURNING *`,
@@ -102,9 +102,9 @@ const Consultation = {
         const values = [];
         let paramIndex = 1;
 
-        const allowedFields = ['name', 'email', 'phone', 'company', 'service', 
-                               'booking_date', 'booking_time', 'timezone', 'notes', 
-                               'status', 'assigned_to', 'reminder_sent'];
+        const allowedFields = ['name', 'email', 'phone', 'company', 'service',
+            'booking_date', 'booking_time', 'timezone', 'notes',
+            'status', 'assigned_to', 'reminder_sent'];
 
         for (const [key, value] of Object.entries(updates)) {
             const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
@@ -140,7 +140,7 @@ const Consultation = {
 
         // Get booked slots for the date
         const result = await db.query(
-            `SELECT booking_time FROM consultations 
+            `SELECT booking_time FROM consultations
              WHERE booking_date = $1 AND status != 'cancelled'`,
             [date]
         );
@@ -153,7 +153,7 @@ const Consultation = {
 
         // Filter out booked slots
         const availableSlots = allSlots.filter(slot => !bookedSlots.includes(slot));
-        
+
         return availableSlots;
     },
 
@@ -162,7 +162,7 @@ const Consultation = {
      */
     async getUpcoming(limit = 5) {
         const result = await db.query(
-            `SELECT * FROM consultations 
+            `SELECT * FROM consultations
              WHERE booking_date >= CURRENT_DATE AND status != 'cancelled'
              ORDER BY booking_date ASC, booking_time ASC
              LIMIT $1`,
@@ -188,7 +188,7 @@ const Consultation = {
      */
     async getNeedingReminders() {
         const result = await db.query(`
-            SELECT * FROM consultations 
+            SELECT * FROM consultations
             WHERE booking_date = CURRENT_DATE + INTERVAL '1 day'
             AND status = 'confirmed'
             AND reminder_sent = false
@@ -201,7 +201,7 @@ const Consultation = {
      */
     async markReminderSent(id) {
         await db.query(
-            `UPDATE consultations SET reminder_sent = true WHERE id = $1`,
+            'UPDATE consultations SET reminder_sent = true WHERE id = $1',
             [id]
         );
     }

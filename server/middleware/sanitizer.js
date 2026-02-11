@@ -22,8 +22,10 @@ const DOMPURIFY_CONFIG = {
  * Sanitize a string value
  */
 const sanitizeString = (str, options = {}) => {
-    if (typeof str !== 'string') return str;
-    
+    if (typeof str !== 'string') {
+        return str;
+    }
+
     const {
         allowHtml = false,
         maxLength = 10000,
@@ -65,18 +67,20 @@ const sanitizeString = (str, options = {}) => {
  * Sanitize email
  */
 const sanitizeEmail = (email) => {
-    if (typeof email !== 'string') return '';
-    
+    if (typeof email !== 'string') {
+        return '';
+    }
+
     let result = email.trim().toLowerCase();
-    
+
     // Validate email format
     if (!validator.isEmail(result)) {
         return '';
     }
-    
+
     // Normalize email
     result = validator.normalizeEmail(result) || '';
-    
+
     return result;
 };
 
@@ -84,16 +88,18 @@ const sanitizeEmail = (email) => {
  * Sanitize phone number
  */
 const sanitizePhone = (phone) => {
-    if (typeof phone !== 'string') return '';
-    
+    if (typeof phone !== 'string') {
+        return '';
+    }
+
     // Remove all non-digit characters except + - ( ) and spaces
     let result = phone.replace(/[^\d+\-() ]/g, '');
-    
+
     // Limit length
     if (result.length > 20) {
         result = result.substring(0, 20);
     }
-    
+
     return result;
 };
 
@@ -101,19 +107,21 @@ const sanitizePhone = (phone) => {
  * Sanitize name field
  */
 const sanitizeName = (name) => {
-    if (typeof name !== 'string') return '';
-    
+    if (typeof name !== 'string') {
+        return '';
+    }
+
     // Remove any HTML
     let result = DOMPurify.sanitize(name, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
-    
+
     // Remove special characters except hyphen, apostrophe, space
     result = result.replace(/[^a-zA-Z\u00C0-\u024F\s'-]/g, '');
-    
+
     // Limit length
     if (result.length > 100) {
         result = result.substring(0, 100);
     }
-    
+
     return result.trim();
 };
 
@@ -121,30 +129,32 @@ const sanitizeName = (name) => {
  * Sanitize URL
  */
 const sanitizeUrl = (url) => {
-    if (typeof url !== 'string') return '';
-    
+    if (typeof url !== 'string') {
+        return '';
+    }
+
     const trimmed = url.trim();
-    
+
     // Block javascript: and data: URLs
     if (/^(javascript|data|vbscript):/i.test(trimmed)) {
         return '';
     }
-    
+
     // Validate URL format
-    if (!validator.isURL(trimmed, { 
+    if (!validator.isURL(trimmed, {
         protocols: ['http', 'https'],
-        require_protocol: true 
+        require_protocol: true
     })) {
         // Try adding https:// prefix
-        if (validator.isURL(`https://${trimmed}`, { 
+        if (validator.isURL(`https://${trimmed}`, {
             protocols: ['https'],
-            require_protocol: true 
+            require_protocol: true
         })) {
             return `https://${trimmed}`;
         }
         return '';
     }
-    
+
     return trimmed;
 };
 
@@ -152,13 +162,15 @@ const sanitizeUrl = (url) => {
  * Deep sanitize an object
  */
 const sanitizeObject = (obj, schema = {}) => {
-    if (typeof obj !== 'object' || obj === null) return obj;
-    
+    if (typeof obj !== 'object' || obj === null) {
+        return obj;
+    }
+
     const result = {};
-    
+
     for (const [key, value] of Object.entries(obj)) {
         const fieldSchema = schema[key] || {};
-        
+
         if (Array.isArray(value)) {
             result[key] = value.map(item => {
                 if (typeof item === 'object') {
@@ -193,7 +205,7 @@ const sanitizeObject = (obj, schema = {}) => {
             result[key] = value;
         }
     }
-    
+
     return result;
 };
 
@@ -218,26 +230,26 @@ const sanitizeRequest = (req, res, next) => {
         for (const [key, value] of Object.entries(req.body)) {
             if (typeof value === 'string') {
                 // Basic sanitization for all string fields
-                req.body[key] = sanitizeString(value, { 
+                req.body[key] = sanitizeString(value, {
                     allowHtml: false,
-                    maxLength: 10000 
+                    maxLength: 10000
                 });
             }
         }
     }
-    
+
     // Sanitize query parameters
     if (req.query && typeof req.query === 'object') {
         for (const [key, value] of Object.entries(req.query)) {
             if (typeof value === 'string') {
-                req.query[key] = sanitizeString(value, { 
+                req.query[key] = sanitizeString(value, {
                     allowHtml: false,
-                    maxLength: 500 
+                    maxLength: 500
                 });
             }
         }
     }
-    
+
     next();
 };
 
@@ -253,7 +265,7 @@ const schemas = {
         service: { maxLength: 100 },
         message: { allowHtml: false, maxLength: 5000 }
     },
-    
+
     bookingForm: {
         name: { type: 'name', maxLength: 100 },
         email: { type: 'email' },
@@ -262,18 +274,18 @@ const schemas = {
         service: { maxLength: 100 },
         notes: { allowHtml: false, maxLength: 2000 }
     },
-    
+
     chatMessage: {
         content: { allowHtml: false, maxLength: 2000 }
     },
-    
+
     staffProfile: {
         name: { type: 'name', maxLength: 100 },
         email: { type: 'email' },
         phone: { type: 'phone' },
         department: { maxLength: 100 }
     },
-    
+
     newsletter: {
         email: { type: 'email' },
         name: { type: 'name', maxLength: 100 }

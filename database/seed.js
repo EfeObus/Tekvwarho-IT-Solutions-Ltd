@@ -1,7 +1,7 @@
 /**
  * Database Seed Script
  * Run with: npm run db:seed
- * 
+ *
  * Seeds the database with sample data for development and testing.
  * WARNING: This will insert sample data - do not run in production!
  * Supports Railway DATABASE_URL and local PostgreSQL
@@ -13,7 +13,7 @@ const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 
 // Configure pool - prefer DATABASE_URL for Railway/cloud deployments
-const poolConfig = process.env.DATABASE_URL 
+const poolConfig = process.env.DATABASE_URL
     ? {
         connectionString: process.env.DATABASE_URL,
         ssl: { rejectUnauthorized: false }
@@ -23,7 +23,7 @@ const poolConfig = process.env.DATABASE_URL
         port: process.env.DB_PORT || 5432,
         database: process.env.DB_NAME || 'tekvwarho',
         user: process.env.DB_USER || 'postgres',
-        password: process.env.DB_PASSWORD || '',
+        password: process.env.DB_PASSWORD || ''
     };
 
 const pool = new Pool(poolConfig);
@@ -36,7 +36,7 @@ async function seedDatabase() {
         // Seed Staff Members
         // =====================
         console.log('👥 Seeding staff members...');
-        
+
         const staffMembers = [
             {
                 email: 'john.doe@tekvwarho.com',
@@ -89,7 +89,7 @@ async function seedDatabase() {
                     `INSERT INTO staff (
                         email, password_hash, name, role, department, phone,
                         must_change_password, is_active,
-                        can_manage_messages, can_manage_consultations, 
+                        can_manage_messages, can_manage_consultations,
                         can_manage_chats, can_view_analytics
                     ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
                     RETURNING id`,
@@ -112,7 +112,7 @@ async function seedDatabase() {
         // Seed Visitors
         // =====================
         console.log('\n👤 Seeding visitors...');
-        
+
         const visitors = [
             { name: 'Alice Johnson', email: 'alice.johnson@example.com', source: 'google' },
             { name: 'Bob Williams', email: 'bob.williams@example.com', source: 'linkedin' },
@@ -146,7 +146,7 @@ async function seedDatabase() {
         // Seed Messages
         // =====================
         console.log('\n📧 Seeding contact messages...');
-        
+
         const services = ['IT Consulting', 'Software Development', 'Website Development', 'Data Analytics'];
         const messages = [
             {
@@ -217,7 +217,7 @@ async function seedDatabase() {
         // Seed Consultations
         // =====================
         console.log('\n📅 Seeding consultations...');
-        
+
         const today = new Date();
         const consultations = [
             {
@@ -298,7 +298,7 @@ async function seedDatabase() {
         // Seed Newsletter Subscribers
         // =====================
         console.log('\n📰 Seeding newsletter subscribers...');
-        
+
         const subscribers = [
             { email: 'subscriber1@example.com', name: 'Subscriber One' },
             { email: 'subscriber2@example.com', name: 'Subscriber Two' },
@@ -328,10 +328,10 @@ async function seedDatabase() {
         // Seed Analytics Events
         // =====================
         console.log('\n📊 Seeding analytics events...');
-        
+
         const eventTypes = ['page_view', 'form_submit', 'chat_start', 'booking'];
         const pages = ['/', '/it-consulting.html', '/software-development.html', '/website-development.html', '/data-analytics.html', '/contact.html', '/book-consultation.html'];
-        
+
         for (let i = 0; i < 50; i++) {
             const visitorId = visitorIds[Math.floor(Math.random() * visitorIds.length)];
             const eventType = eventTypes[Math.floor(Math.random() * eventTypes.length)];

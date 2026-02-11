@@ -17,8 +17,8 @@ const db = require('../config/database');
  * GET /api/admin/messages
  * List all messages with search, filters & pagination
  */
-router.get('/', 
-    authMiddleware, 
+router.get('/',
+    authMiddleware,
     hasPermission('can_manage_messages'),
     paginationMiddleware({
         defaultLimit: 20,
@@ -28,57 +28,57 @@ router.get('/',
     }),
     async (req, res) => {
         try {
-            const { page, limit, offset, sortField, sortOrder, search, filters, dateRange } = req.pagination;
-            
+            const { page, limit, sortField, sortOrder, search, filters, dateRange } = req.pagination;
+
             // Build query using QueryBuilder
             const qb = new QueryBuilder('messages');
-            
+
             // Apply status filter
             if (filters.status) {
                 qb.whereEquals('status', filters.status);
             }
-            
+
             // Apply service filter
             if (filters.service) {
                 qb.whereEquals('service', filters.service);
             }
-            
+
             // Apply assigned filter
             if (filters.assigned_to) {
                 qb.whereEquals('assigned_to', filters.assigned_to);
             }
-            
+
             // Apply unassigned filter
             if (filters.unassigned === 'true') {
                 qb.where('assigned_to IS NULL');
             }
-            
+
             // Apply date range
             if (dateRange.from || dateRange.to) {
                 qb.whereDateRange('created_at', dateRange.from, dateRange.to);
             }
-            
+
             // Apply search across multiple columns
             if (search) {
                 qb.search(search, ['name', 'email', 'company', 'message', 'service']);
             }
-            
+
             // Apply sorting and pagination
             qb.orderBy(sortOrder === 'ASC' ? sortField : `-${sortField}`)
-              .paginate(page, limit);
-            
+                .paginate(page, limit);
+
             // Execute query
             const dataQuery = qb.build();
             const countQuery = qb.buildCount();
-            
+
             const [dataResult, countResult] = await Promise.all([
                 db.query(dataQuery.query, dataQuery.params),
                 db.query(countQuery.query, countQuery.params)
             ]);
-            
+
             const messages = dataResult.rows;
             const total = parseInt(countResult.rows[0].total || countResult.rows[0].count, 10);
-            
+
             // Build pagination response
             const totalPages = Math.ceil(total / limit);
             const pagination = {
@@ -89,10 +89,10 @@ router.get('/',
                 hasNext: page < totalPages,
                 hasPrev: page > 1
             };
-            
+
             // Set Link headers for REST best practices
             setPaginationHeaders(res, pagination, req.originalUrl);
-            
+
             res.json({
                 success: true,
                 data: messages,
@@ -100,9 +100,9 @@ router.get('/',
             });
         } catch (error) {
             console.error('Get messages error:', error);
-            res.status(500).json({ 
+            res.status(500).json({
                 success: false,
-                message: 'Failed to retrieve messages' 
+                message: 'Failed to retrieve messages'
             });
         }
     }
@@ -115,7 +115,7 @@ router.get('/',
 router.get('/stats', authMiddleware, hasPermission('can_manage_messages'), async (req, res) => {
     try {
         const stats = await db.query(`
-            SELECT 
+            SELECT
                 COUNT(*) as total,
                 COUNT(*) FILTER (WHERE status = 'new') as new_count,
                 COUNT(*) FILTER (WHERE status = 'in_progress') as in_progress_count,
@@ -126,16 +126,16 @@ router.get('/stats', authMiddleware, hasPermission('can_manage_messages'), async
                 COUNT(*) FILTER (WHERE created_at >= NOW() - INTERVAL '7 days') as week_count
             FROM messages
         `);
-        
+
         res.json({
             success: true,
             data: stats.rows[0]
         });
     } catch (error) {
         console.error('Get message stats error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: 'Failed to retrieve message statistics' 
+            message: 'Failed to retrieve message statistics'
         });
     }
 });
@@ -147,23 +147,23 @@ router.get('/stats', authMiddleware, hasPermission('can_manage_messages'), async
 router.get('/export', authMiddleware, hasPermission('can_manage_messages'), async (req, res) => {
     try {
         const { status, from, to, format = 'csv' } = req.query;
-        
+
         const qb = new QueryBuilder('messages')
             .select('id, name, email, company, service, message, status, created_at, updated_at');
-        
+
         if (status) {
             qb.whereEquals('status', status);
         }
-        
+
         if (from || to) {
             qb.whereDateRange('created_at', from, to);
         }
-        
+
         qb.orderBy('-created_at');
-        
+
         const query = qb.build();
         const result = await db.query(query.sql, query.values);
-        
+
         // Log export action
         await AuditService.log({
             staffId: req.user.id,
@@ -172,7 +172,7 @@ router.get('/export', authMiddleware, hasPermission('can_manage_messages'), asyn
             details: { count: result.rows.length, format, status, from, to },
             ipAddress: req.ip
         });
-        
+
         if (format === 'csv') {
             const headers = ['ID', 'Name', 'Email', 'Company', 'Service', 'Message', 'Status', 'Created', 'Updated'];
             const rows = result.rows.map(row => [
@@ -186,9 +186,9 @@ router.get('/export', authMiddleware, hasPermission('can_manage_messages'), asyn
                 row.created_at?.toISOString() || '',
                 row.updated_at?.toISOString() || ''
             ]);
-            
+
             const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-            
+
             res.setHeader('Content-Type', 'text/csv');
             res.setHeader('Content-Disposition', `attachment; filename=messages_export_${new Date().toISOString().split('T')[0]}.csv`);
             res.send(csv);
@@ -200,9 +200,9 @@ router.get('/export', authMiddleware, hasPermission('can_manage_messages'), asyn
         }
     } catch (error) {
         console.error('Export messages error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: 'Failed to export messages' 
+            message: 'Failed to export messages'
         });
     }
 });
@@ -215,15 +215,15 @@ router.get('/:id', authMiddleware, hasPermission('can_manage_messages'), async (
     try {
         const message = await Message.findById(req.params.id);
         if (!message) {
-            return res.status(404).json({ 
+            return res.status(404).json({
                 success: false,
-                message: 'Message not found' 
+                message: 'Message not found'
             });
         }
-        
+
         // Get replies
         const replies = await Message.getReplies(req.params.id);
-        
+
         // Get notes if model supports it
         let notes = [];
         try {
@@ -235,16 +235,16 @@ router.get('/:id', authMiddleware, hasPermission('can_manage_messages'), async (
         } catch (e) {
             // Notes table may not exist
         }
-        
-        res.json({ 
-            success: true, 
-            data: { ...message, replies, notes } 
+
+        res.json({
+            success: true,
+            data: { ...message, replies, notes }
         });
     } catch (error) {
         console.error('Get message error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: 'Failed to retrieve message' 
+            message: 'Failed to retrieve message'
         });
     }
 });
@@ -255,32 +255,32 @@ router.get('/:id', authMiddleware, hasPermission('can_manage_messages'), async (
  */
 router.patch('/:id', authMiddleware, hasPermission('can_manage_messages'), async (req, res) => {
     try {
-        const { status, assigned_to, priority } = req.body;
+        const { status, assigned_to } = req.body;
         const validStatuses = ['new', 'in_progress', 'converted', 'archived'];
-        
+
         if (status && !validStatuses.includes(status)) {
-            return res.status(400).json({ 
+            return res.status(400).json({
                 success: false,
-                message: 'Invalid status' 
+                message: 'Invalid status'
             });
         }
 
         // Get the old message for audit
         const oldMessage = await Message.findById(req.params.id);
         if (!oldMessage) {
-            return res.status(404).json({ 
+            return res.status(404).json({
                 success: false,
-                message: 'Message not found' 
+                message: 'Message not found'
             });
         }
-        
+
         const message = await Message.updateStatus(req.params.id, status, assigned_to);
 
         // Log changes
         if (status && status !== oldMessage.status) {
             await AuditService.logStatusChange(req.user.id, 'message', req.params.id, oldMessage.status, status, req.ip);
         }
-        
+
         if (assigned_to && assigned_to !== oldMessage.assigned_to) {
             await AuditService.logAssignment(req.user.id, 'message', req.params.id, assigned_to, req.ip);
         }
@@ -288,9 +288,9 @@ router.patch('/:id', authMiddleware, hasPermission('can_manage_messages'), async
         res.json({ success: true, data: message });
     } catch (error) {
         console.error('Update message error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: 'Failed to update message' 
+            message: 'Failed to update message'
         });
     }
 });
@@ -299,8 +299,8 @@ router.patch('/:id', authMiddleware, hasPermission('can_manage_messages'), async
  * POST /api/admin/messages/:id/reply
  * Reply to a message
  */
-router.post('/:id/reply', 
-    authMiddleware, 
+router.post('/:id/reply',
+    authMiddleware,
     hasPermission('can_manage_messages'),
     [
         body('content').trim().notEmpty().withMessage('Reply content is required')
@@ -309,26 +309,26 @@ router.post('/:id/reply',
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
-                return res.status(400).json({ 
+                return res.status(400).json({
                     success: false,
-                    errors: errors.array() 
+                    errors: errors.array()
                 });
             }
 
             const { content, sendEmail = true } = req.body;
-            
+
             // Get original message
             const message = await Message.findById(req.params.id);
             if (!message) {
-                return res.status(404).json({ 
+                return res.status(404).json({
                     success: false,
-                    message: 'Message not found' 
+                    message: 'Message not found'
                 });
             }
 
             // Create reply
             const reply = await Message.addReply(req.params.id, req.user.id, content);
-            
+
             // Send email reply to the visitor
             if (sendEmail) {
                 const { sendReplyEmail } = require('../services/emailService');
@@ -336,7 +336,7 @@ router.post('/:id/reply',
                     console.error('Failed to send reply email:', err);
                 });
             }
-            
+
             // Log action
             await AuditService.log({
                 staffId: req.user.id,
@@ -350,9 +350,9 @@ router.post('/:id/reply',
             res.json({ success: true, data: reply });
         } catch (error) {
             console.error('Reply to message error:', error);
-            res.status(500).json({ 
+            res.status(500).json({
                 success: false,
-                message: 'Failed to send reply' 
+                message: 'Failed to send reply'
             });
         }
     }
@@ -365,26 +365,26 @@ router.post('/:id/reply',
 router.post('/bulk', authMiddleware, hasPermission('can_manage_messages'), async (req, res) => {
     try {
         const { action, messageIds, data } = req.body;
-        
+
         if (!Array.isArray(messageIds) || messageIds.length === 0) {
-            return res.status(400).json({ 
+            return res.status(400).json({
                 success: false,
-                message: 'Message IDs array is required' 
+                message: 'Message IDs array is required'
             });
         }
-        
+
         const validActions = ['update_status', 'assign', 'delete', 'archive'];
         if (!validActions.includes(action)) {
-            return res.status(400).json({ 
+            return res.status(400).json({
                 success: false,
-                message: 'Invalid bulk action' 
+                message: 'Invalid bulk action'
             });
         }
-        
+
         let affectedCount = 0;
-        
+
         switch (action) {
-            case 'update_status':
+            case 'update_status': {
                 if (!data?.status) {
                     return res.status(400).json({ success: false, message: 'Status is required' });
                 }
@@ -394,8 +394,9 @@ router.post('/bulk', authMiddleware, hasPermission('can_manage_messages'), async
                 );
                 affectedCount = statusResult.rowCount;
                 break;
-                
-            case 'assign':
+            }
+
+            case 'assign': {
                 if (!data?.assigned_to) {
                     return res.status(400).json({ success: false, message: 'Assignee is required' });
                 }
@@ -405,25 +406,28 @@ router.post('/bulk', authMiddleware, hasPermission('can_manage_messages'), async
                 );
                 affectedCount = assignResult.rowCount;
                 break;
-                
-            case 'archive':
+            }
+
+            case 'archive': {
                 const archiveResult = await db.query(
-                    `UPDATE messages SET status = 'archived', updated_at = NOW() WHERE id = ANY($1) RETURNING id`,
+                    'UPDATE messages SET status = \'archived\', updated_at = NOW() WHERE id = ANY($1) RETURNING id',
                     [messageIds]
                 );
                 affectedCount = archiveResult.rowCount;
                 break;
-                
-            case 'delete':
+            }
+
+            case 'delete': {
                 // Soft delete or hard delete based on policy
                 const deleteResult = await db.query(
-                    `UPDATE messages SET status = 'deleted', updated_at = NOW() WHERE id = ANY($1) RETURNING id`,
+                    'UPDATE messages SET status = \'deleted\', updated_at = NOW() WHERE id = ANY($1) RETURNING id',
                     [messageIds]
                 );
                 affectedCount = deleteResult.rowCount;
                 break;
+            }
         }
-        
+
         // Log bulk action
         await AuditService.log({
             staffId: req.user.id,
@@ -432,7 +436,7 @@ router.post('/bulk', authMiddleware, hasPermission('can_manage_messages'), async
             details: { count: affectedCount, messageIds, data },
             ipAddress: req.ip
         });
-        
+
         res.json({
             success: true,
             message: `Successfully processed ${affectedCount} messages`,
@@ -440,9 +444,9 @@ router.post('/bulk', authMiddleware, hasPermission('can_manage_messages'), async
         });
     } catch (error) {
         console.error('Bulk message operation error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: 'Failed to process bulk operation' 
+            message: 'Failed to process bulk operation'
         });
     }
 });
@@ -455,18 +459,18 @@ router.delete('/:id', authMiddleware, hasPermission('can_manage_messages'), asyn
     try {
         const message = await Message.findById(req.params.id);
         if (!message) {
-            return res.status(404).json({ 
+            return res.status(404).json({
                 success: false,
-                message: 'Message not found' 
+                message: 'Message not found'
             });
         }
-        
+
         // Soft delete
         await db.query(
-            `UPDATE messages SET status = 'deleted', updated_at = NOW() WHERE id = $1`,
+            'UPDATE messages SET status = \'deleted\', updated_at = NOW() WHERE id = $1',
             [req.params.id]
         );
-        
+
         // Log deletion
         await AuditService.log({
             staffId: req.user.id,
@@ -476,13 +480,13 @@ router.delete('/:id', authMiddleware, hasPermission('can_manage_messages'), asyn
             details: { email: message.email },
             ipAddress: req.ip
         });
-        
+
         res.json({ success: true, message: 'Message deleted' });
     } catch (error) {
         console.error('Delete message error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: 'Failed to delete message' 
+            message: 'Failed to delete message'
         });
     }
 });

@@ -1,7 +1,7 @@
 /**
  * Tekvwarho IT Solutions - Main Server
  * Express.js backend with WebSocket support
- * 
+ *
  * Security Features:
  * - JWT access tokens (15 min) + refresh tokens (7 days)
  * - Rate limiting on all endpoints
@@ -38,13 +38,10 @@ const savedRepliesRoutes = require('./routes/savedReplies');
 const { securityHeaders, corsOptions, botProtection } = require('./middleware/securityHeaders');
 const { requestId, errorHandler, notFoundHandler, Logger } = require('./middleware/errorHandler');
 const { sanitizeRequest } = require('./middleware/sanitizer');
-const { 
-    contactFormLimiter, 
-    newsletterLimiter, 
-    bookingLimiter,
-    loginLimiter,
-    authenticatedApiLimiter,
-    publicApiLimiter
+const {
+    contactFormLimiter,
+    newsletterLimiter,
+    bookingLimiter
 } = require('./middleware/rateLimiter');
 
 // Import WebSocket handler
@@ -131,21 +128,21 @@ app.get('/api/health', (req, res) => {
 app.get('/api/debug/db', async (req, res) => {
     try {
         const db = require('./config/database');
-        
+
         // Check connection
         const timeResult = await db.query('SELECT NOW() as now');
-        
+
         // Check if staff table exists
         const tableCheck = await db.query(`
             SELECT EXISTS (
-                SELECT FROM information_schema.tables 
+                SELECT FROM information_schema.tables
                 WHERE table_name = 'staff'
             ) as exists
         `);
-        
+
         // Check admin user
         let adminExists = false;
-        let adminEmail = process.env.ADMIN_EMAIL || 'admin@tekvwarho.com';
+        const adminEmail = process.env.ADMIN_EMAIL || 'admin@tekvwarho.com';
         if (tableCheck.rows[0].exists) {
             const adminCheck = await db.query(
                 'SELECT id, email, role FROM staff WHERE email = $1',
@@ -153,7 +150,7 @@ app.get('/api/debug/db', async (req, res) => {
             );
             adminExists = adminCheck.rows.length > 0;
         }
-        
+
         res.json({
             status: 'ok',
             database: {
@@ -220,50 +217,50 @@ const PORT = process.env.PORT || 5500;
 // ======================
 async function initializeDatabase() {
     const db = require('./config/database');
-    
+
     console.log('🔄 Checking database connection...');
     console.log(`   DATABASE_URL configured: ${!!process.env.DATABASE_URL}`);
-    
+
     try {
         // Test connection first
         const testResult = await db.query('SELECT NOW() as now');
         console.log(`✅ Database connected at: ${testResult.rows[0].now}`);
-        
+
         // Check if staff table exists
         const tableCheck = await db.query(`
             SELECT EXISTS (
-                SELECT FROM information_schema.tables 
+                SELECT FROM information_schema.tables
                 WHERE table_name = 'staff'
             )
         `);
-        
+
         if (!tableCheck.rows[0].exists) {
             console.log('📦 First run detected - initializing database schema...');
-            
+
             // Read and execute schema
             const schemaPath = path.join(__dirname, '../database/schema.sql');
             const schema = fs.readFileSync(schemaPath, 'utf8');
             await db.query(schema);
             console.log('✅ Database schema created');
         }
-        
+
         // Check/create admin user
         const adminEmail = process.env.ADMIN_EMAIL || 'admin@tekvwarho.com';
         const adminPassword = process.env.ADMIN_PASSWORD || 'TekvwarhoAdmin2026!';
         const adminName = process.env.ADMIN_NAME || 'System Administrator';
-        
+
         const existingAdmin = await db.query(
             'SELECT id FROM staff WHERE email = $1',
             [adminEmail]
         );
-        
+
         if (existingAdmin.rows.length === 0) {
             const hashedPassword = await bcrypt.hash(adminPassword, 12);
             await db.query(
                 `INSERT INTO staff (
-                    email, password_hash, name, role, 
+                    email, password_hash, name, role,
                     must_change_password, is_active,
-                    can_manage_messages, can_manage_consultations, 
+                    can_manage_messages, can_manage_consultations,
                     can_manage_chats, can_view_analytics
                 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
                 [adminEmail, hashedPassword, adminName, 'admin', false, true, true, true, true, true]
@@ -272,7 +269,7 @@ async function initializeDatabase() {
         } else {
             console.log(`✅ Admin user exists: ${adminEmail}`);
         }
-        
+
         // Run migrations
         const migrationsDir = path.join(__dirname, '../database/migrations');
         if (fs.existsSync(migrationsDir)) {
@@ -289,7 +286,7 @@ async function initializeDatabase() {
                 }
             }
         }
-        
+
         console.log('✅ Database ready');
     } catch (error) {
         console.error('❌ Database initialization error:', error.message);
@@ -301,16 +298,16 @@ async function initializeDatabase() {
 // Initialize database then start server
 initializeDatabase().then(() => {
     server.listen(PORT, () => {
-        console.log(`\n🚀 Tekvwarho IT Solutions Server Started`);
-        console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+        console.log('\n🚀 Tekvwarho IT Solutions Server Started');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         console.log(`📡 Server running on port ${PORT}`);
         console.log(`🔌 WebSocket server on ws://localhost:${PORT}/ws/chat`);
-        console.log(`👤 Admin dashboard at /admin`);
-        console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
-        console.log(`✅ Security: Rate limiting, XSS protection, CSP headers`);
-        console.log(`✅ Auth: JWT with refresh token rotation`);
-        console.log(`✅ Logging: Structured JSON with request IDs`);
-        console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`);
+        console.log('👤 Admin dashboard at /admin');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log('✅ Security: Rate limiting, XSS protection, CSP headers');
+        console.log('✅ Auth: JWT with refresh token rotation');
+        console.log('✅ Logging: Structured JSON with request IDs');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
     });
 }).catch(err => {
     console.error('Failed to start server:', err);

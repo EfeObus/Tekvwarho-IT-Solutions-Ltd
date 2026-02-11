@@ -17,11 +17,11 @@ const Visitor = {
                 'SELECT * FROM visitors WHERE email = $1',
                 [email]
             );
-            
+
             if (existing.rows.length > 0) {
                 // Update existing visitor
                 const result = await db.query(
-                    `UPDATE visitors 
+                    `UPDATE visitors
                      SET name = COALESCE($1, name),
                          last_visit = CURRENT_TIMESTAMP,
                          page_views = page_views + 1,
@@ -73,7 +73,7 @@ const Visitor = {
      */
     async incrementPageViews(id) {
         await db.query(
-            `UPDATE visitors 
+            `UPDATE visitors
              SET page_views = page_views + 1, last_visit = CURRENT_TIMESTAMP
              WHERE id = $1`,
             [id]
@@ -93,7 +93,7 @@ const Visitor = {
      */
     async getByDateRange(startDate, endDate) {
         const result = await db.query(
-            `SELECT * FROM visitors 
+            `SELECT * FROM visitors
              WHERE created_at >= $1 AND created_at <= $2
              ORDER BY created_at DESC`,
             [startDate, endDate]
@@ -106,7 +106,7 @@ const Visitor = {
      */
     async getRecent(limit = 10) {
         const result = await db.query(
-            `SELECT * FROM visitors 
+            `SELECT * FROM visitors
              ORDER BY last_visit DESC
              LIMIT $1`,
             [limit]

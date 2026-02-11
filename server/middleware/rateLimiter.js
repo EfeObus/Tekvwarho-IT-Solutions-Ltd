@@ -10,11 +10,17 @@ const rateLimit = require('express-rate-limit');
  * Handles IPv6 addresses properly to prevent bypass
  */
 const normalizeIp = (ip) => {
-    if (!ip) return 'unknown';
+    if (!ip) {
+        return 'unknown';
+    }
     // Handle IPv6 localhost
-    if (ip === '::1') return '127.0.0.1';
+    if (ip === '::1') {
+        return '127.0.0.1';
+    }
     // Handle IPv4-mapped IPv6 (::ffff:192.168.1.1)
-    if (ip.startsWith('::ffff:')) return ip.slice(7);
+    if (ip.startsWith('::ffff:')) {
+        return ip.slice(7);
+    }
     // Handle full IPv6 - normalize by using first 4 segments (/64 prefix)
     if (ip.includes(':')) {
         const parts = ip.split(':');
@@ -42,8 +48,8 @@ const loginLimiter = rateLimit({
     ...commonOptions,
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 5, // 5 attempts per window
-    message: { 
-        success: false, 
+    message: {
+        success: false,
         error: {
             code: 'RATE_LIMITED',
             message: 'Too many login attempts. Please try again in 15 minutes.'
@@ -73,7 +79,7 @@ const contactFormLimiter = rateLimit({
     ...commonOptions,
     windowMs: 60 * 60 * 1000, // 1 hour
     max: 3, // 3 submissions per hour
-    message: { 
+    message: {
         success: false,
         error: {
             code: 'RATE_LIMITED',
@@ -90,7 +96,7 @@ const newsletterLimiter = rateLimit({
     ...commonOptions,
     windowMs: 60 * 60 * 1000, // 1 hour
     max: 5, // 5 attempts per hour
-    message: { 
+    message: {
         success: false,
         error: {
             code: 'RATE_LIMITED',
@@ -107,7 +113,7 @@ const bookingLimiter = rateLimit({
     ...commonOptions,
     windowMs: 60 * 60 * 1000, // 1 hour
     max: 3, // 3 bookings per hour
-    message: { 
+    message: {
         success: false,
         error: {
             code: 'RATE_LIMITED',
@@ -124,7 +130,7 @@ const chatMessageLimiter = rateLimit({
     ...commonOptions,
     windowMs: 60 * 1000, // 1 minute
     max: 30, // 30 messages per minute
-    message: { 
+    message: {
         success: false,
         error: {
             code: 'RATE_LIMITED',
@@ -141,7 +147,7 @@ const authenticatedApiLimiter = rateLimit({
     ...commonOptions,
     windowMs: 60 * 1000, // 1 minute
     max: 100, // 100 requests per minute
-    message: { 
+    message: {
         success: false,
         error: {
             code: 'RATE_LIMITED',
@@ -163,7 +169,7 @@ const publicApiLimiter = rateLimit({
     ...commonOptions,
     windowMs: 60 * 1000, // 1 minute
     max: 30, // 30 requests per minute
-    message: { 
+    message: {
         success: false,
         error: {
             code: 'RATE_LIMITED',
@@ -180,7 +186,7 @@ const passwordResetLimiter = rateLimit({
     ...commonOptions,
     windowMs: 60 * 60 * 1000, // 1 hour
     max: 3, // 3 attempts per hour
-    message: { 
+    message: {
         success: false,
         error: {
             code: 'RATE_LIMITED',
@@ -197,7 +203,7 @@ const refreshTokenLimiter = rateLimit({
     ...commonOptions,
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 30, // 30 refreshes per 15 minutes
-    message: { 
+    message: {
         success: false,
         error: {
             code: 'RATE_LIMITED',
@@ -214,7 +220,7 @@ const exportLimiter = rateLimit({
     ...commonOptions,
     windowMs: 5 * 60 * 1000, // 5 minutes
     max: 5, // 5 exports per 5 minutes
-    message: { 
+    message: {
         success: false,
         error: {
             code: 'RATE_LIMITED',

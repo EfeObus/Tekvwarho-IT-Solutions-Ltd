@@ -114,7 +114,7 @@ class TokenManager {
         // Revoke old token (but keep grace period for replay protection)
         const gracePeriodEnd = new Date(Date.now() + TOKEN_ROTATION_GRACE_PERIOD);
         await db.query(
-            `UPDATE refresh_tokens 
+            `UPDATE refresh_tokens
              SET revoked_at = $1
              WHERE id = $2`,
             [gracePeriodEnd, storedToken.id]
@@ -142,7 +142,7 @@ class TokenManager {
 
         // Link old token to new one
         await db.query(
-            `UPDATE refresh_tokens SET replaced_by = $1 WHERE id = $2`,
+            'UPDATE refresh_tokens SET replaced_by = $1 WHERE id = $2',
             [newRefreshToken.tokenId, storedToken.id]
         );
 
@@ -164,11 +164,11 @@ class TokenManager {
      */
     static async revokeToken(tokenId) {
         await db.query(
-            `UPDATE refresh_tokens SET revoked_at = NOW() WHERE id = $1`,
+            'UPDATE refresh_tokens SET revoked_at = NOW() WHERE id = $1',
             [tokenId]
         );
         await db.query(
-            `UPDATE active_sessions SET is_active = false WHERE refresh_token_id = $1`,
+            'UPDATE active_sessions SET is_active = false WHERE refresh_token_id = $1',
             [tokenId]
         );
     }
@@ -178,12 +178,12 @@ class TokenManager {
      */
     static async revokeAllUserTokens(userId) {
         await db.query(
-            `UPDATE refresh_tokens SET revoked_at = NOW() 
+            `UPDATE refresh_tokens SET revoked_at = NOW()
              WHERE user_id = $1 AND revoked_at IS NULL`,
             [userId]
         );
         await db.query(
-            `UPDATE active_sessions SET is_active = false WHERE user_id = $1`,
+            'UPDATE active_sessions SET is_active = false WHERE user_id = $1',
             [userId]
         );
     }
@@ -193,7 +193,7 @@ class TokenManager {
      */
     static async getActiveSessions(userId) {
         const result = await db.query(
-            `SELECT s.id, rt.ip_address, rt.user_agent, 
+            `SELECT s.id, rt.ip_address, rt.user_agent,
                     s.last_activity, rt.created_at as session_started
              FROM active_sessions s
              JOIN refresh_tokens rt ON s.refresh_token_id = rt.id
@@ -209,7 +209,7 @@ class TokenManager {
      */
     static async updateSessionActivity(sessionId) {
         await db.query(
-            `UPDATE active_sessions SET last_activity = NOW() WHERE id = $1`,
+            'UPDATE active_sessions SET last_activity = NOW() WHERE id = $1',
             [sessionId]
         );
     }
@@ -220,13 +220,13 @@ class TokenManager {
     static async invalidateUserTokens(userId, reason = 'security_update') {
         // Increment token version to invalidate all existing access tokens
         await db.query(
-            `UPDATE staff SET token_version = COALESCE(token_version, 0) + 1 WHERE id = $1`,
+            'UPDATE staff SET token_version = COALESCE(token_version, 0) + 1 WHERE id = $1',
             [userId]
         );
-        
+
         // Revoke all refresh tokens
         await this.revokeAllUserTokens(userId);
-        
+
         return { invalidated: true, reason };
     }
 
@@ -235,7 +235,7 @@ class TokenManager {
      */
     static async cleanupExpiredTokens() {
         const result = await db.query(
-            `DELETE FROM refresh_tokens 
+            `DELETE FROM refresh_tokens
              WHERE expires_at < NOW() - INTERVAL '1 day'
              RETURNING id`
         );

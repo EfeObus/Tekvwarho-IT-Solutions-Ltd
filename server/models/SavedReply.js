@@ -29,21 +29,21 @@ class SavedReply {
         let whereClause = 'WHERE (is_global = true OR created_by = $1)';
         const values = [userId];
         let paramIndex = 2;
-        
+
         if (category) {
             whereClause += ` AND category = $${paramIndex}`;
             values.push(category);
             paramIndex++;
         }
-        
+
         if (search) {
             whereClause += ` AND (title ILIKE $${paramIndex} OR content ILIKE $${paramIndex} OR shortcut ILIKE $${paramIndex})`;
             values.push(`%${search}%`);
             paramIndex++;
         }
-        
+
         values.push(limit, offset);
-        
+
         const result = await db.query(
             `SELECT sr.*, s.name as created_by_name
              FROM saved_replies sr
@@ -53,7 +53,7 @@ class SavedReply {
              LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`,
             values
         );
-        
+
         return result.rows;
     }
 
@@ -73,7 +73,7 @@ class SavedReply {
      */
     static async findByShortcut(shortcut, userId) {
         const result = await db.query(
-            `SELECT * FROM saved_replies 
+            `SELECT * FROM saved_replies
              WHERE shortcut = $1 AND (is_global = true OR created_by = $2)
              LIMIT 1`,
             [shortcut, userId]
@@ -110,7 +110,9 @@ class SavedReply {
             values.push(isGlobal);
         }
 
-        if (fields.length === 0) return null;
+        if (fields.length === 0) {
+            return null;
+        }
 
         fields.push('updated_at = NOW()');
         values.push(id);
@@ -145,7 +147,7 @@ class SavedReply {
     static async getCategories(userId) {
         const result = await db.query(
             `SELECT DISTINCT category, COUNT(*) as count
-             FROM saved_replies 
+             FROM saved_replies
              WHERE is_global = true OR created_by = $1
              GROUP BY category
              ORDER BY count DESC`,
@@ -159,7 +161,7 @@ class SavedReply {
      */
     static async getMostUsed(userId, limit = 5) {
         const result = await db.query(
-            `SELECT * FROM saved_replies 
+            `SELECT * FROM saved_replies
              WHERE (is_global = true OR created_by = $1) AND use_count > 0
              ORDER BY use_count DESC
              LIMIT $2`,

@@ -50,7 +50,7 @@ const PerformanceService = {
      */
     async getMessageMetrics(staffId, startDate, endDate) {
         const result = await db.query(`
-            SELECT 
+            SELECT
                 COUNT(*) FILTER (WHERE assigned_to = $1) as assigned,
                 COUNT(*) FILTER (WHERE assigned_to = $1 AND status = 'converted') as converted,
                 COUNT(*) FILTER (WHERE assigned_to = $1 AND status = 'archived') as archived,
@@ -62,7 +62,7 @@ const PerformanceService = {
         const row = result.rows[0];
         const assigned = parseInt(row.assigned) || 0;
         const converted = parseInt(row.converted) || 0;
-        
+
         return {
             assigned,
             converted,
@@ -77,7 +77,7 @@ const PerformanceService = {
      */
     async getConsultationMetrics(staffId, startDate, endDate) {
         const result = await db.query(`
-            SELECT 
+            SELECT
                 COUNT(*) FILTER (WHERE assigned_to = $1) as assigned,
                 COUNT(*) FILTER (WHERE assigned_to = $1 AND status = 'completed') as completed,
                 COUNT(*) FILTER (WHERE assigned_to = $1 AND status = 'confirmed') as confirmed,
@@ -106,7 +106,7 @@ const PerformanceService = {
      */
     async getChatMetrics(staffId, startDate, endDate) {
         const result = await db.query(`
-            SELECT 
+            SELECT
                 COUNT(DISTINCT cs.id) FILTER (WHERE cs.assigned_to = $1) as sessions_handled,
                 COUNT(cm.id) FILTER (WHERE cm.sender_id = $1 AND cm.sender_type = 'staff') as messages_sent,
                 COUNT(DISTINCT cs.id) FILTER (WHERE cs.assigned_to = $1 AND cs.status = 'closed') as sessions_closed
@@ -129,25 +129,25 @@ const PerformanceService = {
     async getAverageResponseTime(staffId, startDate, endDate) {
         // Get time between message creation and first reply
         const result = await db.query(`
-            SELECT 
+            SELECT
                 AVG(
                     EXTRACT(EPOCH FROM (mr.created_at - m.created_at)) / 60
                 ) as avg_response_minutes
             FROM messages m
             INNER JOIN message_replies mr ON m.id = mr.message_id
             WHERE mr.staff_id = $1
-                AND mr.created_at >= $2 
+                AND mr.created_at >= $2
                 AND mr.created_at <= $3::date + interval '1 day'
                 AND mr.id = (
-                    SELECT id FROM message_replies 
+                    SELECT id FROM message_replies
                     WHERE message_id = m.id AND staff_id = $1
-                    ORDER BY created_at ASC 
+                    ORDER BY created_at ASC
                     LIMIT 1
                 )
         `, [staffId, startDate, endDate]);
 
         const avgMinutes = parseFloat(result.rows[0]?.avg_response_minutes) || 0;
-        
+
         return {
             averageMinutes: Math.round(avgMinutes * 10) / 10,
             averageFormatted: this.formatDuration(avgMinutes)
@@ -159,7 +159,7 @@ const PerformanceService = {
      */
     async getActivityMetrics(staffId, startDate, endDate) {
         const result = await db.query(`
-            SELECT 
+            SELECT
                 COUNT(*) as total_actions,
                 COUNT(*) FILTER (WHERE action = 'login') as logins,
                 COUNT(*) FILTER (WHERE action = 'reply') as replies,
@@ -169,7 +169,7 @@ const PerformanceService = {
                 COUNT(DISTINCT DATE(created_at)) as active_days
             FROM audit_logs
             WHERE staff_id = $1
-                AND created_at >= $2 
+                AND created_at >= $2
                 AND created_at <= $3::date + interval '1 day'
         `, [staffId, startDate, endDate]);
 
@@ -190,7 +190,7 @@ const PerformanceService = {
      */
     async getAllStaffPerformance(startDate, endDate) {
         const result = await db.query(`
-            SELECT 
+            SELECT
                 s.id,
                 s.name,
                 s.email,
@@ -207,7 +207,7 @@ const PerformanceService = {
                 -- Activity metrics
                 COALESCE(COUNT(al.id), 0) as total_actions
             FROM staff s
-            LEFT JOIN messages m ON m.assigned_to = s.id 
+            LEFT JOIN messages m ON m.assigned_to = s.id
                 AND m.created_at >= $1 AND m.created_at <= $2::date + interval '1 day'
             LEFT JOIN consultations c ON c.assigned_to = s.id
                 AND c.created_at >= $1 AND c.created_at <= $2::date + interval '1 day'
@@ -228,8 +228,8 @@ const PerformanceService = {
             consultations_completed: parseInt(row.consultations_completed),
             chats_handled: parseInt(row.chats_handled),
             total_actions: parseInt(row.total_actions),
-            message_conversion_rate: row.messages_assigned > 0 
-                ? Math.round((row.messages_converted / row.messages_assigned) * 100) 
+            message_conversion_rate: row.messages_assigned > 0
+                ? Math.round((row.messages_converted / row.messages_assigned) * 100)
                 : 0,
             consultation_completion_rate: row.consultations_assigned > 0
                 ? Math.round((row.consultations_completed / row.consultations_assigned) * 100)
@@ -242,20 +242,20 @@ const PerformanceService = {
      */
     calculatePerformanceScore({ messageMetrics, consultationMetrics, chatMetrics, responseTimeMetrics, activityMetrics }) {
         let score = 50; // Base score
-        
+
         // Message conversion rate (up to 20 points)
         score += Math.min(messageMetrics.conversionRate * 0.2, 20);
-        
+
         // Consultation completion rate (up to 15 points)
         score += Math.min(consultationMetrics.completionRate * 0.15, 15);
-        
+
         // Response time (up to 15 points - faster is better)
         if (responseTimeMetrics.averageMinutes > 0) {
             // Under 30 min = full points, over 240 min = no points
             const responseScore = Math.max(0, 15 - (responseTimeMetrics.averageMinutes / 16));
             score += responseScore;
         }
-        
+
         // Activity level (up to 10 points based on active days)
         const expectedDays = 22; // Average work days in a month
         const activityScore = Math.min((activityMetrics.activeDays / expectedDays) * 10, 10);
@@ -268,8 +268,12 @@ const PerformanceService = {
      * Format minutes to human readable duration
      */
     formatDuration(minutes) {
-        if (minutes < 1) return 'Under 1 min';
-        if (minutes < 60) return `${Math.round(minutes)} min`;
+        if (minutes < 1) {
+            return 'Under 1 min';
+        }
+        if (minutes < 60) {
+            return `${Math.round(minutes)} min`;
+        }
         const hours = Math.floor(minutes / 60);
         const mins = Math.round(minutes % 60);
         return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
@@ -281,9 +285,9 @@ const PerformanceService = {
     async getLeaderboard(period = 'month') {
         const startDate = this.getPeriodStart(period);
         const endDate = new Date().toISOString().split('T')[0];
-        
+
         const staff = await this.getAllStaffPerformance(startDate, endDate);
-        
+
         // Calculate scores for each staff
         const leaderboard = await Promise.all(
             staff.map(async (s) => {
@@ -300,7 +304,7 @@ const PerformanceService = {
                 };
             })
         );
-        
+
         return leaderboard.sort((a, b) => b.performanceScore - a.performanceScore);
     },
 

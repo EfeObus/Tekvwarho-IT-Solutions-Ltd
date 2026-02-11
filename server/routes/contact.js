@@ -30,9 +30,9 @@ router.post('/', contactValidation, async (req, res) => {
         // Validate input
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return res.status(400).json({ 
+            return res.status(400).json({
                 success: false,
-                errors: errors.array() 
+                errors: errors.array()
             });
         }
 
@@ -83,9 +83,9 @@ router.post('/', contactValidation, async (req, res) => {
         });
     } catch (error) {
         console.error('Contact form error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: 'Failed to submit message. Please try again.' 
+            message: 'Failed to submit message. Please try again.'
         });
     }
 });
@@ -97,17 +97,17 @@ router.post('/', contactValidation, async (req, res) => {
 router.get('/', async (req, res) => {
     try {
         const { status, limit, offset } = req.query;
-        const messages = await Message.findAll({ 
-            status, 
-            limit: parseInt(limit) || 50, 
-            offset: parseInt(offset) || 0 
+        const messages = await Message.findAll({
+            status,
+            limit: parseInt(limit) || 50,
+            offset: parseInt(offset) || 0
         });
         res.json({ success: true, data: messages });
     } catch (error) {
         console.error('Get messages error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: 'Failed to retrieve messages' 
+            message: 'Failed to retrieve messages'
         });
     }
 });
@@ -120,24 +120,24 @@ router.get('/:id', async (req, res) => {
     try {
         const message = await Message.findById(req.params.id);
         if (!message) {
-            return res.status(404).json({ 
+            return res.status(404).json({
                 success: false,
-                message: 'Message not found' 
+                message: 'Message not found'
             });
         }
-        
+
         // Get replies
         const replies = await Message.getReplies(req.params.id);
-        
-        res.json({ 
-            success: true, 
-            data: { ...message, replies } 
+
+        res.json({
+            success: true,
+            data: { ...message, replies }
         });
     } catch (error) {
         console.error('Get message error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: 'Failed to retrieve message' 
+            message: 'Failed to retrieve message'
         });
     }
 });
@@ -150,29 +150,29 @@ router.patch('/:id/status', async (req, res) => {
     try {
         const { status, assignedTo, staffId } = req.body;
         const validStatuses = ['new', 'in_progress', 'converted', 'archived'];
-        
+
         if (!validStatuses.includes(status)) {
-            return res.status(400).json({ 
+            return res.status(400).json({
                 success: false,
-                message: 'Invalid status' 
+                message: 'Invalid status'
             });
         }
 
         // Get the old status for audit
         const oldMessage = await Message.findById(req.params.id);
-        
+
         const message = await Message.updateStatus(req.params.id, status, assignedTo);
         if (!message) {
-            return res.status(404).json({ 
+            return res.status(404).json({
                 success: false,
-                message: 'Message not found' 
+                message: 'Message not found'
             });
         }
 
         // Log status change
         if (staffId) {
             await AuditService.logStatusChange(staffId, 'message', req.params.id, oldMessage?.status, status, req.ip);
-            
+
             // Log assignment if different
             if (assignedTo && assignedTo !== oldMessage?.assigned_to) {
                 await AuditService.logAssignment(staffId, 'message', req.params.id, assignedTo, req.ip);
@@ -182,9 +182,9 @@ router.patch('/:id/status', async (req, res) => {
         res.json({ success: true, data: message });
     } catch (error) {
         console.error('Update status error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: 'Failed to update status' 
+            message: 'Failed to update status'
         });
     }
 });
@@ -200,28 +200,28 @@ router.post('/:id/reply', [
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return res.status(400).json({ 
+            return res.status(400).json({
                 success: false,
-                errors: errors.array() 
+                errors: errors.array()
             });
         }
 
         const { content, staffId, sendEmail = true } = req.body;
-        
+
         // Get original message
         const message = await Message.findById(req.params.id);
         if (!message) {
-            return res.status(404).json({ 
+            return res.status(404).json({
                 success: false,
-                message: 'Message not found' 
+                message: 'Message not found'
             });
         }
 
         // Create reply
         const reply = await Message.addReply(
-            req.params.id, 
-            staffId, 
-            content, 
+            req.params.id,
+            staffId,
+            content,
             sendEmail
         );
 
@@ -248,17 +248,17 @@ router.post('/:id/reply', [
         // Log the reply action
         await AuditService.logMessageReply(staffId, req.params.id, emailSent, req.ip);
 
-        res.status(201).json({ 
-            success: true, 
+        res.status(201).json({
+            success: true,
             data: reply,
             emailSent,
             emailError: emailError || undefined
         });
     } catch (error) {
         console.error('Reply error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: 'Failed to send reply' 
+            message: 'Failed to send reply'
         });
     }
 });

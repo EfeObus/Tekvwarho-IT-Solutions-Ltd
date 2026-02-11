@@ -12,11 +12,11 @@ class Draft {
      */
     static async upsert({ staffId, entityType, entityId, content, subject }) {
         const existing = await this.findByEntity(staffId, entityType, entityId);
-        
+
         if (existing) {
             return this.update(existing.id, { content, subject });
         }
-        
+
         const id = uuidv4();
         const result = await db.query(
             `INSERT INTO drafts (id, staff_id, entity_type, entity_id, content, subject, created_at, updated_at)
@@ -32,7 +32,7 @@ class Draft {
      */
     static async findByEntity(staffId, entityType, entityId) {
         const result = await db.query(
-            `SELECT * FROM drafts 
+            `SELECT * FROM drafts
              WHERE staff_id = $1 AND entity_type = $2 AND entity_id = $3`,
             [staffId, entityType, entityId]
         );
@@ -44,13 +44,13 @@ class Draft {
      */
     static async findByStaff(staffId, { entityType, limit = 50 } = {}) {
         let query = `
-            SELECT d.*, 
-                CASE 
+            SELECT d.*,
+                CASE
                     WHEN d.entity_type = 'message' THEN m.name
                     WHEN d.entity_type = 'chat' THEN c.visitor_name
                     WHEN d.entity_type = 'consultation' THEN con.name
                 END as entity_name,
-                CASE 
+                CASE
                     WHEN d.entity_type = 'message' THEN m.email
                     WHEN d.entity_type = 'chat' THEN c.visitor_email
                     WHEN d.entity_type = 'consultation' THEN con.email
@@ -61,17 +61,17 @@ class Draft {
             LEFT JOIN consultations con ON d.entity_type = 'consultation' AND d.entity_id = con.id
             WHERE d.staff_id = $1
         `;
-        
+
         const values = [staffId];
-        
+
         if (entityType) {
             query += ' AND d.entity_type = $2';
             values.push(entityType);
         }
-        
+
         query += ' ORDER BY d.updated_at DESC LIMIT $' + (values.length + 1);
         values.push(limit);
-        
+
         const result = await db.query(query, values);
         return result.rows;
     }
@@ -81,7 +81,7 @@ class Draft {
      */
     static async update(id, { content, subject }) {
         const result = await db.query(
-            `UPDATE drafts SET content = $1, subject = $2, updated_at = NOW() 
+            `UPDATE drafts SET content = $1, subject = $2, updated_at = NOW()
              WHERE id = $3 RETURNING *`,
             [content, subject, id]
         );

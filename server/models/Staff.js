@@ -11,10 +11,10 @@ const Staff = {
     /**
      * Create a new staff member (onboarding by admin)
      */
-    async create({ 
-        email, 
-        password, 
-        name, 
+    async create({
+        email,
+        password,
+        name,
         role = 'staff',
         department = null,
         phone = null,
@@ -23,16 +23,16 @@ const Staff = {
     }) {
         const id = uuidv4();
         const passwordHash = await bcrypt.hash(password, 12);
-        
+
         const result = await db.query(
             `INSERT INTO staff (
                 id, email, password_hash, name, role, department, phone,
                 must_change_password, is_active, created_by,
-                can_manage_messages, can_manage_consultations, 
+                can_manage_messages, can_manage_consultations,
                 can_manage_chats, can_view_analytics
             )
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
-            RETURNING id, email, name, role, department, phone, is_active, 
+            RETURNING id, email, name, role, department, phone, is_active,
                       must_change_password, can_manage_messages, can_manage_consultations,
                       can_manage_chats, can_view_analytics, created_at`,
             [
@@ -65,9 +65,9 @@ const Staff = {
      */
     async findById(id) {
         const result = await db.query(
-            `SELECT id, email, name, role, department, phone, is_active, 
+            `SELECT id, email, name, role, department, phone, is_active,
                     must_change_password, can_manage_messages, can_manage_consultations,
-                    can_manage_chats, can_view_analytics, created_at, last_login 
+                    can_manage_chats, can_view_analytics, created_at, last_login
              FROM staff WHERE id = $1`,
             [id]
         );
@@ -79,9 +79,9 @@ const Staff = {
      */
     async findAll(filters = {}) {
         let query = `
-            SELECT id, email, name, role, department, phone, is_active, 
+            SELECT id, email, name, role, department, phone, is_active,
                    must_change_password, can_manage_messages, can_manage_consultations,
-                   can_manage_chats, can_view_analytics, created_at, last_login 
+                   can_manage_chats, can_view_analytics, created_at, last_login
             FROM staff
         `;
         const conditions = [];
@@ -115,9 +115,9 @@ const Staff = {
      */
     async getCountByRole() {
         const result = await db.query(`
-            SELECT role, COUNT(*) as count 
-            FROM staff 
-            WHERE is_active = true 
+            SELECT role, COUNT(*) as count
+            FROM staff
+            WHERE is_active = true
             GROUP BY role
         `);
         return result.rows;
@@ -146,10 +146,10 @@ const Staff = {
     async changePassword(id, newPassword, clearMustChange = true) {
         const passwordHash = await bcrypt.hash(newPassword, 12);
         await db.query(
-            `UPDATE staff SET 
-                password_hash = $1, 
+            `UPDATE staff SET
+                password_hash = $1,
                 must_change_password = $2,
-                updated_at = CURRENT_TIMESTAMP 
+                updated_at = CURRENT_TIMESTAMP
              WHERE id = $3`,
             [passwordHash, !clearMustChange, id]
         );
@@ -189,7 +189,7 @@ const Staff = {
             fields.push(`password_hash = $${paramIndex}`);
             values.push(hash);
             paramIndex++;
-            
+
             // If admin is setting password, staff must change it on first login
             fields.push(`must_change_password = $${paramIndex}`);
             values.push(true);
@@ -202,9 +202,9 @@ const Staff = {
 
         values.push(id);
         const result = await db.query(
-            `UPDATE staff SET ${fields.join(', ')}, updated_at = CURRENT_TIMESTAMP 
-             WHERE id = $${paramIndex} 
-             RETURNING id, email, name, role, department, phone, is_active, 
+            `UPDATE staff SET ${fields.join(', ')}, updated_at = CURRENT_TIMESTAMP
+             WHERE id = $${paramIndex}
+             RETURNING id, email, name, role, department, phone, is_active,
                        must_change_password, can_manage_messages, can_manage_consultations,
                        can_manage_chats, can_view_analytics, created_at`,
             values
@@ -240,13 +240,13 @@ const Staff = {
         const admins = await db.query(
             "SELECT COUNT(*) as count FROM staff WHERE role = 'admin' AND is_active = true"
         );
-        
+
         const staff = await this.findById(id);
-        
+
         if (staff && staff.role === 'admin' && parseInt(admins.rows[0].count) <= 1) {
             throw new Error('Cannot delete the last admin user');
         }
-        
+
         await db.query('DELETE FROM staff WHERE id = $1', [id]);
     },
 
@@ -254,8 +254,10 @@ const Staff = {
      * Check if user has permission
      */
     hasPermission(staff, permission) {
-        if (staff.role === 'admin') return true;
-        
+        if (staff.role === 'admin') {
+            return true;
+        }
+
         const permissionMap = {
             'messages': staff.can_manage_messages,
             'consultations': staff.can_manage_consultations,
@@ -263,7 +265,7 @@ const Staff = {
             'analytics': staff.can_view_analytics,
             'staff': staff.role === 'admin' || staff.role === 'manager'
         };
-        
+
         return permissionMap[permission] || false;
     },
 
@@ -272,9 +274,9 @@ const Staff = {
      */
     async getActiveStaff() {
         const result = await db.query(
-            `SELECT id, name, email, role, department 
-             FROM staff 
-             WHERE is_active = true 
+            `SELECT id, name, email, role, department
+             FROM staff
+             WHERE is_active = true
              ORDER BY name ASC`
         );
         return result.rows;
@@ -286,8 +288,8 @@ const Staff = {
     async findAdminForFallback() {
         const result = await db.query(`
             SELECT id, name, email, role
-            FROM staff 
-            WHERE is_active = true 
+            FROM staff
+            WHERE is_active = true
               AND role = 'admin'
             ORDER BY last_login DESC NULLS LAST
             LIMIT 1
@@ -310,20 +312,20 @@ const Staff = {
                 WHERE status = 'active' AND assigned_to IS NOT NULL
                 GROUP BY assigned_to
             ) active_chats ON s.id = active_chats.assigned_to
-            WHERE s.is_active = true 
+            WHERE s.is_active = true
               AND s.can_manage_chats = true
         `;
-        
+
         const params = [];
-        
+
         // Prefer online staff if provided
         if (onlineStaffIds && onlineStaffIds.length > 0) {
-            query += ` AND s.id = ANY($1)`;
+            query += ' AND s.id = ANY($1)';
             params.push(onlineStaffIds);
         }
-        
-        query += ` ORDER BY active_chat_count ASC, s.last_login DESC NULLS LAST LIMIT 1`;
-        
+
+        query += ' ORDER BY active_chat_count ASC, s.last_login DESC NULLS LAST LIMIT 1';
+
         const result = await db.query(query, params);
         return result.rows[0] || null;
     },
@@ -342,7 +344,7 @@ const Staff = {
                 WHERE status IN ('pending', 'confirmed') AND assigned_to IS NOT NULL
                 GROUP BY assigned_to
             ) pending_consults ON s.id = pending_consults.assigned_to
-            WHERE s.is_active = true 
+            WHERE s.is_active = true
               AND s.can_manage_consultations = true
             ORDER BY pending_count ASC, s.last_login DESC NULLS LAST
             LIMIT 1
@@ -364,7 +366,7 @@ const Staff = {
                 WHERE status IN ('new', 'in_progress') AND assigned_to IS NOT NULL
                 GROUP BY assigned_to
             ) active_msgs ON s.id = active_msgs.assigned_to
-            WHERE s.is_active = true 
+            WHERE s.is_active = true
               AND s.can_manage_messages = true
             ORDER BY active_message_count ASC, s.last_login DESC NULLS LAST
             LIMIT 1
