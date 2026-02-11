@@ -72,15 +72,23 @@ router.get('/',
             const countQuery = qb.buildCount();
             
             const [dataResult, countResult] = await Promise.all([
-                db.query(dataQuery.sql, dataQuery.values),
-                db.query(countQuery.sql, countQuery.values)
+                db.query(dataQuery.query, dataQuery.params),
+                db.query(countQuery.query, countQuery.params)
             ]);
             
             const messages = dataResult.rows;
-            const total = parseInt(countResult.rows[0].count, 10);
+            const total = parseInt(countResult.rows[0].total || countResult.rows[0].count, 10);
             
             // Build pagination response
-            const pagination = QueryBuilder.buildPaginationResponse(total, page, limit);
+            const totalPages = Math.ceil(total / limit);
+            const pagination = {
+                page,
+                limit,
+                total,
+                totalPages,
+                hasNext: page < totalPages,
+                hasPrev: page > 1
+            };
             
             // Set Link headers for REST best practices
             setPaginationHeaders(res, pagination, req.originalUrl);
@@ -321,10 +329,12 @@ router.post('/:id/reply',
             // Create reply
             const reply = await Message.addReply(req.params.id, req.user.id, content);
             
-            // Send email if requested
+            // Send email reply to the visitor
             if (sendEmail) {
                 const { sendReplyEmail } = require('../services/emailService');
-                sendReplyEmail(message, content, req.user.name).catch(console.error);
+                sendReplyEmail(message.email, content, message.name).catch(err => {
+                    console.error('Failed to send reply email:', err);
+                });
             }
             
             // Log action

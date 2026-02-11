@@ -90,7 +90,15 @@ app.use('/users', express.static(path.join(__dirname, '../users')));
 // ======================
 
 // Public routes with rate limiting
-app.use('/api/contact', contactFormLimiter, contactRoutes);
+// Note: contactFormLimiter only applies to POST /api/contact (root) - not replies or other actions
+app.use('/api/contact', (req, res, next) => {
+    // Only rate limit the public contact form submission (POST to root)
+    // Don't rate limit staff/admin actions like replies, status updates, etc.
+    if (req.method === 'POST' && req.path === '/') {
+        return contactFormLimiter(req, res, next);
+    }
+    next();
+}, contactRoutes);
 app.use('/api/newsletter', newsletterLimiter, newsletterRoutes);
 app.use('/api/consultation', bookingLimiter, consultationRoutes);
 app.use('/api/consultations', consultationRoutes);
@@ -117,20 +125,25 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Favicon (redirect .ico requests to .svg)
+app.get('/favicon.ico', (req, res) => {
+    res.redirect(301, '/favicon.svg');
+});
+
 // WebSocket connection handling
 initChatHandler(wss);
 
-// Serve index.html for root and other frontend routes
+// Serve index.html for root
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/index.html'));
+    res.sendFile(path.join(__dirname, '../index.html'));
 });
 
-// Catch-all for frontend routes
+// Catch-all for frontend routes (HTML files at root level)
 app.get('*.html', (req, res) => {
-    const filePath = path.join(__dirname, '../public', req.path);
+    const filePath = path.join(__dirname, '..', req.path);
     res.sendFile(filePath, (err) => {
         if (err) {
-            res.status(404).send('Page not found');
+            res.sendFile(path.join(__dirname, '../404.html'));
         }
     });
 });

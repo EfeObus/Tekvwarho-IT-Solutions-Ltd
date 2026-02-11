@@ -20,6 +20,49 @@
     let isConnected = false;
     let reconnectAttempts = 0;
     let visitorInfo = null;
+    let chatSettings = {
+        chat_enabled: true,
+        chat_auto_reply_enabled: true,
+        chat_auto_reply: 'Thank you for your message! One of our team members will be with you shortly.',
+        chat_offline_message: 'We are currently offline. Please leave a message and we will get back to you.',
+        business_hours_start: '09:00',
+        business_hours_end: '17:00',
+        working_days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+    };
+
+    // Fetch chat settings from server
+    const fetchChatSettings = async () => {
+        try {
+            const response = await fetch('/api/settings/chat/public');
+            const result = await response.json();
+            if (result.success) {
+                chatSettings = { ...chatSettings, ...result.data };
+            }
+        } catch (error) {
+            console.warn('Failed to fetch chat settings, using defaults:', error);
+        }
+    };
+
+    // Check if currently within business hours
+    const isWithinBusinessHours = () => {
+        const now = new Date();
+        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const currentDay = dayNames[now.getDay()];
+        
+        // Check if today is a working day
+        if (!chatSettings.working_days.includes(currentDay)) {
+            return false;
+        }
+        
+        // Check time
+        const currentTime = now.getHours() * 60 + now.getMinutes();
+        const [startHour, startMin] = chatSettings.business_hours_start.split(':').map(Number);
+        const [endHour, endMin] = chatSettings.business_hours_end.split(':').map(Number);
+        const startMinutes = startHour * 60 + startMin;
+        const endMinutes = endHour * 60 + endMin;
+        
+        return currentTime >= startMinutes && currentTime <= endMinutes;
+    };
 
     // Create chat widget HTML
     const createWidget = () => {
@@ -458,7 +501,50 @@
             case 'session_started':
                 sessionId = data.sessionId;
                 sessionStorage.setItem('chat_session', sessionId);
+                sessionStorage.setItem('chat_visitor_name', visitorInfo?.name || '');
                 addSystemMessage(data.message);
+                break;
+            
+            case 'session_restored':
+                // Session was restored after page refresh
+                sessionId = data.sessionId;
+                sessionStorage.setItem('chat_session', sessionId);
+                
+                // Show the chat messages area
+                document.getElementById('chat-start-form').style.display = 'none';
+                document.getElementById('chat-messages').style.display = 'flex';
+                document.getElementById('chat-footer').style.display = 'block';
+                
+                // Clear any existing messages and add restored messages
+                const messagesContainer = document.getElementById('chat-messages');
+                messagesContainer.innerHTML = '<div class="message system"><p>Session restored. Your chat history is below.</p></div>';
+                
+                // Restore previous messages
+                if (data.messages && data.messages.length > 0) {
+                    data.messages.forEach(msg => {
+                        const sender = msg.sender_type === 'visitor' ? 'user' : 'agent';
+                        addMessage(msg.content, sender, msg.created_at);
+                    });
+                }
+                
+                if (data.assignedTo) {
+                    addSystemMessage(`${data.assignedTo} is assisting you.`);
+                }
+                break;
+            
+            case 'session_expired':
+                // Session has ended, clear data and show start form
+                sessionId = null;
+                sessionStorage.removeItem('chat_session');
+                sessionStorage.removeItem('chat_visitor_name');
+                
+                // Show start form again
+                document.getElementById('chat-start-form').style.display = 'flex';
+                document.getElementById('chat-messages').style.display = 'none';
+                document.getElementById('chat-footer').style.display = 'none';
+                
+                // Clear messages
+                document.getElementById('chat-messages').innerHTML = '<div class="message system"><p>Welcome! An agent will be with you shortly.</p></div>';
                 break;
                 
             case 'new_message':
@@ -483,6 +569,7 @@
                 addSystemMessage(data.message);
                 sessionId = null;
                 sessionStorage.removeItem('chat_session');
+                sessionStorage.removeItem('chat_visitor_name');
                 break;
                 
             case 'error':
@@ -620,9 +707,30 @@
     };
 
     // Initialize widget
-    const init = () => {
+    const init = async () => {
+        // Fetch settings first
+        await fetchChatSettings();
+        
+        // Check if chat is enabled
+        if (!chatSettings.chat_enabled) {
+            console.log('Chat widget is disabled in settings');
+            return;
+        }
+        
         injectStyles();
         createWidget();
+        
+        // Show offline message if outside business hours
+        if (!isWithinBusinessHours()) {
+            const startForm = document.getElementById('chat-start-form');
+            if (startForm) {
+                const offlineNote = document.createElement('p');
+                offlineNote.className = 'offline-notice';
+                offlineNote.style.cssText = 'color: #e74c3c; font-size: 12px; margin-top: 15px; padding: 10px; background: #fdf2f2; border-radius: 8px;';
+                offlineNote.textContent = chatSettings.chat_offline_message;
+                startForm.appendChild(offlineNote);
+            }
+        }
         
         // Check for existing session
         sessionId = sessionStorage.getItem('chat_session');
@@ -654,8 +762,13 @@
             }
         });
         
-        // Connect when toggle is clicked (lazy connection)
-        console.log('Chat widget initialized');
+        // If there's an existing session, auto-connect to restore it
+        if (sessionId) {
+            console.log('Existing session found, auto-connecting...');
+            connect();
+        }
+        
+        console.log('Chat widget initialized with settings:', chatSettings.chat_enabled);
     };
 
     // Initialize on DOM ready

@@ -438,7 +438,7 @@ const OnboardingManager = {
         // Check if there's more than one staff member
         try {
             const response = await fetch('/api/admin/staff/count', {
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
             });
             if (response.ok) {
                 const data = await response.json();

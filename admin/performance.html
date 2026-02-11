@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Staff Performance | Tekvwarho Admin</title>
     <link rel="stylesheet" href="css/admin.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -377,20 +379,23 @@
 
             async init() {
                 const user = AdminApp.getCurrentUser();
-                this.isAdmin = user?.role === 'admin';
+                this.isAdmin = user?.role === 'admin' || user?.role === 'manager';
                 
                 this.bindEvents();
                 
                 if (this.isAdmin) {
                     document.getElementById('staff-selector-container').style.display = 'block';
                     await this.loadStaffList();
+                    // Default: show summary view (all staff)
+                    document.getElementById('individual-view').style.display = 'none';
+                    document.getElementById('leaderboard-view').style.display = 'block';
+                    await this.loadSummary();
                     await this.loadLeaderboard();
                 } else {
                     this.selectedStaffId = user?.id;
                     document.getElementById('leaderboard-view').style.display = 'none';
+                    await this.loadPerformance();
                 }
-                
-                await this.loadPerformance();
             },
 
             bindEvents() {
@@ -400,8 +405,14 @@
                         document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
                         e.target.classList.add('active');
                         this.currentPeriod = e.target.dataset.period;
-                        this.loadPerformance();
-                        if (this.isAdmin) this.loadLeaderboard();
+                        if (this.selectedStaffId) {
+                            this.loadPerformance();
+                        } else if (this.isAdmin) {
+                            this.loadSummary();
+                            this.loadLeaderboard();
+                        } else {
+                            this.loadPerformance();
+                        }
                     });
                 });
 
@@ -411,11 +422,52 @@
                     if (this.selectedStaffId) {
                         document.getElementById('leaderboard-view').style.display = 'none';
                         document.getElementById('individual-view').style.display = 'block';
+                        this.loadPerformance();
                     } else {
+                        document.getElementById('individual-view').style.display = 'none';
                         document.getElementById('leaderboard-view').style.display = 'block';
+                        this.loadSummary();
+                        this.loadLeaderboard();
                     }
-                    this.loadPerformance();
                 });
+            },
+
+            async loadSummary() {
+                try {
+                    const response = await AdminApp.apiRequest(`/performance/summary?period=${this.currentPeriod}`);
+                    if (response?.success) {
+                        this.displaySummaryStats(response.data);
+                    }
+                } catch (error) {
+                    console.error('Failed to load summary:', error);
+                }
+            },
+
+            displaySummaryStats(data) {
+                // Calculate aggregate stats
+                let totalMessages = 0, totalConverted = 0;
+                let totalConsultations = 0, totalCompleted = 0;
+                let totalChats = 0, totalActions = 0;
+                
+                data.forEach(staff => {
+                    totalMessages += staff.messages_assigned || 0;
+                    totalConverted += staff.messages_converted || 0;
+                    totalConsultations += staff.consultations_assigned || 0;
+                    totalCompleted += staff.consultations_completed || 0;
+                    totalChats += staff.chats_handled || 0;
+                    totalActions += staff.total_actions || 0;
+                });
+                
+                // Update the individual view stats (hidden but available if needed)
+                document.getElementById('performance-score').textContent = '--';
+                document.getElementById('messages-handled').textContent = totalMessages;
+                document.getElementById('messages-converted').textContent = totalConverted;
+                document.getElementById('messages-rate').textContent = totalMessages > 0 ? Math.round((totalConverted/totalMessages)*100) : 0;
+                document.getElementById('consultations-handled').textContent = totalConsultations;
+                document.getElementById('consultations-completed').textContent = totalCompleted;
+                document.getElementById('consultations-rate').textContent = totalConsultations > 0 ? Math.round((totalCompleted/totalConsultations)*100) : 0;
+                document.getElementById('chats-handled').textContent = totalChats;
+                document.getElementById('total-actions').textContent = totalActions;
             },
 
             async loadStaffList() {

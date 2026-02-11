@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Staff Management | Tekvwarho Admin</title>
     <link rel="stylesheet" href="css/admin.css">
     <link rel="stylesheet" href="css/onboarding.css">
@@ -317,6 +319,20 @@
         const StaffPage = {
             staffList: [],
             
+            // Escape HTML to prevent XSS
+            escapeHtml(str) {
+                if (!str) return '';
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            },
+            
+            // Escape for use in JavaScript strings
+            escapeJs(str) {
+                if (!str) return '';
+                return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+            },
+            
             async init() {
                 this.bindEvents();
                 await this.loadStaff();
@@ -381,24 +397,32 @@
                     return;
                 }
                 
-                tbody.innerHTML = staff.map(member => `
+                tbody.innerHTML = staff.map(member => {
+                    const safeName = this.escapeHtml(member.name || '');
+                    const safeNameJs = this.escapeJs(member.name || '');
+                    const safeEmail = this.escapeHtml(member.email || '');
+                    const safeDept = this.escapeHtml(member.department || '-');
+                    const safeRole = this.escapeHtml(member.role || '');
+                    const initial = (member.name || 'U').charAt(0).toUpperCase();
+                    
+                    return `
                     <tr>
                         <td>
                             <div class="user-cell">
-                                <div class="user-avatar-sm">${member.name.charAt(0).toUpperCase()}</div>
+                                <div class="user-avatar-sm">${initial}</div>
                                 <div>
-                                    <div class="font-medium">${member.name}</div>
+                                    <div class="font-medium">${safeName}</div>
                                     ${member.must_change_password ? '<span class="badge badge-warning">Password Change Required</span>' : ''}
                                 </div>
                             </div>
                         </td>
-                        <td>${member.email}</td>
+                        <td>${safeEmail}</td>
                         <td>
                             <span class="badge badge-${member.role === 'admin' ? 'danger' : member.role === 'manager' ? 'warning' : 'info'}">
-                                ${member.role.charAt(0).toUpperCase() + member.role.slice(1)}
+                                ${safeRole.charAt(0).toUpperCase() + safeRole.slice(1)}
                             </span>
                         </td>
-                        <td>${member.department || '-'}</td>
+                        <td>${safeDept}</td>
                         <td>
                             <div class="permission-badges">
                                 ${member.can_manage_messages ? '<span class="perm-badge" title="Messages"><i class="fas fa-envelope"></i></span>' : ''}
@@ -418,7 +442,7 @@
                                 <button class="btn-icon" title="Edit" onclick="StaffPage.openModal('${member.id}')">
                                     <i class="fas fa-edit"></i>
                                 </button>
-                                <button class="btn-icon" title="Reset Password" onclick="StaffPage.openResetPassword('${member.id}', '${member.name}')">
+                                <button class="btn-icon" title="Reset Password" onclick="StaffPage.openResetPassword('${member.id}', '${safeNameJs}')">
                                     <i class="fas fa-key"></i>
                                 </button>
                                 ${member.is_active 
@@ -429,13 +453,13 @@
                                         <i class="fas fa-user-check"></i>
                                        </button>`
                                 }
-                                <button class="btn-icon text-danger" title="Delete" onclick="StaffPage.openDeleteConfirm('${member.id}', '${member.name}')">
+                                <button class="btn-icon text-danger" title="Delete" onclick="StaffPage.openDeleteConfirm('${member.id}', '${safeNameJs}')">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
                         </td>
                     </tr>
-                `).join('');
+                `}).join('');
             },
             
             formatDate(dateStr) {
@@ -558,7 +582,7 @@
                         payload.password = password;
                     }
                     
-                    const url = id ? `/api/admin/staff/${id}` : '/api/admin/staff';
+                    const url = id ? `/admin/staff/${id}` : '/admin/staff';
                     const method = id ? 'PATCH' : 'POST';
                     
                     const response = await AdminApp.apiRequest(url, {
@@ -684,8 +708,11 @@
         
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof AdminApp !== 'undefined') {
-                AdminApp.init();
-                StaffPage.init();
+                // Only initialize StaffPage if AdminApp.init() succeeds
+                const authOk = AdminApp.init();
+                if (authOk !== false) {
+                    StaffPage.init();
+                }
             }
         });
     </script>

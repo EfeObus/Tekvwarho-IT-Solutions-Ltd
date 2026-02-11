@@ -122,6 +122,20 @@ const Message = {
             [limit]
         );
         return result.rows;
+    },
+
+    /**
+     * Assign message to staff
+     */
+    async assign(id, staffId) {
+        const result = await db.query(
+            `UPDATE messages 
+             SET assigned_to = $1, updated_at = CURRENT_TIMESTAMP
+             WHERE id = $2
+             RETURNING *`,
+            [staffId, id]
+        );
+        return result.rows[0];
     }
 };
 

@@ -38,7 +38,7 @@ const Chat = {
     /**
      * Get all sessions with optional filters
      */
-    async getAllSessions({ status, limit = 50, offset = 0 }) {
+    async getAllSessions({ status, assignedTo, limit = 50, offset = 0 }) {
         let query = `
             SELECT cs.*, s.name as assigned_to_name,
                    (SELECT COUNT(*) FROM chat_messages cm WHERE cm.session_id = cs.id) as message_count,
@@ -47,10 +47,20 @@ const Chat = {
             LEFT JOIN staff s ON cs.assigned_to = s.id
         `;
         const params = [];
+        const conditions = [];
         
         if (status) {
-            query += ' WHERE cs.status = $1';
+            conditions.push(`cs.status = $${params.length + 1}`);
             params.push(status);
+        }
+        
+        if (assignedTo) {
+            conditions.push(`cs.assigned_to = $${params.length + 1}`);
+            params.push(assignedTo);
+        }
+        
+        if (conditions.length > 0) {
+            query += ' WHERE ' + conditions.join(' AND ');
         }
         
         query += ' ORDER BY cs.started_at DESC LIMIT $' + (params.length + 1) + ' OFFSET $' + (params.length + 2);

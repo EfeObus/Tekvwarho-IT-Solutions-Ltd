@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>My Consultations | Tekvwarho Staff Portal</title>
+    <link rel="stylesheet" href="../admin/css/admin.css">
+    <link rel="stylesheet" href="../admin/css/dataTable.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Staff Portal</h2>
+                <span class="subtitle">Dashboard</span>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <span class="nav-section-title">Overview</span>
+                    <a href="dashboard.html" class="nav-item">
+                        <i class="fas fa-home"></i> Dashboard
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <span class="nav-section-title">My Work</span>
+                    <a href="my-messages.html" class="nav-item">
+                        <i class="fas fa-envelope"></i> My Messages
+                    </a>
+                    <a href="my-consultations.html" class="nav-item active">
+                        <i class="fas fa-calendar"></i> My Consultations
+                    </a>
+                    <a href="my-chats.html" class="nav-item">
+                        <i class="fas fa-comments"></i> Live Chats
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <span class="nav-section-title">Settings</span>
+                    <a href="profile.html" class="nav-item">
+                        <i class="fas fa-user"></i> My Profile
+                    </a>
+                    <a href="../index.html" class="nav-item">
+                        <i class="fas fa-globe"></i> View Website
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <header class="admin-header">
+                <button class="sidebar-toggle" id="menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1>My Consultations</h1>
+                <div class="header-actions">
+                    <span class="user-name" id="user-name"></span>
+                    <button class="btn btn-outline-primary" id="logout-btn">Logout</button>
+                </div>
+            </header>
+
+            <div class="admin-content">
+                <!-- Stats Cards -->
+                <div class="stats-grid mb-4">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #3b82f6;">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="pending-count">0</h3>
+                            <p>Pending</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #10b981;">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="confirmed-count">0</h3>
+                            <p>Confirmed</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #f59e0b;">
+                            <i class="fas fa-calendar-day"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="today-count">0</h3>
+                            <p>Today</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="filters-row">
+                            <div class="filter-group">
+                                <label>Status</label>
+                                <select id="filter-status" class="form-control">
+                                    <option value="">All Statuses</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="confirmed">Confirmed</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="cancelled">Cancelled</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>Date Range</label>
+                                <input type="date" id="filter-date-from" class="form-control">
+                            </div>
+                            <div class="filter-group">
+                                <label>&nbsp;</label>
+                                <input type="date" id="filter-date-to" class="form-control">
+                            </div>
+                            <button class="btn btn-primary" id="apply-filters">
+                                <i class="fas fa-filter"></i> Filter
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Consultations Table -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Assigned Consultations</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date & Time</th>
+                                        <th>Client</th>
+                                        <th>Email</th>
+                                        <th>Service</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="consultations-table">
+                                    <tr>
+                                        <td colspan="6" class="text-center">Loading...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="pagination" id="pagination"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <!-- Sidebar Overlay for Mobile -->
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    </div>
+
+    <!-- Consultation Detail Modal -->
+    <div class="modal" id="consultation-modal" style="display: none;">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h2>Consultation Details</h2>
+                <button class="modal-close" id="close-modal">&times;</button>
+            </div>
+            <div class="modal-body" id="consultation-details">
+                <!-- Content loaded dynamically -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="close-modal-btn">Close</button>
+                <button class="btn btn-success" id="confirm-btn" style="display: none;">Confirm</button>
+                <button class="btn btn-primary" id="complete-btn" style="display: none;">Mark Complete</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auth check
+        const token = localStorage.getItem('adminToken');
+        const user = JSON.parse(localStorage.getItem('adminUser') || '{}');
+        
+        if (!token || !user.id) {
+            window.location.href = 'index.html';
+        }
+
+        if (!user.can_manage_consultations) {
+            window.location.href = 'dashboard.html';
+        }
+
+        document.getElementById('user-name').textContent = user.name;
+
+        let currentPage = 1;
+        const limit = 10;
+        let currentConsultationId = null;
+        let currentConsultation = null;
+
+        async function loadStats() {
+            try {
+                const response = await fetch(`/api/consultations/stats?assigned_to=${user.id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('pending-count').textContent = data.stats?.pending || 0;
+                    document.getElementById('confirmed-count').textContent = data.stats?.confirmed || 0;
+                    document.getElementById('today-count').textContent = data.stats?.today || 0;
+                }
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+            }
+        }
+
+        async function loadConsultations() {
+            const status = document.getElementById('filter-status').value;
+            const dateFrom = document.getElementById('filter-date-from').value;
+            const dateTo = document.getElementById('filter-date-to').value;
+            
+            try {
+                let url = `/api/consultations?page=${currentPage}&limit=${limit}&assigned_to=${user.id}`;
+                if (status) url += `&status=${status}`;
+                if (dateFrom) url += `&date_from=${dateFrom}`;
+                if (dateTo) url += `&date_to=${dateTo}`;
+
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    renderConsultations(data.consultations || data.data || []);
+                    renderPagination(data.pagination || { page: 1, total: 0, pages: 1 });
+                }
+            } catch (error) {
+                console.error('Failed to load consultations:', error);
+            }
+        }
+
+        function renderConsultations(consultations) {
+            const tbody = document.getElementById('consultations-table');
+            
+            if (consultations.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center">No consultations assigned to you.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = consultations.map(c => `
+                <tr>
+                    <td>${formatDateTime(c.booking_date, c.booking_time)}</td>
+                    <td>${escapeHtml(c.name)}</td>
+                    <td>${escapeHtml(c.email)}</td>
+                    <td>${escapeHtml(c.service || 'N/A')}</td>
+                    <td><span class="badge badge-${getStatusColor(c.status)}">${c.status}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline" onclick="viewConsultation('${c.id}')">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderPagination(pagination) {
+            const container = document.getElementById('pagination');
+            if (pagination.pages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = '';
+            for (let i = 1; i <= pagination.pages; i++) {
+                html += `<button class="btn btn-sm ${i === pagination.page ? 'btn-primary' : 'btn-outline'}" onclick="goToPage(${i})">${i}</button> `;
+            }
+            container.innerHTML = html;
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            loadConsultations();
+        }
+
+        async function viewConsultation(id) {
+            currentConsultationId = id;
+            try {
+                const response = await fetch(`/api/consultations/${id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    currentConsultation = data.consultation || data.data;
+                    const c = currentConsultation;
+                    
+                    document.getElementById('consultation-details').innerHTML = `
+                        <div class="consultation-info">
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <label>Client Name</label>
+                                    <p>${escapeHtml(c.name)}</p>
+                                </div>
+                                <div class="info-item">
+                                    <label>Email</label>
+                                    <p>${escapeHtml(c.email)}</p>
+                                </div>
+                                <div class="info-item">
+                                    <label>Phone</label>
+                                    <p>${escapeHtml(c.phone || 'N/A')}</p>
+                                </div>
+                                <div class="info-item">
+                                    <label>Company</label>
+                                    <p>${escapeHtml(c.company || 'N/A')}</p>
+                                </div>
+                                <div class="info-item">
+                                    <label>Service</label>
+                                    <p>${escapeHtml(c.service || 'N/A')}</p>
+                                </div>
+                                <div class="info-item">
+                                    <label>Date & Time</label>
+                                    <p>${formatDateTime(c.booking_date, c.booking_time)}</p>
+                                </div>
+                                <div class="info-item">
+                                    <label>Status</label>
+                                    <p><span class="badge badge-${getStatusColor(c.status)}">${c.status}</span></p>
+                                </div>
+                                <div class="info-item">
+                                    <label>Timezone</label>
+                                    <p>${escapeHtml(c.timezone || 'America/Toronto')}</p>
+                                </div>
+                            </div>
+                            ${c.notes ? `<div class="notes-section"><label>Notes</label><p>${escapeHtml(c.notes)}</p></div>` : ''}
+                        </div>
+                    `;
+
+                    // Show/hide action buttons based on status
+                    document.getElementById('confirm-btn').style.display = c.status === 'pending' ? 'inline-block' : 'none';
+                    document.getElementById('complete-btn').style.display = c.status === 'confirmed' ? 'inline-block' : 'none';
+                    
+                    document.getElementById('consultation-modal').style.display = 'flex';
+                }
+            } catch (error) {
+                console.error('Failed to load consultation:', error);
+            }
+        }
+
+        async function updateStatus(status) {
+            try {
+                const response = await fetch(`/api/consultations/${currentConsultationId}/status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('consultation-modal').style.display = 'none';
+                    loadConsultations();
+                    loadStats();
+                }
+            } catch (error) {
+                console.error('Failed to update status:', error);
+            }
+        }
+
+        function getStatusColor(status) {
+            const colors = {
+                'pending': 'warning',
+                'confirmed': 'info',
+                'completed': 'success',
+                'cancelled': 'danger'
+            };
+            return colors[status] || 'secondary';
+        }
+
+        function formatDateTime(date, time) {
+            const d = new Date(date);
+            const dateStr = d.toLocaleDateString('en-US', {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+            return `${dateStr} at ${time}`;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Event listeners
+        document.getElementById('apply-filters').addEventListener('click', () => {
+            currentPage = 1;
+            loadConsultations();
+        });
+
+        document.getElementById('close-modal').addEventListener('click', () => {
+            document.getElementById('consultation-modal').style.display = 'none';
+        });
+
+        document.getElementById('close-modal-btn').addEventListener('click', () => {
+            document.getElementById('consultation-modal').style.display = 'none';
+        });
+
+        document.getElementById('confirm-btn').addEventListener('click', () => updateStatus('confirmed'));
+        document.getElementById('complete-btn').addEventListener('click', () => updateStatus('completed'));
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('adminUser');
+            window.location.href = 'index.html';
+        });
+
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+        document.getElementById('menu-toggle').addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+            sidebarOverlay.classList.toggle('active');
+        });
+
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            sidebarOverlay.classList.remove('active');
+        });
+
+        // Initial load
+        loadStats();
+        loadConsultations();
+    </script>
+
+    <style>
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        .info-item label {
+            font-size: 0.75rem;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .info-item p {
+            margin-top: 0.25rem;
+            font-weight: 500;
+        }
+        .notes-section {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e5e7eb;
+        }
+        @media (max-width: 640px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</body>
+</html>

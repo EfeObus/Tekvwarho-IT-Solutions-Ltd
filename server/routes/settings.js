@@ -10,6 +10,38 @@ const { authMiddleware, adminOnly } = require('../middleware/auth');
 const AuditService = require('../services/auditService');
 
 /**
+ * GET /api/settings/chat/public
+ * Get public chat settings (for chat widget - no auth required)
+ */
+router.get('/chat/public', async (req, res) => {
+    try {
+        const result = await db.query(
+            `SELECT setting_key, setting_value, setting_type FROM system_settings 
+             WHERE category = 'chat' OR setting_key IN ('business_hours_start', 'business_hours_end', 'working_days')`
+        );
+        
+        // Convert to object format
+        const settings = {};
+        result.rows.forEach(row => {
+            let value = row.setting_value;
+            if (row.setting_type === 'boolean') {
+                value = row.setting_value === 'true';
+            } else if (row.setting_type === 'number') {
+                value = parseFloat(row.setting_value);
+            } else if (row.setting_type === 'json') {
+                try { value = JSON.parse(row.setting_value); } catch (e) {}
+            }
+            settings[row.setting_key] = value;
+        });
+        
+        res.json({ success: true, data: settings });
+    } catch (error) {
+        console.error('Get public chat settings error:', error);
+        res.status(500).json({ success: false, message: 'Failed to retrieve settings' });
+    }
+});
+
+/**
  * GET /api/settings
  * Get all system settings (admin only)
  */

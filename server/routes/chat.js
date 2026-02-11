@@ -71,17 +71,18 @@ router.post('/start', [
 
 /**
  * GET /api/chat/sessions
- * Get all chat sessions (admin)
+ * Get all chat sessions (admin) or filtered by assigned_to (staff)
  */
 router.get('/sessions', async (req, res) => {
     try {
-        const { status, limit, offset } = req.query;
+        const { status, limit, offset, assigned_to } = req.query;
         const sessions = await Chat.getAllSessions({ 
             status, 
+            assignedTo: assigned_to,
             limit: parseInt(limit) || 50, 
             offset: parseInt(offset) || 0 
         });
-        res.json({ success: true, data: sessions });
+        res.json({ success: true, data: sessions, sessions: sessions });
     } catch (error) {
         console.error('Get sessions error:', error);
         res.status(500).json({ 

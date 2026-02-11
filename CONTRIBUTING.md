@@ -431,7 +431,7 @@ describe('POST /api/admin/login', () => {
 If you discover a security vulnerability:
 
 1. **DO NOT** open a public issue
-2. Email **efe.obukohwo@outlook.com** with:
+2. Email **talk2efeprogress@gmail.com** with:
    - Description of vulnerability
    - Steps to reproduce
    - Potential impact
@@ -441,7 +441,7 @@ If you discover a security vulnerability:
 
 ## Questions?
 
-Contact **efe.obukohwo@outlook.com** for any questions about contributing.
+Contact **talk2efeprogress@gmail.com** for any questions about contributing.
 
 ---
 

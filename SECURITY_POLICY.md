@@ -277,7 +277,7 @@ In production, the following are blocked on sensitive endpoints:
 
 ## Contact
 
-**Security Concerns:** efe.obukohwo@outlook.com
+**Security Concerns:** talk2efeprogress@gmail.com
 
 ---
 

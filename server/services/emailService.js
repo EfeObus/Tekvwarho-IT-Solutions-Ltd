@@ -1,21 +1,36 @@
 /**
  * Email Service
  * Handles sending email notifications using Nodemailer
+ * 
+ * SUPPORTED SMTP PROVIDERS:
+ * - Gmail: Set SMTP_HOST=smtp.gmail.com, use App Password
+ * - Outlook: Requires OAuth2 (basic auth disabled)
+ * - SendGrid: Set SMTP_HOST=smtp.sendgrid.net
  */
 
 const nodemailer = require('nodemailer');
 
-// Create transporter
+// Create transporter based on provider
 const createTransporter = () => {
-    return nodemailer.createTransport({
-        host: process.env.SMTP_HOST || 'smtp.outlook.com',
-        port: process.env.SMTP_PORT || 587,
-        secure: false,
+    const host = process.env.SMTP_HOST || 'smtp.gmail.com';
+    const isGmail = host.includes('gmail');
+    
+    const config = {
+        host,
+        port: parseInt(process.env.SMTP_PORT) || 587,
+        secure: parseInt(process.env.SMTP_PORT) === 465,
         auth: {
             user: process.env.SMTP_USER,
             pass: process.env.SMTP_PASS
         }
-    });
+    };
+    
+    // Gmail requires special settings
+    if (isGmail) {
+        config.service = 'gmail';
+    }
+    
+    return nodemailer.createTransport(config);
 };
 
 /**
@@ -118,7 +133,7 @@ const sendContactConfirmation = async (message) => {
                 Tekvwarho IT Solutions Ltd<br>
                 Canada: +1 (905) 781 9825<br>
                 Nigeria: +234 906 577 9323<br>
-                Email: efe.obukohwo@outlook.com
+                Email: talk2efeprogress@gmail.com
             </p>
         </div>
     `;
@@ -177,7 +192,7 @@ const sendBookingConfirmation = async (consultation) => {
                 ${consultation.notes ? `<p><strong>Notes:</strong> ${consultation.notes}</p>` : ''}
             </div>
             <p>We'll send you a reminder 24 hours before your consultation.</p>
-            <p>If you need to reschedule, please contact us at efe.obukohwo@outlook.com</p>
+            <p>If you need to reschedule, please contact us at talk2efeprogress@gmail.com</p>
             <p>Best regards,<br>The Tekvwarho Team</p>
             <hr style="margin-top: 30px; border: none; border-top: 1px solid #ddd;">
             <p style="font-size: 12px; color: #666;">

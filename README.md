@@ -17,7 +17,7 @@ A comprehensive IT solutions website with integrated admin dashboard, live chat,
 |---|--------|---------|
 | **Phone** | +1 (905) 781 9825 | +234 906 577 9323 |
 | **Address** | 707 Finch Avenue West, North York, Ontario | 16 Orhono, Eku, Delta State |
-| **Email** | efe.obukohwo@outlook.com | |
+| **Email** | talk2efeprogress@gmail.com | |
 
 ---
 
@@ -508,7 +508,7 @@ visitors (1) ──── (N) chat_sessions
 
 ### Reporting Security Issues
 
-If you discover a security vulnerability, please email **efe.obukohwo@outlook.com** with:
+If you discover a security vulnerability, please email **talk2efeprogress@gmail.com** with:
 - Description of the vulnerability
 - Steps to reproduce
 - Potential impact
@@ -697,7 +697,7 @@ This software is proprietary and confidential. Unauthorized copying, distributio
 
 ## 🤝 Support
 
-For support, email **efe.obukohwo@outlook.com** or open an issue in this repository.
+For support, email **talk2efeprogress@gmail.com** or open an issue in this repository.
 
 ---
 

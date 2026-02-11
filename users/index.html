@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Staff Login | Tekvwarho IT Solutions</title>
     <link rel="stylesheet" href="../admin/css/admin.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -88,13 +90,13 @@
                 if (data.success) {
                     // Check if password change is required
                     if (data.mustChangePassword) {
-                        tempToken = data.token;
+                        tempToken = data.accessToken;
                         tempUser = data.user;
                         document.getElementById('password-modal').style.display = 'flex';
                         btn.disabled = false;
                         btn.textContent = 'Sign In';
                     } else {
-                        localStorage.setItem('adminToken', data.token);
+                        localStorage.setItem('adminToken', data.accessToken);
                         localStorage.setItem('adminUser', JSON.stringify(data.user));
                         
                         // Redirect based on role

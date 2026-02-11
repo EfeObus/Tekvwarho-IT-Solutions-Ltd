@@ -25,13 +25,214 @@ const AdminApp = (function() {
     let chatWs = null;
     let currentChatSession = null;
 
+    // ========================================
+    // Toast Notification System
+    // ========================================
+
+    const NotificationIcons = {
+        success: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>`,
+        error: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`,
+        warning: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`,
+        info: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`
+    };
+
+    const NotificationTitles = {
+        success: 'Success',
+        error: 'Error',
+        warning: 'Warning',
+        info: 'Info'
+    };
+
+    /**
+     * Create toast container if it doesn't exist
+     */
+    function getToastContainer() {
+        let container = document.getElementById('toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'toast-container';
+            container.className = 'toast-container';
+            document.body.appendChild(container);
+        }
+        return container;
+    }
+
+    /**
+     * Show a toast notification
+     * @param {string} message - The message to display
+     * @param {string} type - Type: 'success', 'error', 'warning', 'info'
+     * @param {number} duration - Duration in ms (default 4000, 0 for persistent)
+     */
+    function showToast(message, type = 'info', duration = 4000) {
+        const container = getToastContainer();
+        
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `
+            <div class="toast-icon">
+                ${NotificationIcons[type] || NotificationIcons.info}
+            </div>
+            <div class="toast-content">
+                <div class="toast-title">${NotificationTitles[type] || 'Notification'}</div>
+                <div class="toast-message">${escapeHtml(message)}</div>
+            </div>
+            <button class="toast-close" aria-label="Close">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        `;
+        
+        const closeBtn = toast.querySelector('.toast-close');
+        closeBtn.addEventListener('click', () => removeToast(toast));
+        
+        container.appendChild(toast);
+        
+        if (duration > 0) {
+            setTimeout(() => removeToast(toast), duration);
+        }
+        
+        return toast;
+    }
+
+    /**
+     * Remove a toast with animation
+     */
+    function removeToast(toast) {
+        if (!toast || !toast.parentNode) return;
+        toast.classList.add('hiding');
+        setTimeout(() => toast.remove(), 300);
+    }
+
+    /**
+     * Show a confirmation modal
+     * @param {Object} options - Modal options
+     * @returns {Promise<boolean>} - True if confirmed, false if cancelled
+     */
+    function showConfirmModal(options = {}) {
+        return new Promise((resolve) => {
+            const {
+                title = 'Confirm',
+                message = 'Are you sure?',
+                type = 'warning',
+                confirmText = 'Confirm',
+                cancelText = 'Cancel',
+                confirmClass = 'btn-primary'
+            } = options;
+
+            // Remove existing confirm modal
+            const existing = document.getElementById('confirm-modal-overlay');
+            if (existing) existing.remove();
+
+            const overlay = document.createElement('div');
+            overlay.id = 'confirm-modal-overlay';
+            overlay.className = 'confirm-modal-overlay';
+            overlay.innerHTML = `
+                <div class="confirm-modal">
+                    <div class="confirm-modal-icon ${type}">
+                        ${NotificationIcons[type] || NotificationIcons.info}
+                    </div>
+                    <div class="confirm-modal-title">${escapeHtml(title)}</div>
+                    <div class="confirm-modal-message">${escapeHtml(message)}</div>
+                    <div class="confirm-modal-actions">
+                        <button class="btn btn-secondary" id="confirm-cancel">${escapeHtml(cancelText)}</button>
+                        <button class="btn ${confirmClass}" id="confirm-ok">${escapeHtml(confirmText)}</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(overlay);
+
+            // Trigger reflow for animation
+            overlay.offsetHeight;
+            overlay.classList.add('active');
+
+            const closeModal = (result) => {
+                overlay.classList.remove('active');
+                setTimeout(() => overlay.remove(), 200);
+                resolve(result);
+            };
+
+            overlay.querySelector('#confirm-cancel').addEventListener('click', () => closeModal(false));
+            overlay.querySelector('#confirm-ok').addEventListener('click', () => closeModal(true));
+            
+            // Close on overlay click
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) closeModal(false);
+            });
+
+            // Close on Escape
+            const escHandler = (e) => {
+                if (e.key === 'Escape') {
+                    document.removeEventListener('keydown', escHandler);
+                    closeModal(false);
+                }
+            };
+            document.addEventListener('keydown', escHandler);
+        });
+    }
+
+    /**
+     * Show an alert modal (single button, just for info)
+     * @param {string} message - Message to show
+     * @param {string} type - Type: 'success', 'error', 'warning', 'info'
+     * @param {string} title - Optional title
+     */
+    function showAlert(message, type = 'info', title = null) {
+        return new Promise((resolve) => {
+            const existing = document.getElementById('confirm-modal-overlay');
+            if (existing) existing.remove();
+
+            const overlay = document.createElement('div');
+            overlay.id = 'confirm-modal-overlay';
+            overlay.className = 'confirm-modal-overlay';
+            overlay.innerHTML = `
+                <div class="confirm-modal">
+                    <div class="confirm-modal-icon ${type}">
+                        ${NotificationIcons[type] || NotificationIcons.info}
+                    </div>
+                    <div class="confirm-modal-title">${escapeHtml(title || NotificationTitles[type])}</div>
+                    <div class="confirm-modal-message">${escapeHtml(message)}</div>
+                    <div class="confirm-modal-actions">
+                        <button class="btn btn-primary" id="alert-ok">OK</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(overlay);
+            overlay.offsetHeight;
+            overlay.classList.add('active');
+
+            const closeModal = () => {
+                overlay.classList.remove('active');
+                setTimeout(() => overlay.remove(), 200);
+                resolve();
+            };
+
+            overlay.querySelector('#alert-ok').addEventListener('click', closeModal);
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) closeModal();
+            });
+
+            const escHandler = (e) => {
+                if (e.key === 'Escape') {
+                    document.removeEventListener('keydown', escHandler);
+                    closeModal();
+                }
+            };
+            document.addEventListener('keydown', escHandler);
+        });
+    }
+
     /**
      * Initialize the admin app
+     * @returns {boolean} true if initialized, false if auth failed
      */
     function init() {
         // Check authentication
         if (!checkAuth()) {
-            return;
+            return false;
         }
 
         // Setup token refresh
@@ -42,6 +243,8 @@ const AdminApp = (function() {
         
         // Load user info
         loadUserInfo();
+        
+        return true;
     }
 
     /**
@@ -678,12 +881,12 @@ const AdminApp = (function() {
     async function viewMessage(id) {
         const data = await apiRequest(`/contact/${id}`);
         
-        if (!data || !data.success) {
-            alert('Failed to load message');
+        if (!data || !data.success || !data.data) {
+            showToast('Failed to load message', 'error');
             return;
         }
         
-        const msg = data.message;
+        const msg = data.data;
         const modal = document.getElementById('message-modal');
         const detail = document.getElementById('message-detail');
         
@@ -734,26 +937,45 @@ const AdminApp = (function() {
         
         // Reply button handler
         const replyBtn = document.getElementById('reply-btn');
-        replyBtn.onclick = async () => {
+        if (!replyBtn) {
+            console.error('Reply button not found');
+            return;
+        }
+        
+        // Remove any existing handlers by cloning
+        const newReplyBtn = replyBtn.cloneNode(true);
+        replyBtn.parentNode.replaceChild(newReplyBtn, replyBtn);
+        
+        newReplyBtn.addEventListener('click', async () => {
             const content = document.getElementById('reply-content').value;
             if (!content.trim()) {
-                alert('Please enter a reply');
+                showToast('Please enter a reply', 'warning');
                 return;
             }
             
             const result = await apiRequest(`/contact/${id}/reply`, {
                 method: 'POST',
-                body: JSON.stringify({ content })
+                body: JSON.stringify({ 
+                    content,
+                    staffId: currentUser.id,
+                    sendEmail: true
+                })
             });
             
             if (result && result.success) {
-                alert('Reply sent successfully');
+                if (result.emailSent) {
+                    showToast('Reply sent successfully! Email delivered to the visitor.', 'success');
+                } else if (result.emailError) {
+                    showToast(`Reply saved but email failed: ${result.emailError}`, 'warning');
+                } else {
+                    showToast('Reply saved successfully.', 'success');
+                }
                 closeModals();
                 loadMessages();
             } else {
-                alert(result?.message || 'Failed to send reply');
+                showToast(result?.message || 'Failed to send reply', 'error');
             }
-        };
+        });
         
         modal.classList.add('active');
     }
@@ -765,9 +987,10 @@ const AdminApp = (function() {
         });
         
         if (result && result.success) {
+            showToast('Status updated', 'success');
             loadMessages();
         } else {
-            alert(result?.message || 'Failed to update status');
+            showToast(result?.message || 'Failed to update status', 'error');
         }
     }
 
@@ -782,12 +1005,23 @@ const AdminApp = (function() {
     }
 
     function connectChatWebSocket() {
-        const wsUrl = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}?type=admin`;
+        const wsUrl = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws/chat?type=admin`;
         
         chatWs = new WebSocket(wsUrl);
         
         chatWs.onopen = () => {
             console.log('Admin chat connected');
+            
+            // Authenticate with staff info
+            if (currentUser) {
+                chatWs.send(JSON.stringify({
+                    type: 'authenticate',
+                    staffId: currentUser.id,
+                    staffName: currentUser.name || currentUser.email,
+                    role: currentUser.role
+                }));
+            }
+            
             chatWs.send(JSON.stringify({ type: 'get_sessions' }));
         };
         
@@ -808,6 +1042,10 @@ const AdminApp = (function() {
 
     function handleChatMessage(data) {
         switch (data.type) {
+            case 'authenticated':
+                console.log('Chat WebSocket authenticated');
+                break;
+                
             case 'sessions_list':
                 renderChatSessions(data.sessions);
                 break;
@@ -816,8 +1054,68 @@ const AdminApp = (function() {
                 addNewSession(data.session);
                 break;
                 
+            case 'chat_assigned':
+                // A new chat has been auto-assigned
+                addNewSession(data.session);
+                showChatNotification(`New chat assigned: ${data.session?.visitor?.name || 'New visitor'}`, 'success');
+                break;
+            
+            case 'admin_chat_notification':
+                // Admin-specific notification for record keeping
+                showChatNotification(data.message, 'info');
+                // Also add to session list if not already there
+                if (data.session) {
+                    addNewSession(data.session);
+                }
+                // Play notification sound if available
+                try {
+                    const audio = new Audio('/admin/sounds/notification.mp3');
+                    audio.volume = 0.3;
+                    audio.play().catch(() => {}); // Ignore if audio fails
+                } catch(e) {}
+                break;
+                
             case 'session_joined':
-                renderChatMessages(data.messages);
+                renderChatMessages(data.messages, data.assignedTo);
+                break;
+                
+            case 'session_locked':
+                showChatNotification(data.message, 'warning');
+                // Clear selection if trying to join locked session
+                currentChatSession = null;
+                document.getElementById('chat-input-area').style.display = 'none';
+                document.getElementById('close-chat-btn').style.display = 'none';
+                break;
+                
+            case 'session_claimed':
+                updateSessionClaimed(data.sessionId, data.staffName);
+                break;
+                
+            case 'session_transferred':
+                showChatNotification(`Chat transferred from ${data.fromStaffName} to ${data.toStaffName}`, 'info');
+                if (data.toStaffId === currentUser?.id) {
+                    showChatNotification('A chat was transferred to you!', 'info');
+                }
+                loadChatSessions();
+                break;
+                
+            case 'session_released':
+                showChatNotification(`${data.staffName} released a chat`, 'info');
+                loadChatSessions();
+                break;
+                
+            case 'transfer_success':
+                showChatNotification(data.message, 'info');
+                currentChatSession = null;
+                document.getElementById('chat-input-area').style.display = 'none';
+                loadChatSessions();
+                break;
+                
+            case 'release_success':
+                showChatNotification(data.message, 'info');
+                currentChatSession = null;
+                document.getElementById('chat-input-area').style.display = 'none';
+                loadChatSessions();
                 break;
                 
             case 'new_message':
@@ -847,6 +1145,25 @@ const AdminApp = (function() {
             case 'warning':
                 showChatNotification(data.message, 'warning');
                 break;
+                
+            case 'error':
+                showChatNotification(data.message, 'warning');
+                break;
+        }
+    }
+    
+    function updateSessionClaimed(sessionId, staffName) {
+        const sessionItem = document.querySelector(`[data-session="${sessionId}"]`);
+        if (sessionItem) {
+            let badge = sessionItem.querySelector('.claimed-badge');
+            if (!badge) {
+                badge = document.createElement('span');
+                badge.className = 'claimed-badge';
+                badge.style.cssText = 'font-size: 10px; background: #2c3e50; color: white; padding: 2px 6px; border-radius: 4px; margin-left: 8px;';
+                const header = sessionItem.querySelector('.message-header');
+                if (header) header.appendChild(badge);
+            }
+            badge.textContent = staffName;
         }
     }
 
@@ -869,10 +1186,16 @@ const AdminApp = (function() {
     }
 
     async function loadChatSessions() {
-        const data = await apiRequest('/chat/sessions');
+        // Only load active sessions to match dashboard count
+        const data = await apiRequest('/chat/sessions?status=active');
         
         if (data && data.success) {
             renderChatSessions(data.sessions);
+            // Update the sidebar badge as well
+            const chatsBadge = document.getElementById('chats-badge');
+            if (chatsBadge) {
+                chatsBadge.textContent = data.sessions?.length || 0;
+            }
         }
     }
 
@@ -885,23 +1208,33 @@ const AdminApp = (function() {
             return;
         }
         
-        container.innerHTML = sessions.map(session => `
-            <div class="message-item ${session.unread_count > 0 ? 'unread' : ''}" 
-                 data-session="${session.id}"
-                 onclick="AdminApp.selectChatSession('${session.id}')">
-                <div class="message-avatar">${(session.visitor_name || 'V').charAt(0).toUpperCase()}</div>
-                <div class="message-content">
-                    <div class="message-header">
-                        <span class="message-sender">${escapeHtml(session.visitor_name || 'Visitor')}</span>
-                        <span class="message-time">${formatRelativeTime(session.created_at)}</span>
-                    </div>
-                    <div class="message-preview">${session.visitor_email || ''}</div>
-                    <div class="message-meta">
-                        ${getStatusBadge(session.status)}
+        container.innerHTML = sessions.map(session => {
+            const staffName = session.assigned_to_name || session.staff_name;
+            const assignedBadge = session.assigned_to 
+                ? `<span class="claimed-badge" style="font-size: 10px; background: #2c3e50; color: white; padding: 2px 6px; border-radius: 4px; margin-left: 8px;">
+                    ${escapeHtml(staffName || 'Assigned')}
+                   </span>` 
+                : '';
+            
+            return `
+                <div class="message-item ${session.unread_count > 0 ? 'unread' : ''}" 
+                     data-session="${session.id}"
+                     onclick="AdminApp.selectChatSession('${session.id}')">
+                    <div class="message-avatar">${(session.visitor_name || 'V').charAt(0).toUpperCase()}</div>
+                    <div class="message-content">
+                        <div class="message-header">
+                            <span class="message-sender">${escapeHtml(session.visitor_name || 'Visitor')}</span>
+                            ${assignedBadge}
+                            <span class="message-time">${formatRelativeTime(session.created_at)}</span>
+                        </div>
+                        <div class="message-preview">${session.visitor_email || ''}</div>
+                        <div class="message-meta">
+                            ${getStatusBadge(session.status)}
+                        </div>
                     </div>
                 </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
     function addNewSession(session) {
@@ -952,9 +1285,89 @@ const AdminApp = (function() {
             }));
         }
         
-        // Show input area
+        // Show action buttons
         document.getElementById('chat-input-area').style.display = 'flex';
         document.getElementById('close-chat-btn').style.display = 'block';
+        document.getElementById('transfer-chat-btn').style.display = 'inline-block';
+        document.getElementById('release-chat-btn').style.display = 'inline-block';
+    }
+    
+    async function showTransferModal() {
+        if (!currentChatSession) return;
+        
+        // Get available staff
+        const data = await apiRequest('/admin/staff');
+        if (!data || !data.success) {
+            showToast('Failed to load staff list', 'error');
+            return;
+        }
+        
+        // Filter out current user - API returns data.data, not data.staff
+        const availableStaff = (data.data || []).filter(s => s.id !== currentUser?.id);
+        
+        if (!availableStaff.length) {
+            showToast('No other staff available for transfer', 'warning');
+            return;
+        }
+        
+        const staffOptions = availableStaff.map(s => 
+            `<option value="${s.id}" data-name="${escapeHtml(s.name)}">${escapeHtml(s.name)} (${s.role})</option>`
+        ).join('');
+        
+        const modal = document.createElement('div');
+        modal.id = 'transfer-modal';
+        modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;';
+        modal.innerHTML = `
+            <div style="background: white; padding: 24px; border-radius: 8px; max-width: 400px; width: 100%;">
+                <h3 style="margin-bottom: 16px;">Transfer Chat</h3>
+                <select id="transfer-staff-select" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 16px;">
+                    ${staffOptions}
+                </select>
+                <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                    <button class="btn btn-secondary" onclick="document.getElementById('transfer-modal').remove()">Cancel</button>
+                    <button class="btn btn-primary" onclick="AdminApp.executeTransfer()">Transfer</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    
+    function executeTransfer() {
+        const select = document.getElementById('transfer-staff-select');
+        const staffId = parseInt(select.value);
+        const staffName = select.options[select.selectedIndex].dataset.name;
+        
+        if (chatWs && chatWs.readyState === WebSocket.OPEN && currentChatSession) {
+            chatWs.send(JSON.stringify({
+                type: 'transfer_session',
+                sessionId: currentChatSession,
+                toStaffId: staffId,
+                toStaffName: staffName
+            }));
+        }
+        
+        document.getElementById('transfer-modal').remove();
+    }
+    
+    async function releaseChat() {
+        if (!currentChatSession) return;
+        
+        const confirmed = await showConfirmModal({
+            title: 'Release Chat',
+            message: 'Are you sure you want to release this chat? It will become available for other staff.',
+            type: 'warning',
+            confirmText: 'Release',
+            cancelText: 'Cancel'
+        });
+        
+        if (confirmed) {
+            if (chatWs && chatWs.readyState === WebSocket.OPEN) {
+                chatWs.send(JSON.stringify({
+                    type: 'release_session',
+                    sessionId: currentChatSession
+                }));
+            }
+        }
     }
 
     function renderChatMessages(messages) {
@@ -967,7 +1380,7 @@ const AdminApp = (function() {
         }
         
         container.innerHTML = messages.map(msg => `
-            <div class="chat-message ${msg.sender_type === 'agent' ? 'outgoing' : 'incoming'}">
+            <div class="chat-message ${msg.sender_type === 'staff' ? 'outgoing' : 'incoming'}">
                 <div class="chat-bubble">
                     ${escapeHtml(msg.content)}
                     <div style="font-size: 10px; opacity: 0.7; margin-top: 4px;">
@@ -990,7 +1403,7 @@ const AdminApp = (function() {
         }
         
         const html = `
-            <div class="chat-message ${message.sender_type === 'agent' ? 'outgoing' : 'incoming'}">
+            <div class="chat-message ${message.sender_type === 'staff' ? 'outgoing' : 'incoming'}">
                 <div class="chat-bubble">
                     ${escapeHtml(message.content)}
                     <div style="font-size: 10px; opacity: 0.7; margin-top: 4px;">
@@ -1041,10 +1454,18 @@ const AdminApp = (function() {
         input.value = '';
     }
 
-    function closeChatSession() {
+    async function closeChatSession() {
         if (!currentChatSession || !chatWs) return;
         
-        if (confirm('Are you sure you want to close this chat session?')) {
+        const confirmed = await showConfirmModal({
+            title: 'Close Chat',
+            message: 'Are you sure you want to close this chat session?',
+            type: 'warning',
+            confirmText: 'Close Chat',
+            cancelText: 'Cancel'
+        });
+        
+        if (confirmed) {
             chatWs.send(JSON.stringify({
                 type: 'close_session',
                 sessionId: currentChatSession
@@ -1170,7 +1591,7 @@ const AdminApp = (function() {
         const data = await apiRequest(`/consultation/${id}`);
         
         if (!data || !data.success) {
-            alert('Failed to load consultation');
+            showToast('Failed to load consultation', 'error');
             return;
         }
         
@@ -1236,7 +1657,16 @@ const AdminApp = (function() {
         };
         
         cancelBtn.onclick = async () => {
-            if (confirm('Are you sure you want to cancel this consultation?')) {
+            const confirmed = await showConfirmModal({
+                title: 'Cancel Consultation',
+                message: 'Are you sure you want to cancel this consultation?',
+                type: 'warning',
+                confirmText: 'Yes, Cancel',
+                cancelText: 'No, Keep It',
+                confirmClass: 'btn-danger'
+            });
+            
+            if (confirmed) {
                 await updateConsultationStatus(id, 'cancelled');
                 closeModals();
             }
@@ -1252,9 +1682,10 @@ const AdminApp = (function() {
         });
         
         if (result && result.success) {
+            showToast('Consultation status updated', 'success');
             loadConsultations();
         } else {
-            alert(result?.message || 'Failed to update status');
+            showToast(result?.message || 'Failed to update status', 'error');
         }
     }
 
@@ -1339,7 +1770,7 @@ const AdminApp = (function() {
         const modal = document.getElementById('staff-modal');
         const title = document.getElementById('staff-modal-title');
         const form = document.getElementById('staff-form');
-        const passwordGroup = document.getElementById('password-group');
+        const passwordRow = document.getElementById('password-row');
         
         form.reset();
         
@@ -1349,14 +1780,38 @@ const AdminApp = (function() {
             document.getElementById('staff-name').value = staff.name;
             document.getElementById('staff-email').value = staff.email;
             document.getElementById('staff-role').value = staff.role;
-            document.getElementById('staff-status').value = staff.status;
+            if (document.getElementById('staff-phone')) {
+                document.getElementById('staff-phone').value = staff.phone || '';
+            }
+            if (document.getElementById('staff-department')) {
+                document.getElementById('staff-department').value = staff.department || '';
+            }
+            // Set permissions if they exist
+            if (document.getElementById('perm-messages')) {
+                document.getElementById('perm-messages').checked = staff.can_manage_messages !== false;
+            }
+            if (document.getElementById('perm-consultations')) {
+                document.getElementById('perm-consultations').checked = staff.can_manage_consultations !== false;
+            }
+            if (document.getElementById('perm-chats')) {
+                document.getElementById('perm-chats').checked = staff.can_manage_chats !== false;
+            }
+            if (document.getElementById('perm-analytics')) {
+                document.getElementById('perm-analytics').checked = staff.can_view_analytics === true;
+            }
             document.getElementById('staff-password').required = false;
-            passwordGroup.querySelector('label').textContent = 'New Password (leave blank to keep current)';
+            if (passwordRow) {
+                const label = passwordRow.querySelector('label[for="staff-password"]');
+                if (label) label.textContent = 'New Password (leave blank to keep current)';
+            }
         } else {
             title.textContent = 'Add Staff Member';
             document.getElementById('staff-id').value = '';
             document.getElementById('staff-password').required = true;
-            passwordGroup.querySelector('label').textContent = 'Password *';
+            if (passwordRow) {
+                const label = passwordRow.querySelector('label[for="staff-password"]');
+                if (label) label.textContent = 'Password *';
+            }
         }
         
         modal.classList.add('active');
@@ -1366,25 +1821,50 @@ const AdminApp = (function() {
         const data = await apiRequest(`/admin/staff/${id}`);
         
         if (data && data.success) {
-            openStaffModal(data.staff);
+            openStaffModal(data.data);
         } else {
-            alert('Failed to load staff member');
+            showToast('Failed to load staff member', 'error');
         }
     }
 
     async function saveStaff() {
         const id = document.getElementById('staff-id').value;
+        const errorEl = document.getElementById('form-error');
+        
+        // Collect permissions from checkboxes
+        const permissions = {
+            messages: document.getElementById('perm-messages')?.checked || false,
+            consultations: document.getElementById('perm-consultations')?.checked || false,
+            chats: document.getElementById('perm-chats')?.checked || false,
+            analytics: document.getElementById('perm-analytics')?.checked || false
+        };
+        
         const staffData = {
             name: document.getElementById('staff-name').value,
             email: document.getElementById('staff-email').value,
             role: document.getElementById('staff-role').value,
-            status: document.getElementById('staff-status').value
+            phone: document.getElementById('staff-phone')?.value || '',
+            department: document.getElementById('staff-department')?.value || '',
+            permissions
         };
         
         const password = document.getElementById('staff-password').value;
+        
+        // Password is required for new staff
+        if (!id && !password) {
+            if (errorEl) {
+                errorEl.textContent = 'Password is required for new staff members';
+                errorEl.style.display = 'block';
+            }
+            return;
+        }
+        
         if (password) {
             staffData.password = password;
         }
+        
+        // Hide previous errors
+        if (errorEl) errorEl.style.display = 'none';
         
         const url = id ? `/admin/staff/${id}` : '/admin/staff';
         const method = id ? 'PATCH' : 'POST';
@@ -1398,23 +1878,37 @@ const AdminApp = (function() {
             closeModals();
             loadStaff();
         } else {
-            alert(result?.message || 'Failed to save staff member');
+            const message = result?.message || result?.errors?.[0]?.msg || 'Failed to save staff member';
+            if (errorEl) {
+                errorEl.textContent = message;
+                errorEl.style.display = 'block';
+            } else {
+                showToast(message, 'error');
+            }
         }
     }
 
     async function deleteStaff(id) {
-        if (!confirm('Are you sure you want to delete this staff member?')) {
-            return;
-        }
+        const confirmed = await showConfirmModal({
+            title: 'Delete Staff Member',
+            message: 'Are you sure you want to delete this staff member? This action cannot be undone.',
+            type: 'error',
+            confirmText: 'Delete',
+            cancelText: 'Cancel',
+            confirmClass: 'btn-danger'
+        });
+        
+        if (!confirmed) return;
         
         const result = await apiRequest(`/admin/staff/${id}`, {
             method: 'DELETE'
         });
         
         if (result && result.success) {
+            showToast('Staff member deleted', 'success');
             loadStaff();
         } else {
-            alert(result?.message || 'Failed to delete staff member');
+            showToast(result?.message || 'Failed to delete staff member', 'error');
         }
     }
 
@@ -1555,6 +2049,9 @@ const AdminApp = (function() {
         goToPage,
         initChatPage,
         selectChatSession,
+        showTransferModal,
+        executeTransfer,
+        releaseChat,
         loadConsultations,
         viewConsultation,
         updateConsultationStatus,

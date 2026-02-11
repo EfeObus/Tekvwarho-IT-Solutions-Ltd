@@ -8,6 +8,7 @@ const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const Consultation = require('../models/Consultation');
 const Visitor = require('../models/Visitor');
+const Staff = require('../models/Staff');
 const { sendBookingConfirmation, sendBookingNotification } = require('../services/emailService');
 const { authMiddleware, hasPermission } = require('../middleware/auth');
 const db = require('../config/database');
@@ -89,14 +90,30 @@ router.post('/book', bookingValidation, async (req, res) => {
             visitorId: visitor.id
         });
 
+        // Auto-assign to available staff
+        let assignedStaff = null;
+        try {
+            assignedStaff = await Staff.getNextAvailableForConsultations();
+            if (assignedStaff) {
+                await Consultation.update(consultation.id, { assignedTo: assignedStaff.id });
+                consultation.assigned_to = assignedStaff.id;
+                consultation.assigned_to_name = assignedStaff.name;
+                console.log(`Consultation ${consultation.id} auto-assigned to ${assignedStaff.name}`);
+            }
+        } catch (assignError) {
+            console.error('Auto-assign error (non-fatal):', assignError);
+            // Continue without assignment - not a critical error
+        }
+
         // Send email notifications (async - don't wait)
         sendBookingConfirmation(consultation).catch(err => console.error('Email error:', err));
-        sendBookingNotification(consultation).catch(err => console.error('Email error:', err));
+        sendBookingNotification(consultation, assignedStaff).catch(err => console.error('Email error:', err));
 
         res.status(201).json({
             success: true,
             message: 'Consultation booked successfully! Check your email for confirmation.',
-            data: consultation
+            data: consultation,
+            assignedTo: assignedStaff?.name || null
         });
     } catch (error) {
         console.error('Booking error:', error);
@@ -115,6 +132,51 @@ router.post('/', bookingValidation, async (req, res) => {
     // Forward to /book handler logic
     req.url = '/book';
     router.handle(req, res, () => {});
+});
+
+/**
+ * GET /api/consultations/stats or /api/admin/consultations/stats
+ * Get consultation stats for a staff member
+ */
+router.get('/stats', async (req, res) => {
+    try {
+        const { assigned_to } = req.query;
+        const today = new Date().toISOString().split('T')[0];
+        
+        // Get counts by status for the assigned staff member
+        let baseCondition = assigned_to ? 'WHERE assigned_to = $1' : 'WHERE 1=1';
+        const params = assigned_to ? [assigned_to] : [];
+        
+        const statsQuery = `
+            SELECT 
+                COUNT(*) FILTER (WHERE status = 'pending') as pending,
+                COUNT(*) FILTER (WHERE status = 'confirmed') as confirmed,
+                COUNT(*) FILTER (WHERE status = 'completed') as completed,
+                COUNT(*) FILTER (WHERE booking_date = $${params.length + 1}) as today
+            FROM consultations
+            ${baseCondition}
+        `;
+        params.push(today);
+        
+        const result = await db.query(statsQuery, params);
+        const stats = result.rows[0] || { pending: 0, confirmed: 0, completed: 0, today: 0 };
+        
+        res.json({ 
+            success: true, 
+            stats: {
+                pending: parseInt(stats.pending) || 0,
+                confirmed: parseInt(stats.confirmed) || 0,
+                completed: parseInt(stats.completed) || 0,
+                today: parseInt(stats.today) || 0
+            }
+        });
+    } catch (error) {
+        console.error('Get consultation stats error:', error);
+        res.status(500).json({ 
+            success: false,
+            message: 'Failed to retrieve stats' 
+        });
+    }
 });
 
 /**
@@ -179,19 +241,20 @@ router.get('/slots', async (req, res) => {
 
 /**
  * GET /api/consultations
- * Get all consultations (admin)
+ * Get all consultations (admin) or filtered by assigned_to (staff)
  */
 router.get('/', async (req, res) => {
     try {
-        const { status, startDate, endDate, limit, offset } = req.query;
+        const { status, startDate, endDate, limit, offset, assigned_to, date_from, date_to } = req.query;
         const consultations = await Consultation.findAll({ 
             status, 
-            startDate,
-            endDate,
+            startDate: startDate || date_from,
+            endDate: endDate || date_to,
+            assignedTo: assigned_to,
             limit: parseInt(limit) || 50, 
             offset: parseInt(offset) || 0 
         });
-        res.json({ success: true, data: consultations });
+        res.json({ success: true, data: consultations, consultations: consultations });
     } catch (error) {
         console.error('Get consultations error:', error);
         res.status(500).json({ 

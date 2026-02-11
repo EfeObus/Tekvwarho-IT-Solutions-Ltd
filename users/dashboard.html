@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Staff Dashboard | Tekvwarho IT Solutions</title>
     <link rel="stylesheet" href="../admin/css/admin.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,52 +15,63 @@
 <body>
     <div class="admin-layout">
         <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar">
+        <aside class="admin-sidebar" id="sidebar">
             <div class="sidebar-header">
                 <h2>Staff Portal</h2>
+                <span class="subtitle">Dashboard</span>
             </div>
             <nav class="sidebar-nav">
-                <a href="dashboard.html" class="nav-item active">
-                    <i class="fas fa-home"></i>
-                    <span>Dashboard</span>
-                </a>
-                <a href="my-messages.html" class="nav-item" id="nav-messages">
-                    <i class="fas fa-envelope"></i>
-                    <span>My Messages</span>
-                </a>
-                <a href="my-consultations.html" class="nav-item" id="nav-consultations">
-                    <i class="fas fa-calendar"></i>
-                    <span>My Consultations</span>
-                </a>
-                <a href="my-chats.html" class="nav-item" id="nav-chats">
-                    <i class="fas fa-comments"></i>
-                    <span>Live Chats</span>
-                </a>
-                <div class="nav-divider"></div>
-                <a href="profile.html" class="nav-item">
-                    <i class="fas fa-user"></i>
-                    <span>My Profile</span>
-                </a>
+                <div class="nav-section">
+                    <span class="nav-section-title">Overview</span>
+                    <a href="dashboard.html" class="nav-item active">
+                        <i class="fas fa-home"></i> Dashboard
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <span class="nav-section-title">My Work</span>
+                    <a href="my-messages.html" class="nav-item" id="nav-messages">
+                        <i class="fas fa-envelope"></i> My Messages
+                        <span class="badge" id="messages-badge">0</span>
+                    </a>
+                    <a href="my-consultations.html" class="nav-item" id="nav-consultations">
+                        <i class="fas fa-calendar"></i> My Consultations
+                    </a>
+                    <a href="my-chats.html" class="nav-item" id="nav-chats">
+                        <i class="fas fa-comments"></i> Live Chats
+                        <span class="badge" id="chats-badge">0</span>
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <span class="nav-section-title">Settings</span>
+                    <a href="profile.html" class="nav-item">
+                        <i class="fas fa-user"></i> My Profile
+                    </a>
+                    <a href="../index.html" class="nav-item">
+                        <i class="fas fa-globe"></i> View Website
+                    </a>
+                </div>
             </nav>
         </aside>
 
         <!-- Main Content -->
-        <main class="main-content">
-            <header class="content-header">
-                <button class="menu-toggle" id="menu-toggle">
+        <main class="admin-main">
+            <header class="admin-header">
+                <button class="sidebar-toggle" id="menu-toggle">
                     <i class="fas fa-bars"></i>
                 </button>
                 <h1>Dashboard</h1>
                 <div class="header-actions">
                     <span class="user-name" id="user-name"></span>
-                    <button class="btn btn-outline" id="logout-btn">Logout</button>
+                    <button class="btn btn-outline-primary" id="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
                 </div>
             </header>
 
-            <div class="content-body">
-                <div class="welcome-card">
+            <div class="admin-content">
+                <div class="page-header">
                     <h2>Welcome back, <span id="welcome-name"></span>!</h2>
-                    <p>Here's an overview of your assigned tasks.</p>
+                    <p class="text-muted">Here's an overview of your assigned tasks.</p>
                 </div>
 
                 <!-- Stats Cards -->
@@ -106,6 +119,9 @@
             </div>
         </main>
     </div>
+    
+    <!-- Sidebar Overlay for Mobile -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
     <script>
         // Auth check
@@ -186,12 +202,22 @@
         document.getElementById('logout-btn').addEventListener('click', () => {
             localStorage.removeItem('adminToken');
             localStorage.removeItem('adminUser');
+            localStorage.removeItem('refreshToken');
             window.location.href = 'index.html';
         });
 
         // Mobile menu toggle
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        
         document.getElementById('menu-toggle').addEventListener('click', () => {
-            document.getElementById('sidebar').classList.toggle('open');
+            sidebar.classList.toggle('open');
+            sidebarOverlay.classList.toggle('active');
+        });
+        
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            sidebarOverlay.classList.remove('active');
         });
 
         loadDashboard();

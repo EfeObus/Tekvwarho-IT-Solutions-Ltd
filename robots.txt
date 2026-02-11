@@ -1,0 +1,25 @@
+# Tekvwarho IT Solutions - Robots.txt
+# https://tekvwarho.com
+
+User-agent: *
+Allow: /
+
+# Disallow admin and user portal areas
+Disallow: /admin/
+Disallow: /users/
+Disallow: /api/
+
+# Disallow database and server files
+Disallow: /database/
+Disallow: /server/
+
+# Allow search engines to access static assets
+Allow: /css/
+Allow: /js/
+Allow: /img/
+
+# Sitemap location
+Sitemap: https://tekvwarho.com/sitemap.xml
+
+# Crawl delay (optional - be respectful to server resources)
+Crawl-delay: 10

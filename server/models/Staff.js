@@ -278,6 +278,98 @@ const Staff = {
              ORDER BY name ASC`
         );
         return result.rows;
+    },
+
+    /**
+     * Find an admin user for fallback assignment when no staff is available
+     */
+    async findAdminForFallback() {
+        const result = await db.query(`
+            SELECT id, name, email, role
+            FROM staff 
+            WHERE is_active = true 
+              AND role = 'admin'
+            ORDER BY last_login DESC NULLS LAST
+            LIMIT 1
+        `);
+        return result.rows[0] || null;
+    },
+
+    /**
+     * Get next available staff for chat assignment (round-robin by least active chats)
+     * @param {Array} onlineStaffIds - Array of staff IDs currently online (optional)
+     */
+    async getNextAvailableForChats(onlineStaffIds = null) {
+        let query = `
+            SELECT s.id, s.name, s.email, s.role,
+                   COALESCE(active_chats.count, 0) as active_chat_count
+            FROM staff s
+            LEFT JOIN (
+                SELECT assigned_to, COUNT(*) as count
+                FROM chat_sessions
+                WHERE status = 'active' AND assigned_to IS NOT NULL
+                GROUP BY assigned_to
+            ) active_chats ON s.id = active_chats.assigned_to
+            WHERE s.is_active = true 
+              AND s.can_manage_chats = true
+        `;
+        
+        const params = [];
+        
+        // Prefer online staff if provided
+        if (onlineStaffIds && onlineStaffIds.length > 0) {
+            query += ` AND s.id = ANY($1)`;
+            params.push(onlineStaffIds);
+        }
+        
+        query += ` ORDER BY active_chat_count ASC, s.last_login DESC NULLS LAST LIMIT 1`;
+        
+        const result = await db.query(query, params);
+        return result.rows[0] || null;
+    },
+
+    /**
+     * Get next available staff for consultation assignment (round-robin by least pending)
+     */
+    async getNextAvailableForConsultations() {
+        const result = await db.query(`
+            SELECT s.id, s.name, s.email, s.role,
+                   COALESCE(pending_consults.count, 0) as pending_count
+            FROM staff s
+            LEFT JOIN (
+                SELECT assigned_to, COUNT(*) as count
+                FROM consultations
+                WHERE status IN ('pending', 'confirmed') AND assigned_to IS NOT NULL
+                GROUP BY assigned_to
+            ) pending_consults ON s.id = pending_consults.assigned_to
+            WHERE s.is_active = true 
+              AND s.can_manage_consultations = true
+            ORDER BY pending_count ASC, s.last_login DESC NULLS LAST
+            LIMIT 1
+        `);
+        return result.rows[0] || null;
+    },
+
+    /**
+     * Get next available staff for message assignment (round-robin by least active messages)
+     */
+    async getNextAvailableForMessages() {
+        const result = await db.query(`
+            SELECT s.id, s.name, s.email, s.role,
+                   COALESCE(active_msgs.count, 0) as active_message_count
+            FROM staff s
+            LEFT JOIN (
+                SELECT assigned_to, COUNT(*) as count
+                FROM messages
+                WHERE status IN ('new', 'in_progress') AND assigned_to IS NOT NULL
+                GROUP BY assigned_to
+            ) active_msgs ON s.id = active_msgs.assigned_to
+            WHERE s.is_active = true 
+              AND s.can_manage_messages = true
+            ORDER BY active_message_count ASC, s.last_login DESC NULLS LAST
+            LIMIT 1
+        `);
+        return result.rows[0] || null;
     }
 };
 

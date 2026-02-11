@@ -25,7 +25,7 @@ const Consultation = {
     /**
      * Get all consultations with optional filters
      */
-    async findAll({ status, startDate, endDate, limit = 50, offset = 0 }) {
+    async findAll({ status, startDate, endDate, assignedTo, limit = 50, offset = 0 }) {
         let query = `
             SELECT c.*, s.name as assigned_to_name
             FROM consultations c
@@ -50,6 +50,12 @@ const Consultation = {
         if (endDate) {
             query += ` AND c.booking_date <= $${paramIndex}`;
             params.push(endDate);
+            paramIndex++;
+        }
+        
+        if (assignedTo) {
+            query += ` AND c.assigned_to = $${paramIndex}`;
+            params.push(assignedTo);
             paramIndex++;
         }
         

@@ -198,6 +198,64 @@ router.get('/me', authMiddleware, async (req, res) => {
 });
 
 /**
+ * GET /api/admin/profile
+ * Get current user profile (alias for /me)
+ */
+router.get('/profile', authMiddleware, async (req, res) => {
+    try {
+        const staff = await Staff.findById(req.user.id);
+        if (!staff) {
+            return res.status(404).json({ 
+                success: false,
+                message: 'User not found' 
+            });
+        }
+        res.json({ success: true, user: staff, data: staff });
+    } catch (error) {
+        console.error('Get profile error:', error);
+        res.status(500).json({ 
+            success: false,
+            message: 'Failed to get profile' 
+        });
+    }
+});
+
+/**
+ * PUT /api/admin/profile
+ * Update current user profile (limited fields for non-admins)
+ */
+router.put('/profile', authMiddleware, async (req, res) => {
+    try {
+        const { name, phone, department } = req.body;
+        
+        // Non-admin users can only update their own basic info
+        const updates = { name, phone };
+        
+        // Department can be updated by admins or managers
+        if (req.user.role === 'admin' || req.user.role === 'manager') {
+            updates.department = department;
+        }
+        
+        const staff = await Staff.update(req.user.id, updates);
+        if (!staff) {
+            return res.status(404).json({ 
+                success: false,
+                message: 'User not found' 
+            });
+        }
+        
+        // Update localStorage data for the frontend
+        res.json({ success: true, user: staff, data: staff });
+    } catch (error) {
+        console.error('Update profile error:', error);
+        res.status(500).json({ 
+            success: false,
+            message: 'Failed to update profile' 
+        });
+    }
+});
+
+/**
  * GET /api/admin/dashboard
  * Get admin dashboard stats
  */
@@ -278,7 +336,7 @@ router.get('/staff-dashboard', authMiddleware, async (req, res) => {
             )
         ]);
 
-        // Get recent tasks
+        // Get recent tasks (including chats)
         const recentTasksResult = await db.query(`
             (SELECT 'message' as type, name as title, email as subtitle, created_at 
              FROM messages WHERE assigned_to = $1 ORDER BY created_at DESC LIMIT 3)
@@ -286,6 +344,9 @@ router.get('/staff-dashboard', authMiddleware, async (req, res) => {
             (SELECT 'consultation' as type, name as title, 
              booking_date::text || ' at ' || booking_time::text as subtitle, created_at 
              FROM consultations WHERE assigned_to = $1 ORDER BY created_at DESC LIMIT 3)
+            UNION ALL
+            (SELECT 'chat' as type, visitor_name as title, visitor_email as subtitle, started_at as created_at
+             FROM chat_sessions WHERE assigned_to = $1 ORDER BY started_at DESC LIMIT 3)
             ORDER BY created_at DESC LIMIT 5
         `, [staffId]);
 
@@ -326,6 +387,23 @@ router.get('/staff', authMiddleware, adminOnly, async (req, res) => {
         res.status(500).json({ 
             success: false,
             message: 'Failed to get staff list' 
+        });
+    }
+});
+
+/**
+ * GET /api/admin/staff/count
+ * Get total staff count (for onboarding check)
+ */
+router.get('/staff/count', authMiddleware, async (req, res) => {
+    try {
+        const staff = await Staff.findAll({});
+        res.json({ success: true, count: staff.length });
+    } catch (error) {
+        console.error('Get staff count error:', error);
+        res.status(500).json({ 
+            success: false,
+            message: 'Failed to get staff count' 
         });
     }
 });

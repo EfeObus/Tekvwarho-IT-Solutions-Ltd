@@ -310,4 +310,4 @@ This policy will be reviewed:
 
 ---
 
-*For questions about this policy, contact: efe.obukohwo@outlook.com*
+*For questions about this policy, contact: talk2efeprogress@gmail.com*

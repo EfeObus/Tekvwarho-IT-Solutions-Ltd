@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>My Profile | Tekvwarho Staff Portal</title>
+    <link rel="stylesheet" href="../admin/css/admin.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0066cc, #3399ff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2.5rem;
+            font-weight: 600;
+        }
+        .profile-info h2 {
+            margin-bottom: 0.25rem;
+        }
+        .profile-info p {
+            color: #6b7280;
+        }
+        .profile-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: #e0e7ff;
+            color: #4338ca;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+        .form-section {
+            margin-bottom: 2rem;
+        }
+        .form-section h3 {
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        @media (max-width: 640px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+        .permissions-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .permission-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: #f3f4f6;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+        }
+        .permission-item i.fa-check { color: #10b981; }
+        .permission-item i.fa-times { color: #ef4444; }
+        .sessions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .session-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: #f9fafb;
+            border-radius: 0.5rem;
+        }
+        .session-item.current {
+            border: 2px solid #10b981;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Staff Portal</h2>
+                <span class="subtitle">Dashboard</span>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <span class="nav-section-title">Overview</span>
+                    <a href="dashboard.html" class="nav-item">
+                        <i class="fas fa-home"></i> Dashboard
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <span class="nav-section-title">My Work</span>
+                    <a href="my-messages.html" class="nav-item">
+                        <i class="fas fa-envelope"></i> My Messages
+                    </a>
+                    <a href="my-consultations.html" class="nav-item">
+                        <i class="fas fa-calendar"></i> My Consultations
+                    </a>
+                    <a href="my-chats.html" class="nav-item">
+                        <i class="fas fa-comments"></i> Live Chats
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <span class="nav-section-title">Settings</span>
+                    <a href="profile.html" class="nav-item active">
+                        <i class="fas fa-user"></i> My Profile
+                    </a>
+                    <a href="../index.html" class="nav-item">
+                        <i class="fas fa-globe"></i> View Website
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <header class="admin-header">
+                <button class="sidebar-toggle" id="menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1>My Profile</h1>
+                <div class="header-actions">
+                    <span class="user-name" id="user-name"></span>
+                    <button class="btn btn-outline-primary" id="logout-btn">Logout</button>
+                </div>
+            </header>
+
+            <div class="admin-content">
+                <!-- Profile Header -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="profile-header">
+                            <div class="profile-avatar" id="profile-avatar">A</div>
+                            <div class="profile-info">
+                                <h2 id="profile-name">Loading...</h2>
+                                <p id="profile-email">loading@example.com</p>
+                                <span class="profile-badge" id="profile-role">Staff</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Profile Details -->
+                    <div class="col-lg-8">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h2>Profile Information</h2>
+                            </div>
+                            <div class="card-body">
+                                <form id="profile-form">
+                                    <div class="form-section">
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="name">Full Name</label>
+                                                <input type="text" id="name" class="form-control" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="email">Email Address</label>
+                                                <input type="email" id="email" class="form-control" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="phone">Phone Number</label>
+                                                <input type="tel" id="phone" class="form-control">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="department">Department</label>
+                                                <input type="text" id="department" class="form-control">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="profile-message" class="mb-3" style="display: none;"></div>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> Save Changes
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Change Password -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h2>Change Password</h2>
+                            </div>
+                            <div class="card-body">
+                                <form id="password-form">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="current-password">Current Password</label>
+                                            <input type="password" id="current-password" class="form-control" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="new-password">New Password</label>
+                                            <input type="password" id="new-password" class="form-control" required minlength="8">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="confirm-password">Confirm New Password</label>
+                                            <input type="password" id="confirm-password" class="form-control" required>
+                                        </div>
+                                    </div>
+                                    <div id="password-message" class="mb-3" style="display: none;"></div>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-lock"></i> Update Password
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sidebar Info -->
+                    <div class="col-lg-4">
+                        <!-- Permissions -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h2>My Permissions</h2>
+                            </div>
+                            <div class="card-body">
+                                <div class="permissions-list" id="permissions-list">
+                                    <!-- Loaded dynamically -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Account Info -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h2>Account Info</h2>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Member Since:</strong> <span id="created-at">-</span></p>
+                                <p><strong>Last Login:</strong> <span id="last-login">-</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <!-- Sidebar Overlay for Mobile -->
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    </div>
+
+    <script>
+        // Auth check
+        const token = localStorage.getItem('adminToken');
+        const user = JSON.parse(localStorage.getItem('adminUser') || '{}');
+        
+        if (!token || !user.id) {
+            window.location.href = 'index.html';
+        }
+
+        document.getElementById('user-name').textContent = user.name;
+
+        async function loadProfile() {
+            try {
+                const response = await fetch('/api/admin/profile', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    const profile = data.user || data.data;
+                    
+                    // Update header
+                    document.getElementById('profile-name').textContent = profile.name;
+                    document.getElementById('profile-email').textContent = profile.email;
+                    document.getElementById('profile-role').textContent = profile.role;
+                    document.getElementById('profile-avatar').textContent = profile.name.charAt(0).toUpperCase();
+                    
+                    // Update form
+                    document.getElementById('name').value = profile.name;
+                    document.getElementById('email').value = profile.email;
+                    document.getElementById('phone').value = profile.phone || '';
+                    document.getElementById('department').value = profile.department || '';
+                    
+                    // Update account info
+                    document.getElementById('created-at').textContent = formatDate(profile.created_at);
+                    document.getElementById('last-login').textContent = profile.last_login ? formatDate(profile.last_login) : 'Never';
+                    
+                    // Update permissions
+                    renderPermissions(profile);
+                }
+            } catch (error) {
+                console.error('Failed to load profile:', error);
+            }
+        }
+
+        function renderPermissions(profile) {
+            const container = document.getElementById('permissions-list');
+            const permissions = [
+                { name: 'Manage Messages', enabled: profile.can_manage_messages },
+                { name: 'Manage Consultations', enabled: profile.can_manage_consultations },
+                { name: 'Manage Chats', enabled: profile.can_manage_chats },
+                { name: 'View Analytics', enabled: profile.can_view_analytics }
+            ];
+
+            container.innerHTML = permissions.map(p => `
+                <div class="permission-item">
+                    <i class="fas ${p.enabled ? 'fa-check' : 'fa-times'}"></i>
+                    ${p.name}
+                </div>
+            `).join('');
+        }
+
+        // Update profile
+        document.getElementById('profile-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const messageDiv = document.getElementById('profile-message');
+            
+            try {
+                const response = await fetch('/api/admin/profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: document.getElementById('name').value,
+                        phone: document.getElementById('phone').value,
+                        department: document.getElementById('department').value
+                    })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    messageDiv.className = 'mb-3 text-success';
+                    messageDiv.textContent = 'Profile updated successfully!';
+                    messageDiv.style.display = 'block';
+                    
+                    // Update local storage
+                    const updatedUser = { ...user, name: document.getElementById('name').value };
+                    localStorage.setItem('adminUser', JSON.stringify(updatedUser));
+                    document.getElementById('user-name').textContent = updatedUser.name;
+                    document.getElementById('profile-name').textContent = updatedUser.name;
+                    document.getElementById('profile-avatar').textContent = updatedUser.name.charAt(0).toUpperCase();
+                } else {
+                    messageDiv.className = 'mb-3 text-danger';
+                    messageDiv.textContent = data.message || 'Failed to update profile';
+                    messageDiv.style.display = 'block';
+                }
+            } catch (error) {
+                messageDiv.className = 'mb-3 text-danger';
+                messageDiv.textContent = 'An error occurred';
+                messageDiv.style.display = 'block';
+            }
+
+            setTimeout(() => { messageDiv.style.display = 'none'; }, 3000);
+        });
+
+        // Change password
+        document.getElementById('password-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const messageDiv = document.getElementById('password-message');
+            
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            
+            if (newPassword !== confirmPassword) {
+                messageDiv.className = 'mb-3 text-danger';
+                messageDiv.textContent = 'Passwords do not match';
+                messageDiv.style.display = 'block';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/admin/change-password', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        currentPassword: document.getElementById('current-password').value,
+                        newPassword: newPassword
+                    })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    messageDiv.className = 'mb-3 text-success';
+                    messageDiv.textContent = 'Password updated successfully!';
+                    messageDiv.style.display = 'block';
+                    document.getElementById('password-form').reset();
+                } else {
+                    messageDiv.className = 'mb-3 text-danger';
+                    messageDiv.textContent = data.message || 'Failed to update password';
+                    messageDiv.style.display = 'block';
+                }
+            } catch (error) {
+                messageDiv.className = 'mb-3 text-danger';
+                messageDiv.textContent = 'An error occurred';
+                messageDiv.style.display = 'block';
+            }
+
+            setTimeout(() => { messageDiv.style.display = 'none'; }, 3000);
+        });
+
+        function formatDate(dateStr) {
+            return new Date(dateStr).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        // Event listeners
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('adminUser');
+            window.location.href = 'index.html';
+        });
+
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+        document.getElementById('menu-toggle').addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+            sidebarOverlay.classList.toggle('active');
+        });
+
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            sidebarOverlay.classList.remove('active');
+        });
+
+        // Initial load
+        loadProfile();
+    </script>
+</body>
+</html>

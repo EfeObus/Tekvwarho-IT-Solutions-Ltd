@@ -44,13 +44,21 @@ const authMiddleware = (req, res, next) => {
         if (error.name === 'TokenExpiredError') {
             return res.status(401).json({ 
                 success: false,
-                message: 'Token expired' 
+                message: 'Token expired',
+                error: {
+                    code: 'TOKEN_EXPIRED',
+                    message: 'Token expired'
+                }
             });
         }
         
         return res.status(401).json({ 
             success: false,
-            message: 'Invalid token' 
+            message: 'Invalid token',
+            error: {
+                code: 'INVALID_TOKEN',
+                message: 'Invalid token'
+            }
         });
     }
 };
@@ -80,11 +88,17 @@ const hasPermission = (permission) => {
 
         const permissions = req.user.permissions || {};
         const permissionMap = {
+            // Short names
             'messages': permissions.canManageMessages,
             'consultations': permissions.canManageConsultations,
             'chats': permissions.canManageChats,
             'analytics': permissions.canViewAnalytics,
-            'staff': req.user.role === 'admin' || req.user.role === 'manager'
+            'staff': req.user.role === 'admin' || req.user.role === 'manager',
+            // Full names (for backwards compatibility)
+            'can_manage_messages': permissions.canManageMessages,
+            'can_manage_consultations': permissions.canManageConsultations,
+            'can_manage_chats': permissions.canManageChats,
+            'can_view_analytics': permissions.canViewAnalytics
         };
 
         if (!permissionMap[permission]) {

@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Admin Login | Tekvwarho IT Solutions</title>
     <link rel="stylesheet" href="css/admin.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -56,6 +58,15 @@
     <script>
         let tempToken = null;
         let tempRefreshToken = null;
+        let tempUser = null;
+        
+        function redirectByRole(user) {
+            if (user && user.role !== 'admin') {
+                window.location.href = '../users/dashboard.html';
+            } else {
+                window.location.href = 'index.html';
+            }
+        }
         
         // Check for session expired message
         const urlParams = new URLSearchParams(window.location.search);
@@ -91,6 +102,7 @@
                     if (data.mustChangePassword) {
                         tempToken = data.accessToken;
                         tempRefreshToken = data.refreshToken;
+                        tempUser = data.user;
                         document.getElementById('login-form').style.display = 'none';
                         document.getElementById('change-password-form').style.display = 'block';
                         document.getElementById('login-subtitle').textContent = 'Change your password';
@@ -102,7 +114,8 @@
                         localStorage.setItem('refreshToken', data.refreshToken);
                         localStorage.setItem('tokenExpiresIn', data.expiresIn || 900);
                         localStorage.setItem('adminUser', JSON.stringify(data.user));
-                        window.location.href = 'index.html';
+                        // Redirect based on role
+                        redirectByRole(data.user);
                     }
                 } else {
                     errorDiv.textContent = data.message || data.error?.message || 'Invalid credentials';
@@ -164,7 +177,10 @@
                         localStorage.setItem('refreshToken', tempRefreshToken);
                         localStorage.setItem('tokenExpiresIn', '900');
                     }
-                    window.location.href = 'index.html';
+                    if (tempUser) {
+                        localStorage.setItem('adminUser', JSON.stringify(tempUser));
+                    }
+                    redirectByRole(tempUser);
                 } else {
                     errorDiv.textContent = data.message || 'Failed to change password';
                     errorDiv.style.display = 'block';
@@ -182,7 +198,8 @@
         
         // Redirect if already logged in
         if (localStorage.getItem('adminToken')) {
-            window.location.href = 'index.html';
+            const storedUser = JSON.parse(localStorage.getItem('adminUser') || '{}');
+            redirectByRole(storedUser);
         }
     </script>
 </body>

@@ -8,6 +8,7 @@ const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const Message = require('../models/Message');
 const Visitor = require('../models/Visitor');
+const Staff = require('../models/Staff');
 const { sendContactNotification, sendContactConfirmation } = require('../services/emailService');
 const AuditService = require('../services/auditService');
 
@@ -56,8 +57,23 @@ router.post('/', contactValidation, async (req, res) => {
             visitorId: visitor.id
         });
 
+        // Auto-assign to available staff
+        let assignedStaff = null;
+        try {
+            assignedStaff = await Staff.getNextAvailableForMessages();
+            if (assignedStaff) {
+                await Message.assign(newMessage.id, assignedStaff.id);
+                newMessage.assigned_to = assignedStaff.id;
+                newMessage.assigned_to_name = assignedStaff.name;
+                console.log(`Message ${newMessage.id} auto-assigned to ${assignedStaff.name}`);
+            }
+        } catch (assignError) {
+            console.error('Auto-assign error (non-fatal):', assignError);
+            // Continue without assignment - not a critical error
+        }
+
         // Send email notifications (async, don't wait)
-        sendContactNotification(newMessage).catch(console.error);
+        sendContactNotification(newMessage, assignedStaff).catch(console.error);
         sendContactConfirmation(newMessage).catch(console.error);
 
         res.status(201).json({
@@ -190,7 +206,7 @@ router.post('/:id/reply', [
             });
         }
 
-        const { content, staffId, sendEmail } = req.body;
+        const { content, staffId, sendEmail = true } = req.body;
         
         // Get original message
         const message = await Message.findById(req.params.id);
@@ -206,13 +222,22 @@ router.post('/:id/reply', [
             req.params.id, 
             staffId, 
             content, 
-            sendEmail || false
+            sendEmail
         );
 
         // Send email if requested
+        let emailSent = false;
+        let emailError = null;
         if (sendEmail) {
-            const { sendReplyEmail } = require('../services/emailService');
-            sendReplyEmail(message.email, content, message.name).catch(console.error);
+            try {
+                const { sendReplyEmail } = require('../services/emailService');
+                await sendReplyEmail(message.email, content, message.name);
+                emailSent = true;
+                console.log(`Reply email sent to ${message.email}`);
+            } catch (err) {
+                emailError = err.message;
+                console.error('Failed to send reply email:', err.message);
+            }
         }
 
         // Update message status to in_progress if it's new
@@ -221,9 +246,14 @@ router.post('/:id/reply', [
         }
 
         // Log the reply action
-        await AuditService.logMessageReply(staffId, req.params.id, sendEmail || false, req.ip);
+        await AuditService.logMessageReply(staffId, req.params.id, emailSent, req.ip);
 
-        res.status(201).json({ success: true, data: reply });
+        res.status(201).json({ 
+            success: true, 
+            data: reply,
+            emailSent,
+            emailError: emailError || undefined
+        });
     } catch (error) {
         console.error('Reply error:', error);
         res.status(500).json({ 

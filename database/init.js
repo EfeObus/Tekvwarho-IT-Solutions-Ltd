@@ -1,6 +1,7 @@
 /**
  * Database Initialization Script
  * Run with: npm run db:init
+ * Supports Railway DATABASE_URL and local PostgreSQL
  */
 
 require('dotenv').config();
@@ -10,47 +11,56 @@ const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 
 async function initDatabase() {
-    // First connect without database to create it if needed
-    const adminPool = new Pool({
-        host: process.env.DB_HOST || 'localhost',
-        port: process.env.DB_PORT || 5432,
-        user: process.env.DB_USER || 'postgres',
-        password: process.env.DB_PASSWORD || '',
-        database: 'postgres' // Connect to default postgres database
-    });
+    let pool;
+    const isRailway = !!process.env.DATABASE_URL;
 
-    const dbName = process.env.DB_NAME || 'tekvwarho';
+    if (isRailway) {
+        // Railway: Database already exists, connect directly
+        console.log('🚂 Detected Railway environment');
+        pool = new Pool({
+            connectionString: process.env.DATABASE_URL,
+            ssl: { rejectUnauthorized: false }
+        });
+    } else {
+        // Local: Check/create database first
+        const adminPool = new Pool({
+            host: process.env.DB_HOST || 'localhost',
+            port: process.env.DB_PORT || 5432,
+            user: process.env.DB_USER || 'postgres',
+            password: process.env.DB_PASSWORD || '',
+            database: 'postgres'
+        });
 
-    try {
-        // Check if database exists
-        const dbCheck = await adminPool.query(
-            "SELECT 1 FROM pg_database WHERE datname = $1",
-            [dbName]
-        );
+        const dbName = process.env.DB_NAME || 'tekvwarho';
 
-        if (dbCheck.rows.length === 0) {
-            // Create database
-            await adminPool.query(`CREATE DATABASE ${dbName}`);
-            console.log(`Database "${dbName}" created successfully`);
-        } else {
-            console.log(`Database "${dbName}" already exists`);
+        try {
+            const dbCheck = await adminPool.query(
+                "SELECT 1 FROM pg_database WHERE datname = $1",
+                [dbName]
+            );
+
+            if (dbCheck.rows.length === 0) {
+                await adminPool.query(`CREATE DATABASE ${dbName}`);
+                console.log(`Database "${dbName}" created successfully`);
+            } else {
+                console.log(`Database "${dbName}" already exists`);
+            }
+        } catch (error) {
+            if (error.code !== '42P04') {
+                console.error('Error checking/creating database:', error.message);
+            }
+        } finally {
+            await adminPool.end();
         }
-    } catch (error) {
-        if (error.code !== '42P04') { // Database already exists error
-            console.error('Error checking/creating database:', error.message);
-        }
-    } finally {
-        await adminPool.end();
+
+        pool = new Pool({
+            host: process.env.DB_HOST || 'localhost',
+            port: process.env.DB_PORT || 5432,
+            database: dbName,
+            user: process.env.DB_USER || 'postgres',
+            password: process.env.DB_PASSWORD || '',
+        });
     }
-
-    // Now connect to the actual database
-    const pool = new Pool({
-        host: process.env.DB_HOST || 'localhost',
-        port: process.env.DB_PORT || 5432,
-        database: dbName,
-        user: process.env.DB_USER || 'postgres',
-        password: process.env.DB_PASSWORD || '',
-    });
 
     try {
         console.log('Initializing database schema...');

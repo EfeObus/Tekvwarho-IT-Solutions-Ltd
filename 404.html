@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="robots" content="noindex, nofollow">
+    <title>404 - Page Not Found | Tekvwarho IT Solutions</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="img/tekvwarho IT solutions logo.jpg">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ed 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        
+        .error-container {
+            text-align: center;
+            max-width: 600px;
+        }
+        
+        .error-code {
+            font-size: 8rem;
+            font-weight: 700;
+            color: #0066CC;
+            line-height: 1;
+            margin-bottom: 1rem;
+            text-shadow: 4px 4px 0 #e0e7ff;
+        }
+        
+        .error-title {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #2D3436;
+            margin-bottom: 1rem;
+        }
+        
+        .error-message {
+            font-size: 1.125rem;
+            color: #636E72;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .error-illustration {
+            margin-bottom: 2rem;
+        }
+        
+        .error-illustration svg {
+            width: 200px;
+            height: auto;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: #0066CC;
+            color: white;
+            border: 2px solid #0066CC;
+        }
+        
+        .btn-primary:hover {
+            background: #004C99;
+            border-color: #004C99;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: #0066CC;
+            border: 2px solid #0066CC;
+        }
+        
+        .btn-outline:hover {
+            background: #0066CC;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .search-container {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .search-container p {
+            color: #636E72;
+            margin-bottom: 1rem;
+        }
+        
+        .quick-links {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .quick-link {
+            color: #0066CC;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            background: white;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .quick-link:hover {
+            background: #0066CC;
+            color: white;
+        }
+        
+        @media (max-width: 480px) {
+            .error-code {
+                font-size: 5rem;
+            }
+            .error-title {
+                font-size: 1.5rem;
+            }
+            .btn-group {
+                flex-direction: column;
+            }
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-illustration">
+            <svg viewBox="0 0 200 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="40" y="30" width="120" height="80" rx="8" fill="#E0E7FF" stroke="#0066CC" stroke-width="2"/>
+                <circle cx="100" cy="70" r="25" fill="white" stroke="#0066CC" stroke-width="2"/>
+                <path d="M90 65 L110 75 M110 65 L90 75" stroke="#0066CC" stroke-width="3" stroke-linecap="round"/>
+                <rect x="60" y="120" width="80" height="8" rx="4" fill="#0066CC"/>
+                <circle cx="50" cy="45" r="5" fill="#FF6B35"/>
+                <circle cx="65" cy="45" r="5" fill="#FDCB6E"/>
+                <circle cx="80" cy="45" r="5" fill="#00B894"/>
+            </svg>
+        </div>
+        
+        <h1 class="error-code">404</h1>
+        <h2 class="error-title">Page Not Found</h2>
+        <p class="error-message">
+            Oops! The page you're looking for seems to have wandered off into the digital void. 
+            Don't worry, let's get you back on track.
+        </p>
+        
+        <div class="btn-group">
+            <a href="/" class="btn btn-primary">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                Go Home
+            </a>
+            <a href="javascript:history.back()" class="btn btn-outline">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Go Back
+            </a>
+        </div>
+        
+        <div class="search-container">
+            <p>Looking for something specific? Try these popular pages:</p>
+            <div class="quick-links">
+                <a href="/it-consulting.html" class="quick-link">IT Consulting</a>
+                <a href="/software-development.html" class="quick-link">Software Development</a>
+                <a href="/contact.html" class="quick-link">Contact Us</a>
+                <a href="/book-consultation.html" class="quick-link">Book Consultation</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

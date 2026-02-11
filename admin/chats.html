@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Live Chats | Tekvwarho Admin</title>
     <link rel="stylesheet" href="css/admin.css">
     <link rel="stylesheet" href="css/onboarding.css">
@@ -171,6 +173,12 @@
                         <div class="card-header">
                             <h3 id="chat-visitor-name">Select a chat</h3>
                             <div class="action-buttons">
+                                <button class="btn btn-sm btn-secondary" id="transfer-chat-btn" style="display: none;" onclick="AdminApp.showTransferModal()">
+                                    Transfer
+                                </button>
+                                <button class="btn btn-sm btn-warning" id="release-chat-btn" style="display: none;" onclick="AdminApp.releaseChat()">
+                                    Release
+                                </button>
                                 <button class="btn btn-sm btn-danger" id="close-chat-btn" style="display: none;">
                                     Close Chat
                                 </button>

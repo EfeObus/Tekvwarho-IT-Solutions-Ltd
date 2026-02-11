@@ -22,8 +22,28 @@ router.post('/track', async (req, res) => {
 
         let actualVisitorId = visitorId;
 
-        // Create or update visitor if no visitorId provided
-        if (!visitorId) {
+        // Check if provided visitorId exists in database
+        if (visitorId) {
+            const existingVisitor = await db.query(
+                'SELECT id FROM visitors WHERE id = $1',
+                [visitorId]
+            );
+            
+            if (existingVisitor.rows.length > 0) {
+                // Visitor exists - update last visit
+                await db.query(
+                    `UPDATE visitors SET last_visit = CURRENT_TIMESTAMP, page_views = page_views + 1 WHERE id = $1`,
+                    [visitorId]
+                );
+            } else {
+                // Visitor ID in localStorage but not in DB (e.g., after DB reset)
+                // Create a new visitor
+                actualVisitorId = null;
+            }
+        }
+        
+        // Create new visitor if needed
+        if (!actualVisitorId) {
             const visitorResult = await db.query(
                 `INSERT INTO visitors (id, ip_address, user_agent, source)
                  VALUES ($1, $2, $3, $4)
@@ -31,12 +51,6 @@ router.post('/track', async (req, res) => {
                 [uuidv4(), ipAddress, userAgent, referrer || 'direct']
             );
             actualVisitorId = visitorResult.rows[0].id;
-        } else {
-            // Update last visit
-            await db.query(
-                `UPDATE visitors SET last_visit = CURRENT_TIMESTAMP, page_views = page_views + 1 WHERE id = $1`,
-                [visitorId]
-            );
         }
 
         // Create analytics event
@@ -49,7 +63,7 @@ router.post('/track', async (req, res) => {
         res.json({ success: true, visitorId: actualVisitorId });
     } catch (error) {
         console.error('Track event error:', error);
-        res.status(500).json({ success: false });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
