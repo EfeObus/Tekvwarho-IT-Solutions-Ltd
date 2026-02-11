@@ -127,6 +127,59 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Debug endpoint for database status (temporary)
+app.get('/api/debug/db', async (req, res) => {
+    try {
+        const db = require('./config/database');
+        
+        // Check connection
+        const timeResult = await db.query('SELECT NOW() as now');
+        
+        // Check if staff table exists
+        const tableCheck = await db.query(`
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables 
+                WHERE table_name = 'staff'
+            ) as exists
+        `);
+        
+        // Check admin user
+        let adminExists = false;
+        let adminEmail = process.env.ADMIN_EMAIL || 'admin@tekvwarho.com';
+        if (tableCheck.rows[0].exists) {
+            const adminCheck = await db.query(
+                'SELECT id, email, role FROM staff WHERE email = $1',
+                [adminEmail]
+            );
+            adminExists = adminCheck.rows.length > 0;
+        }
+        
+        res.json({
+            status: 'ok',
+            database: {
+                connected: true,
+                time: timeResult.rows[0].now,
+                staffTableExists: tableCheck.rows[0].exists,
+                adminEmail: adminEmail,
+                adminExists: adminExists,
+                envVars: {
+                    DATABASE_URL: !!process.env.DATABASE_URL,
+                    JWT_SECRET: !!process.env.JWT_SECRET,
+                    ADMIN_EMAIL: !!process.env.ADMIN_EMAIL,
+                    ADMIN_PASSWORD: !!process.env.ADMIN_PASSWORD,
+                    NODE_ENV: process.env.NODE_ENV
+                }
+            }
+        });
+    } catch (error) {
+        res.status(500).json({
+            status: 'error',
+            error: error.message,
+            stack: error.stack
+        });
+    }
+});
+
 // Favicon (redirect .ico requests to .svg)
 app.get('/favicon.ico', (req, res) => {
     res.redirect(301, '/favicon.svg');
