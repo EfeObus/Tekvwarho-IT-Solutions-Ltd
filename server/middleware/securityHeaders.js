@@ -54,8 +54,10 @@ const corsOptions = {
         // Production: whitelist specific origins
         const allowedOrigins = [
             process.env.FRONTEND_URL,
+            process.env.SITE_URL,
             'https://tekvwarho.com',
-            'https://www.tekvwarho.com'
+            'https://www.tekvwarho.com',
+            'https://tekvwarho-it-solutions-ltd-production.up.railway.app'
         ].filter(Boolean);
         
         if (allowedOrigins.includes(origin)) {
