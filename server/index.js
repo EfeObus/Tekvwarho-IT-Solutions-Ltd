@@ -15,7 +15,9 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const http = require('http');
+const fs = require('fs');
 const WebSocket = require('ws');
+const bcrypt = require('bcryptjs');
 
 // Import routes
 const contactRoutes = require('./routes/contact');
@@ -160,17 +162,106 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5500;
 
-server.listen(PORT, () => {
-    console.log(`\n🚀 Tekvwarho IT Solutions Server Started`);
-    console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
-    console.log(`📡 Server running on http://localhost:${PORT}`);
-    console.log(`🔌 WebSocket server on ws://localhost:${PORT}/ws/chat`);
-    console.log(`👤 Admin dashboard at http://localhost:${PORT}/admin`);
-    console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
-    console.log(`✅ Security: Rate limiting, XSS protection, CSP headers`);
-    console.log(`✅ Auth: JWT with refresh token rotation`);
-    console.log(`✅ Logging: Structured JSON with request IDs`);
-    console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`);
+// ======================
+// DATABASE AUTO-INITIALIZATION
+// ======================
+async function initializeDatabase() {
+    const db = require('./config/database');
+    
+    console.log('🔄 Checking database connection...');
+    console.log(`   DATABASE_URL configured: ${!!process.env.DATABASE_URL}`);
+    
+    try {
+        // Test connection first
+        const testResult = await db.query('SELECT NOW() as now');
+        console.log(`✅ Database connected at: ${testResult.rows[0].now}`);
+        
+        // Check if staff table exists
+        const tableCheck = await db.query(`
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables 
+                WHERE table_name = 'staff'
+            )
+        `);
+        
+        if (!tableCheck.rows[0].exists) {
+            console.log('📦 First run detected - initializing database schema...');
+            
+            // Read and execute schema
+            const schemaPath = path.join(__dirname, '../database/schema.sql');
+            const schema = fs.readFileSync(schemaPath, 'utf8');
+            await db.query(schema);
+            console.log('✅ Database schema created');
+        }
+        
+        // Check/create admin user
+        const adminEmail = process.env.ADMIN_EMAIL || 'admin@tekvwarho.com';
+        const adminPassword = process.env.ADMIN_PASSWORD || 'TekvwarhoAdmin2026!';
+        const adminName = process.env.ADMIN_NAME || 'System Administrator';
+        
+        const existingAdmin = await db.query(
+            'SELECT id FROM staff WHERE email = $1',
+            [adminEmail]
+        );
+        
+        if (existingAdmin.rows.length === 0) {
+            const hashedPassword = await bcrypt.hash(adminPassword, 12);
+            await db.query(
+                `INSERT INTO staff (
+                    email, password_hash, name, role, 
+                    must_change_password, is_active,
+                    can_manage_messages, can_manage_consultations, 
+                    can_manage_chats, can_view_analytics
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+                [adminEmail, hashedPassword, adminName, 'admin', false, true, true, true, true, true]
+            );
+            console.log(`✅ Admin user created: ${adminEmail}`);
+        } else {
+            console.log(`✅ Admin user exists: ${adminEmail}`);
+        }
+        
+        // Run migrations
+        const migrationsDir = path.join(__dirname, '../database/migrations');
+        if (fs.existsSync(migrationsDir)) {
+            const migrations = fs.readdirSync(migrationsDir).filter(f => f.endsWith('.sql')).sort();
+            for (const migration of migrations) {
+                try {
+                    const sql = fs.readFileSync(path.join(migrationsDir, migration), 'utf8');
+                    await db.query(sql);
+                } catch (err) {
+                    // Ignore errors from migrations already applied
+                    if (!err.message.includes('already exists') && !err.message.includes('duplicate')) {
+                        console.log(`Migration ${migration} note:`, err.message);
+                    }
+                }
+            }
+        }
+        
+        console.log('✅ Database ready');
+    } catch (error) {
+        console.error('❌ Database initialization error:', error.message);
+        console.error('   Full error:', error);
+        // Don't crash - let server start and show proper errors
+    }
+}
+
+// Initialize database then start server
+initializeDatabase().then(() => {
+    server.listen(PORT, () => {
+        console.log(`\n🚀 Tekvwarho IT Solutions Server Started`);
+        console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+        console.log(`📡 Server running on port ${PORT}`);
+        console.log(`🔌 WebSocket server on ws://localhost:${PORT}/ws/chat`);
+        console.log(`👤 Admin dashboard at /admin`);
+        console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+        console.log(`✅ Security: Rate limiting, XSS protection, CSP headers`);
+        console.log(`✅ Auth: JWT with refresh token rotation`);
+        console.log(`✅ Logging: Structured JSON with request IDs`);
+        console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`);
+    });
+}).catch(err => {
+    console.error('Failed to start server:', err);
+    process.exit(1);
 });
 
 module.exports = { app, server, wss };
