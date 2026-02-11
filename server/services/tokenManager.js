@@ -9,6 +9,7 @@ const db = require('../config/database');
 
 const ACCESS_TOKEN_EXPIRY = '15m';  // Short-lived access tokens
 const REFRESH_TOKEN_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 7 days in ms
+const REMEMBER_ME_EXPIRY = 30 * 24 * 60 * 60 * 1000; // 30 days in ms for "Remember Me"
 const TOKEN_ROTATION_GRACE_PERIOD = 60 * 1000; // 60 seconds for replay protection
 
 class TokenManager {
@@ -36,11 +37,16 @@ class TokenManager {
 
     /**
      * Generate refresh token (long-lived, stored in DB)
+     * @param {string} userId - User ID
+     * @param {string} ipAddress - IP address
+     * @param {string} userAgent - User agent string
+     * @param {boolean} rememberMe - If true, extends token expiry to 30 days
      */
-    static async generateRefreshToken(userId, ipAddress, userAgent) {
+    static async generateRefreshToken(userId, ipAddress, userAgent, rememberMe = false) {
         const token = crypto.randomBytes(64).toString('hex');
         const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
-        const expiresAt = new Date(Date.now() + REFRESH_TOKEN_EXPIRY);
+        const expiryDuration = rememberMe ? REMEMBER_ME_EXPIRY : REFRESH_TOKEN_EXPIRY;
+        const expiresAt = new Date(Date.now() + expiryDuration);
 
         const result = await db.query(
             `INSERT INTO refresh_tokens (user_id, token_hash, expires_at, ip_address, user_agent)

@@ -35,7 +35,7 @@ router.post('/login', loginLimiter, [
             });
         }
 
-        const { email, password } = req.body;
+        const { email, password, rememberMe } = req.body;
 
         // Find staff member
         const staff = await Staff.findByEmail(email);
@@ -95,10 +95,12 @@ router.post('/login', loginLimiter, [
         const accessToken = TokenManager.generateAccessToken(staff);
         
         // Generate refresh token (long-lived, stored in DB)
+        // If rememberMe is true, extends to 30 days instead of 7 days
         const refreshTokenData = await TokenManager.generateRefreshToken(
             staff.id,
             req.ip,
-            req.get('User-Agent')
+            req.get('User-Agent'),
+            !!rememberMe
         );
 
         res.json({

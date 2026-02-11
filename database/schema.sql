@@ -54,6 +54,21 @@ CREATE TABLE IF NOT EXISTS active_sessions (
 
 CREATE INDEX IF NOT EXISTS idx_active_sessions_user ON active_sessions(user_id, is_active);
 
+-- Password Reset Tokens Table (for self-service password recovery)
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES staff(id) ON DELETE CASCADE NOT NULL,
+    token_hash VARCHAR(255) NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    used_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ip_address INET,
+    user_agent TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_hash ON password_reset_tokens(token_hash);
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user ON password_reset_tokens(user_id, used_at);
+
 -- Visitors Table (for tracking and chat)
 CREATE TABLE IF NOT EXISTS visitors (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

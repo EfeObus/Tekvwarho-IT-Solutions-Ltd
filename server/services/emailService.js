@@ -323,6 +323,45 @@ const sendMissedChatResponse = async (visitorEmail, visitorName, messages, sessi
     });
 };
 
+/**
+ * Send password reset email
+ */
+const sendPasswordResetEmail = async (email, name, resetToken) => {
+    const resetUrl = `${process.env.SITE_URL || 'http://localhost:5500'}/admin/reset-password.html?token=${resetToken}`;
+    
+    const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #0066CC;">Password Reset Request</h2>
+            <p>Hi ${name},</p>
+            <p>We received a request to reset your password for your Tekvwarho admin account.</p>
+            <p>Click the button below to reset your password:</p>
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="${resetUrl}" 
+                   style="background-color: #0066CC; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-size: 16px;">
+                    Reset Password
+                </a>
+            </div>
+            <p style="color: #666; font-size: 14px;">This link will expire in <strong>1 hour</strong>.</p>
+            <p style="color: #666; font-size: 14px;">If you didn't request this password reset, you can safely ignore this email. Your password will remain unchanged.</p>
+            <hr style="margin-top: 30px; border: none; border-top: 1px solid #ddd;">
+            <p style="font-size: 12px; color: #666;">
+                If the button doesn't work, copy and paste this link into your browser:<br>
+                <a href="${resetUrl}" style="color: #0066CC;">${resetUrl}</a>
+            </p>
+            <p style="font-size: 12px; color: #666; margin-top: 20px;">
+                Tekvwarho IT Solutions Ltd<br>
+                This is an automated email, please do not reply.
+            </p>
+        </div>
+    `;
+
+    return sendEmail({
+        to: email,
+        subject: 'Password Reset - Tekvwarho IT Solutions',
+        html
+    });
+};
+
 module.exports = {
     sendEmail,
     sendContactNotification,
@@ -330,5 +369,6 @@ module.exports = {
     sendReplyEmail,
     sendBookingConfirmation,
     sendBookingNotification,
-    sendMissedChatResponse
+    sendMissedChatResponse,
+    sendPasswordResetEmail
 };

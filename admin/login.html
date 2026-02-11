@@ -28,6 +28,13 @@
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password" class="form-control" required placeholder="Enter your password">
             </div>
+            <div class="form-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <label class="checkbox-label" style="display: flex; align-items: center; cursor: pointer; font-size: 14px;">
+                    <input type="checkbox" id="remember-me" name="remember-me" style="margin-right: 8px; width: 16px; height: 16px;">
+                    Remember me
+                </label>
+                <a href="forgot-password.html" class="forgot-link" style="font-size: 14px; color: #0066CC; text-decoration: none;">Forgot password?</a>
+            </div>
             <div id="login-error" class="text-danger mb-3" style="display: none;"></div>
             <button type="submit" class="btn btn-primary" id="login-btn">Sign In</button>
         </form>
@@ -83,6 +90,7 @@
             const errorDiv = document.getElementById('login-error');
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+            const rememberMe = document.getElementById('remember-me').checked;
             
             btn.disabled = true;
             btn.textContent = 'Signing in...';
@@ -92,7 +100,7 @@
                 const response = await fetch('/api/admin/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify({ email, password, rememberMe })
                 });
                 
                 const data = await response.json();
