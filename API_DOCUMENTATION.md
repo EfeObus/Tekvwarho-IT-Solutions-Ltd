@@ -1,6 +1,6 @@
 # API Documentation
 
-Complete API reference for Tekvwarho IT Solutions Ltd backend.
+Complete API reference for Tekvwa IT Solutions Ltd backend.
 
 **Base URL:** `http://localhost:5500/api`
 
@@ -75,7 +75,7 @@ POST /api/admin/auth/login
 **Request Body:**
 ```json
 {
-  "email": "admin@tekvwarho.com",
+  "email": "admin@tekvwa.org",
   "password": "your-password"
 }
 ```
@@ -88,7 +88,7 @@ POST /api/admin/auth/login
     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
     "user": {
       "id": "uuid",
-      "email": "admin@tekvwarho.com",
+      "email": "admin@tekvwa.org",
       "name": "System Administrator",
       "role": "admin",
       "permissions": {
@@ -160,7 +160,7 @@ Authorization: Bearer <token>
   "success": true,
   "data": {
     "id": "uuid",
-    "email": "admin@tekvwarho.com",
+    "email": "admin@tekvwa.org",
     "name": "System Administrator",
     "role": "admin",
     "department": "IT",
@@ -190,7 +190,7 @@ Authorization: Bearer <token>
   "data": [
     {
       "id": "uuid",
-      "email": "staff@tekvwarho.com",
+      "email": "staff@tekvwa.org",
       "name": "John Doe",
       "role": "staff",
       "department": "Sales",
@@ -225,7 +225,7 @@ Authorization: Bearer <token>
 **Request Body:**
 ```json
 {
-  "email": "newstaff@tekvwarho.com",
+  "email": "newstaff@tekvwa.org",
   "password": "SecurePassword123!",
   "name": "Jane Smith",
   "role": "staff",
@@ -246,7 +246,7 @@ Authorization: Bearer <token>
   "success": true,
   "data": {
     "id": "uuid",
-    "email": "newstaff@tekvwarho.com",
+    "email": "newstaff@tekvwa.org",
     "name": "Jane Smith",
     "role": "staff"
   },
@@ -708,7 +708,7 @@ Authorization: Bearer <token>
   "success": true,
   "data": {
     "business": [
-      { "setting_key": "business_name", "value": "Tekvwarho IT Solutions" },
+      { "setting_key": "business_name", "value": "Tekvwa IT Solutions" },
       { "setting_key": "working_days", "value": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
       { "setting_key": "working_hours_start", "value": "09:00" },
       { "setting_key": "working_hours_end", "value": "17:00" }
@@ -1198,6 +1198,6 @@ ws.send(JSON.stringify({
 ---
 
 <p align="center">
-  <strong>Tekvwarho IT Solutions Ltd API Documentation</strong><br>
+  <strong>Tekvwa IT Solutions Ltd API Documentation</strong><br>
   <em>Last updated: January 5, 2026</em>
 </p>

@@ -17,6 +17,9 @@ class TokenManager {
      * Generate access token (short-lived)
      */
     static generateAccessToken(user) {
+        if (!process.env.JWT_SECRET) {
+            throw new Error('JWT_SECRET is not configured');
+        }
         return jwt.sign(
             {
                 id: user.id,
@@ -30,7 +33,7 @@ class TokenManager {
                     canViewAnalytics: user.can_view_analytics
                 }
             },
-            process.env.JWT_SECRET || 'your-secret-key',
+            process.env.JWT_SECRET,
             { expiresIn: ACCESS_TOKEN_EXPIRY }
         );
     }

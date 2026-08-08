@@ -31,11 +31,16 @@ const authMiddleware = (req, res, next) => {
 
         const token = parts[1];
 
+        if (!process.env.JWT_SECRET) {
+            console.error('JWT_SECRET is not configured');
+            return res.status(500).json({
+                success: false,
+                message: 'Server misconfiguration'
+            });
+        }
+
         // Verify token
-        const decoded = jwt.verify(
-            token,
-            process.env.JWT_SECRET || 'your-secret-key'
-        );
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
         // Attach user to request
         req.user = decoded;

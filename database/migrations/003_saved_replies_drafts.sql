@@ -1,4 +1,4 @@
--- Tekvwarho IT Solutions Database Migrations
+-- Tekvwa IT Solutions Database Migrations
 -- Phase 3: Drafts, Saved Replies, and Search Enhancements
 
 -- ==================== SAVED REPLIES TABLE ====================
@@ -126,7 +126,7 @@ INSERT INTO saved_replies (id, title, content, category, shortcut, is_global, cr
 SELECT 
     uuid_generate_v4(),
     'Welcome Greeting',
-    'Hello! Thank you for reaching out to Tekvwarho IT Solutions. How may I assist you today?',
+    'Hello! Thank you for reaching out to Tekvwa IT Solutions. How may I assist you today?',
     'greetings',
     '/hello',
     true,

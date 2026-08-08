@@ -41,7 +41,7 @@ const sendEmail = async ({ to, subject, html, text }) => {
         const transporter = createTransporter();
 
         const mailOptions = {
-            from: `"Tekvwarho IT Solutions" <${process.env.EMAIL_FROM || process.env.SMTP_USER}>`,
+            from: `"Tekvwa IT Solutions" <${process.env.EMAIL_FROM || process.env.SMTP_USER}>`,
             to,
             subject,
             html,
@@ -127,20 +127,19 @@ const sendContactConfirmation = async (message) => {
                 <li><a href="${process.env.SITE_URL || 'http://localhost:3000'}/website-development.html">Website Development</a></li>
                 <li><a href="${process.env.SITE_URL || 'http://localhost:3000'}/data-analytics.html">Data Analytics</a></li>
             </ul>
-            <p>Best regards,<br>The Tekvwarho Team</p>
+            <p>Best regards,<br>The Tekvwa Team</p>
             <hr style="margin-top: 30px; border: none; border-top: 1px solid #ddd;">
             <p style="font-size: 12px; color: #666;">
-                Tekvwarho IT Solutions Ltd<br>
-                Canada: +1 (905) 781 9825<br>
+                Tekvwa IT Solutions Ltd<br>
                 Nigeria: +234 906 577 9323<br>
-                Email: talk2efeprogress@gmail.com
+                Email: info@tekvwa.org
             </p>
         </div>
     `;
 
     return sendEmail({
         to: message.email,
-        subject: 'Thank You for Contacting Tekvwarho IT Solutions',
+        subject: 'Thank You for Contacting Tekvwa IT Solutions',
         html
     });
 };
@@ -153,24 +152,24 @@ const sendReplyEmail = async (to, content, name) => {
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <p>Hi ${name},</p>
             <div style="margin: 20px 0;">${content.replace(/\n/g, '<br>')}</div>
-            <p>Best regards,<br>The Tekvwarho Team</p>
+            <p>Best regards,<br>The Tekvwa Team</p>
             <hr style="margin-top: 30px; border: none; border-top: 1px solid #ddd;">
             <p style="font-size: 12px; color: #666;">
-                Tekvwarho IT Solutions Ltd<br>
-                Canada: +1 (905) 781 9825 | Nigeria: +234 906 577 9323
+                Tekvwa IT Solutions Ltd<br>
+                Nigeria: +234 906 577 9323
             </p>
         </div>
     `;
 
     return sendEmail({
         to,
-        subject: 'Re: Your Inquiry - Tekvwarho IT Solutions',
+        subject: 'Re: Your Inquiry - Tekvwa IT Solutions',
         html
     });
 };
 
 /**
- * Send booking confirmation to visitor
+ * Send booking-received acknowledgment to visitor (not yet staff-reviewed)
  */
 const sendBookingConfirmation = async (consultation) => {
     const dateStr = new Date(consultation.booking_date).toLocaleDateString('en-US', {
@@ -182,22 +181,61 @@ const sendBookingConfirmation = async (consultation) => {
 
     const html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #0066CC;">Consultation Booking Confirmed</h2>
+            <h2 style="color: #0066CC;">We've Received Your Booking Request</h2>
             <p>Hi ${consultation.name},</p>
-            <p>Your consultation has been successfully booked. Here are the details:</p>
+            <p>Thanks for booking a consultation. Here's what you requested — our team will review it and confirm shortly:</p>
             <div style="background-color: #f5f5f5; padding: 20px; border-radius: 5px; margin: 20px 0;">
                 <p><strong>Date:</strong> ${dateStr}</p>
                 <p><strong>Time:</strong> ${consultation.booking_time}</p>
                 ${consultation.service ? `<p><strong>Service:</strong> ${consultation.service}</p>` : ''}
                 ${consultation.notes ? `<p><strong>Notes:</strong> ${consultation.notes}</p>` : ''}
             </div>
-            <p>We'll send you a reminder 24 hours before your consultation.</p>
-            <p>If you need to reschedule, please contact us at talk2efeprogress@gmail.com</p>
-            <p>Best regards,<br>The Tekvwarho Team</p>
+            <p>You'll get a separate email as soon as we confirm the time.</p>
+            <p>If you need to reschedule, please contact us at info@tekvwa.org</p>
+            <p>Best regards,<br>The Tekvwa Team</p>
             <hr style="margin-top: 30px; border: none; border-top: 1px solid #ddd;">
             <p style="font-size: 12px; color: #666;">
-                Tekvwarho IT Solutions Ltd<br>
-                Canada: +1 (905) 781 9825 | Nigeria: +234 906 577 9323
+                Tekvwa IT Solutions Ltd<br>
+                Nigeria: +234 906 577 9323
+            </p>
+        </div>
+    `;
+
+    return sendEmail({
+        to: consultation.email,
+        subject: `Booking Request Received - ${dateStr}`,
+        html
+    });
+};
+
+/**
+ * Send confirmation to visitor once staff confirms the consultation
+ */
+const sendBookingStatusConfirmed = async (consultation) => {
+    const dateStr = new Date(consultation.booking_date).toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+
+    const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #0066CC;">Your Consultation Is Confirmed</h2>
+            <p>Hi ${consultation.name},</p>
+            <p>Good news — your consultation is now confirmed:</p>
+            <div style="background-color: #f5f5f5; padding: 20px; border-radius: 5px; margin: 20px 0;">
+                <p><strong>Date:</strong> ${dateStr}</p>
+                <p><strong>Time:</strong> ${consultation.booking_time}</p>
+                ${consultation.service ? `<p><strong>Service:</strong> ${consultation.service}</p>` : ''}
+            </div>
+            <p>We'll send you a reminder 24 hours before your consultation.</p>
+            <p>If you need to reschedule, please contact us at info@tekvwa.org</p>
+            <p>Best regards,<br>The Tekvwa Team</p>
+            <hr style="margin-top: 30px; border: none; border-top: 1px solid #ddd;">
+            <p style="font-size: 12px; color: #666;">
+                Tekvwa IT Solutions Ltd<br>
+                Nigeria: +234 906 577 9323
             </p>
         </div>
     `;
@@ -205,6 +243,39 @@ const sendBookingConfirmation = async (consultation) => {
     return sendEmail({
         to: consultation.email,
         subject: `Consultation Confirmed - ${dateStr}`,
+        html
+    });
+};
+
+/**
+ * Send cancellation notice to visitor
+ */
+const sendBookingStatusCancelled = async (consultation) => {
+    const dateStr = new Date(consultation.booking_date).toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+
+    const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #0066CC;">Your Consultation Was Cancelled</h2>
+            <p>Hi ${consultation.name},</p>
+            <p>Your consultation scheduled for <strong>${dateStr} at ${consultation.booking_time}</strong> has been cancelled.</p>
+            <p>If this wasn't expected or you'd like to rebook, just reply to this email or reach us at info@tekvwa.org.</p>
+            <p>Best regards,<br>The Tekvwa Team</p>
+            <hr style="margin-top: 30px; border: none; border-top: 1px solid #ddd;">
+            <p style="font-size: 12px; color: #666;">
+                Tekvwa IT Solutions Ltd<br>
+                Nigeria: +234 906 577 9323
+            </p>
+        </div>
+    `;
+
+    return sendEmail({
+        to: consultation.email,
+        subject: `Consultation Cancelled - ${dateStr}`,
         html
     });
 };
@@ -294,7 +365,7 @@ const sendMissedChatResponse = async (visitorEmail, visitorName, messages, _sess
 
     const html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #0066CC;">Response to Your Chat with Tekvwarho IT Solutions</h2>
+            <h2 style="color: #0066CC;">Response to Your Chat with Tekvwa IT Solutions</h2>
 
             <p>Hi ${visitorName},</p>
 
@@ -312,13 +383,13 @@ const sendMissedChatResponse = async (visitorEmail, visitorName, messages, _sess
                 <li>Book a consultation at <a href="${process.env.SITE_URL || 'http://localhost:3000'}/book-consultation.html">our booking page</a></li>
             </ul>
 
-            <p>Best regards,<br>Tekvwarho IT Solutions Team</p>
+            <p>Best regards,<br>Tekvwa IT Solutions Team</p>
         </div>
     `;
 
     return sendEmail({
         to: visitorEmail,
-        subject: 'Response to Your Chat - Tekvwarho IT Solutions',
+        subject: 'Response to Your Chat - Tekvwa IT Solutions',
         html
     });
 };
@@ -333,7 +404,7 @@ const sendPasswordResetEmail = async (email, name, resetToken) => {
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #0066CC;">Password Reset Request</h2>
             <p>Hi ${name},</p>
-            <p>We received a request to reset your password for your Tekvwarho admin account.</p>
+            <p>We received a request to reset your password for your Tekvwa admin account.</p>
             <p>Click the button below to reset your password:</p>
             <div style="text-align: center; margin: 30px 0;">
                 <a href="${resetUrl}"
@@ -349,7 +420,7 @@ const sendPasswordResetEmail = async (email, name, resetToken) => {
                 <a href="${resetUrl}" style="color: #0066CC;">${resetUrl}</a>
             </p>
             <p style="font-size: 12px; color: #666; margin-top: 20px;">
-                Tekvwarho IT Solutions Ltd<br>
+                Tekvwa IT Solutions Ltd<br>
                 This is an automated email, please do not reply.
             </p>
         </div>
@@ -357,7 +428,7 @@ const sendPasswordResetEmail = async (email, name, resetToken) => {
 
     return sendEmail({
         to: email,
-        subject: 'Password Reset - Tekvwarho IT Solutions',
+        subject: 'Password Reset - Tekvwa IT Solutions',
         html
     });
 };
@@ -368,6 +439,8 @@ module.exports = {
     sendContactConfirmation,
     sendReplyEmail,
     sendBookingConfirmation,
+    sendBookingStatusConfirmed,
+    sendBookingStatusCancelled,
     sendBookingNotification,
     sendMissedChatResponse,
     sendPasswordResetEmail

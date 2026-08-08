@@ -29,8 +29,10 @@ const securityHeaders = (req, res, next) => {
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=(), payment=(), usb=()');
 
-    // HSTS (uncomment in production with HTTPS)
-    // res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    // HSTS - only over real HTTPS in production (avoids breaking local HTTP dev)
+    if (process.env.NODE_ENV === 'production') {
+        res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    }
 
     // Remove X-Powered-By header
     res.removeHeader('X-Powered-By');
@@ -57,9 +59,9 @@ const corsOptions = {
         const allowedOrigins = [
             process.env.FRONTEND_URL,
             process.env.SITE_URL,
-            'https://tekvwarho.com',
-            'https://www.tekvwarho.com',
-            'https://tekvwarho-it-solutions-ltd-production.up.railway.app'
+            'https://tekvwa.org',
+            'https://www.tekvwa.org',
+            'https://tekvwa-web-772559903983.northamerica-northeast1.run.app'
         ].filter(Boolean);
 
         if (allowedOrigins.includes(origin)) {

@@ -1,4 +1,4 @@
-# Tekvwarho IT Solutions - Dockerfile
+# Tekvwa IT Solutions - Dockerfile
 # Multi-stage build for optimized production image
 
 # ==========================================
@@ -21,9 +21,9 @@ RUN npm ci --omit=dev
 FROM node:20-alpine AS production
 
 # Add labels for metadata
-LABEL maintainer="Tekvwarho IT Solutions <efe.obukohwo@outlook.com>"
+LABEL maintainer="Tekvwa IT Solutions <info@tekvwa.org>"
 LABEL version="1.0"
-LABEL description="Tekvwarho IT Solutions Website with Admin Dashboard"
+LABEL description="Tekvwa IT Solutions Website with Admin Dashboard"
 
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs && \

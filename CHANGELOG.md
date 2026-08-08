@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the Tekvwarho IT Solutions project will be documented in this file.
+All notable changes to the Tekvwa IT Solutions project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -14,8 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Custom 404 error page
 - Docker and Docker Compose configuration
 - ESLint and Prettier configuration files
-- Railway deployment configuration (`railway.json`)
-- DATABASE_URL connection string support for cloud PostgreSQL
+- DATABASE_URL connection string support for hosted PostgreSQL providers
 - SSL configuration for production database connections
 - This CHANGELOG file
 
@@ -24,9 +23,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Duplicate RETURN statement in database schema trigger function
 
 ### Changed
-- Updated database configuration to support Railway DATABASE_URL
+- Updated database configuration to support hosted-provider DATABASE_URL
 - Enhanced database initialization for cloud environments
-- Updated seed script for Railway PostgreSQL compatibility
+- Updated seed script for hosted PostgreSQL compatibility
+
+---
+
+## [1.4.0] - 2026-08-08
+
+### Changed
+- Rebranded from Tekvwarho IT Solutions to Tekvwa IT Solutions across the entire site, admin dashboard, and documentation
+- Migrated hosting from Railway to Google Cloud (Cloud Run + Cloud SQL + global HTTPS load balancer), live at tekvwa.org
+- Replaced all Canada office/phone references with Nigeria-only contact details (company is not yet incorporated in Canada)
+- Rewrote Privacy Policy's rights section and Terms of Service's governing-law clause for Nigeria (NDPA/NDPR) instead of Canada (PIPEDA)
+- Replaced decorative emoji across the app UI and documentation with Font Awesome icons
+- Resolved all 21 known npm dependency vulnerabilities, including a major-version upgrade of `nodemailer`
+
+### Fixed
+- Contact form, consultation, live chat, and newsletter-subscriber API routes had no authentication in production — any of these could be read or modified by an unauthenticated request
+- Live chat WebSocket accepted an unverified staff identity from the client, allowing admin impersonation
+- Removed a hardcoded JWT signing-key fallback and an unauthenticated debug endpoint
+- `database/init.js` now applies migrations, not just the base schema
+- Fixed logo/favicon references that pointed to a deleted image file
+- Added the missing Font Awesome stylesheet to 8 admin pages that referenced `fa-*` icon classes without loading the icon font
+
+### Removed
+- Railway deployment configuration (`railway.json`) — no longer in use
 
 ---
 

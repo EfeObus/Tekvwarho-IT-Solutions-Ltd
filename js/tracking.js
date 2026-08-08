@@ -1,5 +1,5 @@
 /**
- * Tekvwarho Visitor Tracking Script
+ * Tekvwa Visitor Tracking Script
  * Add this script to all public pages to track site visitors
  */
 
@@ -8,7 +8,7 @@
 
     const TRACKING_ENDPOINT = '/api/analytics/track';
     const VISITOR_ENDPOINT = '/api/analytics/visitor';
-    const STORAGE_KEY = 'tekvwarho_visitor_id';
+    const STORAGE_KEY = 'tekvwa_visitor_id';
 
     // Get or create visitor ID
     function getVisitorId() {
@@ -180,7 +180,7 @@
     }
 
     // Expose tracking functions globally
-    window.TekvwarhoTracker = {
+    window.TekvwaTracker = {
         trackEvent,
         trackFormSubmit,
         trackChatStart,

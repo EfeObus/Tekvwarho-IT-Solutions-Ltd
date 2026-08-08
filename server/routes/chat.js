@@ -9,6 +9,7 @@ const { body, validationResult } = require('express-validator');
 const Chat = require('../models/Chat');
 const Visitor = require('../models/Visitor');
 const AuditService = require('../services/auditService');
+const { authMiddleware, hasPermission } = require('../middleware/auth');
 
 /**
  * POST /api/chat/start
@@ -73,7 +74,7 @@ router.post('/start', [
  * GET /api/chat/sessions
  * Get all chat sessions (admin) or filtered by assigned_to (staff)
  */
-router.get('/sessions', async (req, res) => {
+router.get('/sessions', authMiddleware, hasPermission('can_manage_chats'), async (req, res) => {
     try {
         const { status, limit, offset, assigned_to } = req.query;
         const sessions = await Chat.getAllSessions({
@@ -96,7 +97,7 @@ router.get('/sessions', async (req, res) => {
  * GET /api/chat/sessions/:id
  * Get a single chat session with messages
  */
-router.get('/sessions/:id', async (req, res) => {
+router.get('/sessions/:id', authMiddleware, hasPermission('can_manage_chats'), async (req, res) => {
     try {
         const session = await Chat.getSession(req.params.id);
         if (!session) {
@@ -125,7 +126,7 @@ router.get('/sessions/:id', async (req, res) => {
  * GET /api/chat/sessions/:id/messages
  * Get messages for a session
  */
-router.get('/sessions/:id/messages', async (req, res) => {
+router.get('/sessions/:id/messages', authMiddleware, hasPermission('can_manage_chats'), async (req, res) => {
     try {
         const messages = await Chat.getMessages(req.params.id);
         res.json({ success: true, data: messages });
@@ -142,7 +143,7 @@ router.get('/sessions/:id/messages', async (req, res) => {
  * POST /api/chat/sessions/:id/messages
  * Add a message to a session (HTTP fallback)
  */
-router.post('/sessions/:id/messages', [
+router.post('/sessions/:id/messages', authMiddleware, hasPermission('can_manage_chats'), [
     body('content').trim().notEmpty().withMessage('Message content is required'),
     body('senderType').isIn(['visitor', 'staff']).withMessage('Invalid sender type')
 ], async (req, res) => {
@@ -183,7 +184,7 @@ router.post('/sessions/:id/messages', [
  * PATCH /api/chat/sessions/:id/close
  * Close a chat session
  */
-router.patch('/sessions/:id/close', async (req, res) => {
+router.patch('/sessions/:id/close', authMiddleware, hasPermission('can_manage_chats'), async (req, res) => {
     try {
         const { staffId } = req.body;
         const session = await Chat.closeSession(req.params.id);
@@ -213,7 +214,7 @@ router.patch('/sessions/:id/close', async (req, res) => {
  * GET /api/chat/unread-count
  * Get unread message count
  */
-router.get('/unread-count', async (req, res) => {
+router.get('/unread-count', authMiddleware, hasPermission('can_manage_chats'), async (req, res) => {
     try {
         const count = await Chat.getUnreadCount();
         res.json({ success: true, data: { count } });

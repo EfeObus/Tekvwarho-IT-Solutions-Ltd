@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Tekvwarho IT Solutions Ltd - Main Stylesheet
+   Tekvwa IT Solutions Ltd - Main Stylesheet
    Version: 1.0
    Created: January 4, 2026
    Browser Support: Chrome, Firefox, Safari, Edge, Opera, Brave
@@ -857,6 +857,13 @@ p {
     margin-bottom: var(--spacing-md);
 }
 
+/* Overrides the dark-section .industry-item i orange accent (see "Industries Grid"
+   below) for the light-card variant used on index.html / it-consulting.html,
+   which wraps its icon in .industry-icon and should match the site's blue icon language. */
+.industry-item .industry-icon i {
+    color: var(--color-primary);
+}
+
 .industry-item h4 {
     font-size: var(--font-size-base);
     font-weight: 600;
@@ -1355,7 +1362,8 @@ select.form-control {
 
 .locations-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 360px));
+    justify-content: center;
     gap: var(--spacing-xl);
     max-width: 800px;
     margin: 0 auto;

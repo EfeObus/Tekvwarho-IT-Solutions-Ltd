@@ -1,9 +1,9 @@
-# Tekvwarho IT Solutions Ltd - Website Project Documentation
+# Tekvwa IT Solutions Ltd - Website Project Documentation
 
 ## Project Overview
 
 ### Company Information
-- **Company Name:** Tekvwarho IT Solutions Ltd
+- **Company Name:** Tekvwa IT Solutions Ltd
 - **Type:** IT Solutions Startup
 - **Headquarters:** Canada & Nigeria
 - **Industry:** Information Technology Services

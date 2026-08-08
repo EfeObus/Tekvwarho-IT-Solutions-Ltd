@@ -4,6 +4,7 @@
  */
 
 const WebSocket = require('ws');
+const jwt = require('jsonwebtoken');
 const Chat = require('../models/Chat');
 const Visitor = require('../models/Visitor');
 const Staff = require('../models/Staff');
@@ -469,14 +470,34 @@ const sendVisitorMessage = async (ws, data) => {
 
 /**
  * Authenticate staff connection
+ * Verifies the same JWT access token issued at login (server/services/tokenManager.js) -
+ * never trusts client-supplied staffId/staffName/role directly.
  */
 const authenticateStaff = async (ws, data) => {
-    const { staffId, staffName, role } = data;
+    const { token } = data;
 
-    if (!staffId) {
-        ws.send(JSON.stringify({ type: 'error', message: 'Staff ID required' }));
+    if (!token) {
+        ws.send(JSON.stringify({ type: 'error', message: 'Authentication token required' }));
         return;
     }
+
+    if (!process.env.JWT_SECRET) {
+        console.error('JWT_SECRET is not configured - refusing WebSocket authentication');
+        ws.send(JSON.stringify({ type: 'error', message: 'Server misconfiguration' }));
+        return;
+    }
+
+    let decoded;
+    try {
+        decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (error) {
+        ws.send(JSON.stringify({ type: 'error', message: 'Invalid or expired token' }));
+        return;
+    }
+
+    const staffId = decoded.id;
+    const staffName = decoded.name || decoded.email;
+    const role = decoded.role;
 
     adminConnections.set(ws, { staffId, staffName, role });
     console.log(`Staff authenticated: ${staffName} (ID: ${staffId})`);

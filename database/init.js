@@ -1,7 +1,7 @@
 /**
  * Database Initialization Script
  * Run with: npm run db:init
- * Supports Railway DATABASE_URL and local PostgreSQL
+ * Supports DATABASE_URL (hosted providers) and local PostgreSQL
  */
 
 require('dotenv').config();
@@ -12,11 +12,11 @@ const bcrypt = require('bcryptjs');
 
 async function initDatabase() {
     let pool;
-    const isRailway = !!process.env.DATABASE_URL;
+    const hasHostedUrl = !!process.env.DATABASE_URL;
 
-    if (isRailway) {
-        // Railway: Database already exists, connect directly
-        console.log('🚂 Detected Railway environment');
+    if (hasHostedUrl) {
+        // Hosted provider: database already exists, connect directly
+        console.log('Detected hosted DATABASE_URL environment');
         pool = new Pool({
             connectionString: process.env.DATABASE_URL,
             ssl: { rejectUnauthorized: false }
@@ -31,7 +31,7 @@ async function initDatabase() {
             database: 'postgres'
         });
 
-        const dbName = process.env.DB_NAME || 'tekvwarho';
+        const dbName = process.env.DB_NAME || 'tekvwa';
 
         try {
             const dbCheck = await adminPool.query(
@@ -72,9 +72,26 @@ async function initDatabase() {
         await pool.query(schema);
         console.log('Schema created successfully');
 
+        // Apply migrations (saved replies/drafts, password reset tokens, etc.)
+        const migrationsDir = path.join(__dirname, 'migrations');
+        if (fs.existsSync(migrationsDir)) {
+            const migrations = fs.readdirSync(migrationsDir).filter(f => f.endsWith('.sql')).sort();
+            for (const migration of migrations) {
+                try {
+                    const sql = fs.readFileSync(path.join(migrationsDir, migration), 'utf8');
+                    await pool.query(sql);
+                    console.log(`Migration applied: ${migration}`);
+                } catch (err) {
+                    if (!err.message.includes('already exists') && !err.message.includes('duplicate')) {
+                        console.log(`Migration ${migration} note:`, err.message);
+                    }
+                }
+            }
+        }
+
         // Create default admin user (hardcoded as per requirement)
-        const adminEmail = process.env.ADMIN_EMAIL || 'admin@tekvwarho.com';
-        const adminPassword = process.env.ADMIN_PASSWORD || 'TekvwarhoAdmin2026!';
+        const adminEmail = process.env.ADMIN_EMAIL || 'admin@tekvwa.org';
+        const adminPassword = process.env.ADMIN_PASSWORD || 'TekvwaAdmin2026!';
         const adminName = process.env.ADMIN_NAME || 'System Administrator';
         const hashedPassword = await bcrypt.hash(adminPassword, 12);
 

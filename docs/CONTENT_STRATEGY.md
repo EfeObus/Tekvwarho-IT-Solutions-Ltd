@@ -1,4 +1,4 @@
-# Tekvwarho IT Solutions Ltd - Content Strategy & Copy
+# Tekvwa IT Solutions Ltd - Content Strategy & Copy
 
 ## Brand Voice Guidelines
 
@@ -64,7 +64,7 @@ We help businesses in Canada and Nigeria leverage technology to solve real probl
 ---
 
 ### Why Choose Us Section
-**Section Title:** Why Businesses Trust Tekvwarho
+**Section Title:** Why Businesses Trust Tekvwa
 
 | Feature | Headline | Description |
 |---------|----------|-------------|
@@ -106,7 +106,7 @@ We help businesses in Canada and Nigeria leverage technology to solve real probl
 
 **Placeholder:**
 "Looking forward to partnering with forward-thinking businesses who share our vision for technology-driven growth."
-— The Tekvwarho Team
+— The Tekvwa Team
 
 ---
 
@@ -253,13 +253,13 @@ We help businesses in Canada and Nigeria leverage technology to solve real probl
 ## About Page Content
 
 ### Hero
-**Headline:** About Tekvwarho
+**Headline:** About Tekvwa
 **Subheadline:** Technology solutions that put your business first
 
 ### Our Story
-Tekvwarho IT Solutions was founded with a simple belief: technology should solve real business problems, not create new ones.
+Tekvwa IT Solutions was founded with a simple belief: technology should solve real business problems, not create new ones.
 
-Too often, we see businesses investing in technology without clear outcomes, or struggling to navigate an increasingly complex digital landscape. We started Tekvwarho to be the partner we wished we had—one that understands both business and technology, and bridges the gap between them.
+Too often, we see businesses investing in technology without clear outcomes, or struggling to navigate an increasingly complex digital landscape. We started Tekvwa to be the partner we wished we had—one that understands both business and technology, and bridges the gap between them.
 
 Based in both Canada and Nigeria, we bring a unique perspective that bridges continents, cultures, and markets. Our global presence allows us to serve diverse businesses while understanding local nuances.
 
@@ -273,10 +273,10 @@ Based in both Canada and Nigeria, we bring a unique perspective that bridges con
 
 | Value | Description |
 |-------|-------------|
-| 🤝 Integrity | We do what's right, even when no one is watching. Honesty and transparency guide everything we do. |
-| 💡 Innovation | We embrace new ideas and technologies to deliver cutting-edge solutions that give our clients an edge. |
-| 📈 Growth | We grow with our clients. Their success is our success, and we're committed to long-term partnerships. |
-| 🎯 Excellence | We deliver quality in everything we do. Good enough is never good enough. |
+| Integrity | We do what's right, even when no one is watching. Honesty and transparency guide everything we do. |
+| Innovation | We embrace new ideas and technologies to deliver cutting-edge solutions that give our clients an edge. |
+| Growth | We grow with our clients. Their success is our success, and we're committed to long-term partnerships. |
+| Excellence | We deliver quality in everything we do. Good enough is never good enough. |
 
 ### Global Presence
 
@@ -313,7 +313,7 @@ Bringing innovative technology solutions to African businesses.
 - Tell us about your project (textarea - required)
 
 ### Contact Information
-- **Email:** hello@tekvwarho.com
+- **Email:** hello@tekvwa.org
 - **Phone (Canada):** +1 (XXX) XXX-XXXX
 - **Phone (Nigeria):** +234 XXX XXX XXXX
 - **Business Hours:** Monday - Friday, 9:00 AM - 6:00 PM (Local Time)
@@ -371,32 +371,32 @@ A: Simply fill out the contact form or book a free consultation call. We'll sche
 ## SEO Meta Content
 
 ### Homepage
-- **Title:** Tekvwarho IT Solutions | IT Consulting, Software & Web Development | Canada & Nigeria
-- **Description:** Transform your business with Tekvwarho IT Solutions. We offer IT consulting, custom software development, website development, and data analytics services in Canada and Nigeria.
+- **Title:** Tekvwa IT Solutions | IT Consulting, Software & Web Development | Canada & Nigeria
+- **Description:** Transform your business with Tekvwa IT Solutions. We offer IT consulting, custom software development, website development, and data analytics services in Canada and Nigeria.
 
 ### IT Consulting
-- **Title:** IT Consulting Services | Strategic Technology Guidance | Tekvwarho
+- **Title:** IT Consulting Services | Strategic Technology Guidance | Tekvwa
 - **Description:** Get strategic technology guidance for your business. Our IT consulting services help you make informed decisions that drive real business value.
 
 ### Software Development
-- **Title:** Custom Software Development | Business Applications | Tekvwarho
+- **Title:** Custom Software Development | Business Applications | Tekvwa
 - **Description:** Build custom software that solves real business problems. From concept to deployment, we create applications tailored to your unique needs.
 
 ### Website Development
-- **Title:** Website Development Services | Conversion-Focused Design | Tekvwarho
+- **Title:** Website Development Services | Conversion-Focused Design | Tekvwa
 - **Description:** Create beautiful, fast websites that convert visitors into customers. Mobile-responsive, SEO-optimized websites for your business.
 
 ### Data Analytics
-- **Title:** Data Analytics Services | Business Intelligence | Tekvwarho
+- **Title:** Data Analytics Services | Business Intelligence | Tekvwa
 - **Description:** Transform your data into actionable insights. Our data analytics services help you make smarter, data-driven business decisions.
 
 ### About
-- **Title:** About Tekvwarho | Our Story, Mission & Values
-- **Description:** Learn about Tekvwarho IT Solutions—our story, mission, values, and global presence in Canada and Nigeria.
+- **Title:** About Tekvwa | Our Story, Mission & Values
+- **Description:** Learn about Tekvwa IT Solutions—our story, mission, values, and global presence in Canada and Nigeria.
 
 ### Contact
-- **Title:** Contact Us | Get a Free Consultation | Tekvwarho
-- **Description:** Ready to start your project? Contact Tekvwarho IT Solutions for a free consultation. Offices in Canada and Nigeria.
+- **Title:** Contact Us | Get a Free Consultation | Tekvwa
+- **Description:** Ready to start your project? Contact Tekvwa IT Solutions for a free consultation. Offices in Canada and Nigeria.
 
 ---
 

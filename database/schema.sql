@@ -1,4 +1,4 @@
--- Tekvwarho IT Solutions Database Schema
+-- Tekvwa IT Solutions Database Schema
 -- PostgreSQL
 
 -- Enable UUID extension

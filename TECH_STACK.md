@@ -1,13 +1,13 @@
 # Technology Stack
 
-> **Version:** 1.2  
+> **Version:** 1.2 
 > **Last Updated:** January 5, 2026
 
-Tekvwarho IT Solutions leverages modern, secure, and scalable technologies to build high-performance digital solutions across web, data, and AI-driven systems.
+Tekvwa IT Solutions leverages modern, secure, and scalable technologies to build high-performance digital solutions across web, data, and AI-driven systems.
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Frontend Development](#frontend-development)
 - [Backend & API Development](#backend--api-development)
@@ -240,9 +240,9 @@ Tekvwarho IT Solutions leverages modern, secure, and scalable technologies to bu
 | Service | Purpose |
 |---------|---------|
 | AWS | Primary cloud provider |
+| Google Cloud | Cloud Run + Cloud SQL + global load balancer (current production) |
 | Heroku | Simple deployment option |
 | DigitalOcean | Cost-effective hosting |
-| Railway | Modern deployment platform |
 | Vercel | Frontend-only hosting |
 
 ---

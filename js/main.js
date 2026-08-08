@@ -1,5 +1,5 @@
 /**
- * Tekvwarho IT Solutions - Main JavaScript
+ * Tekvwa IT Solutions - Main JavaScript
  * Version: 1.0.0
  */
 
@@ -441,3 +441,57 @@ function throttle(func, limit) {
         }
     };
 }
+
+/**
+ * Category Filters (Portfolio, Blog)
+ * A filter bar is any element with class "portfolio-filters" containing
+ * ".filter-btn[data-filter]" buttons. It filters the element matching its
+ * "data-filter-target" selector, showing children whose "data-category"
+ * matches the active filter (or is "all").
+ */
+function initCategoryFilters() {
+    const filterBars = document.querySelectorAll('.portfolio-filters[data-filter-target]');
+
+    filterBars.forEach((bar) => {
+        const targetSelector = bar.getAttribute('data-filter-target');
+        const target = document.querySelector(targetSelector);
+        if (!target) return;
+
+        const buttons = bar.querySelectorAll('.filter-btn[data-filter]');
+        const items = target.querySelectorAll('[data-category]');
+
+        let emptyState = target.querySelector('.filter-empty-state');
+        if (!emptyState) {
+            emptyState = document.createElement('div');
+            emptyState.className = 'filter-empty-state';
+            emptyState.style.display = 'none';
+            emptyState.style.gridColumn = '1 / -1';
+            emptyState.style.textAlign = 'center';
+            emptyState.style.padding = 'var(--spacing-3xl, 3rem) 0';
+            emptyState.style.color = 'var(--color-gray, #666)';
+            emptyState.textContent = 'Nothing in this category yet — check back soon.';
+            target.appendChild(emptyState);
+        }
+
+        buttons.forEach((button) => {
+            button.addEventListener('click', () => {
+                const filter = button.getAttribute('data-filter');
+
+                buttons.forEach((b) => b.classList.remove('active'));
+                button.classList.add('active');
+
+                let visibleCount = 0;
+                items.forEach((item) => {
+                    const category = item.getAttribute('data-category');
+                    const show = filter === 'all' || category === 'all' || category === filter;
+                    item.style.display = show ? '' : 'none';
+                    if (show) visibleCount++;
+                });
+
+                emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+            });
+        });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', initCategoryFilters);

@@ -91,7 +91,7 @@ describe('Auth Middleware', () => {
 
             expect(mockNext).toHaveBeenCalled();
             expect(mockReq.user).toBeDefined();
-            expect(mockReq.user.email).toBe('test@tekvwarho.com');
+            expect(mockReq.user.email).toBe('test@tekvwa.org');
         });
 
         it('should reject expired token', () => {

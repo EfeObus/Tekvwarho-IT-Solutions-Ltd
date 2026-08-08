@@ -6,7 +6,8 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../config/database');
-const { authMiddleware, adminOnly } = require('../middleware/auth');
+const { authMiddleware, adminOnly, hasPermission } = require('../middleware/auth');
+const { exportLimiter } = require('../middleware/rateLimiter');
 const AuditService = require('../services/auditService');
 
 // ==========================================
@@ -86,7 +87,7 @@ router.get('/staff/:staffId', authMiddleware, async (req, res) => {
  * GET /api/export/messages
  * Export messages to CSV
  */
-router.get('/messages', authMiddleware, async (req, res) => {
+router.get('/messages', authMiddleware, hasPermission('can_manage_messages'), exportLimiter, async (req, res) => {
     try {
         const { status, startDate, endDate } = req.query;
 
@@ -149,7 +150,7 @@ router.get('/messages', authMiddleware, async (req, res) => {
  * GET /api/export/consultations
  * Export consultations to CSV
  */
-router.get('/consultations', authMiddleware, async (req, res) => {
+router.get('/consultations', authMiddleware, hasPermission('can_manage_consultations'), exportLimiter, async (req, res) => {
     try {
         const { status, startDate, endDate } = req.query;
 
@@ -212,7 +213,7 @@ router.get('/consultations', authMiddleware, async (req, res) => {
  * GET /api/export/visitors
  * Export visitors to CSV
  */
-router.get('/visitors', authMiddleware, async (req, res) => {
+router.get('/visitors', authMiddleware, hasPermission('can_view_analytics'), exportLimiter, async (req, res) => {
     try {
         const { startDate, endDate } = req.query;
 

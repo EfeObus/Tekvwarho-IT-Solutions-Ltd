@@ -8,7 +8,7 @@ process.env.NODE_ENV = 'test';
 process.env.JWT_SECRET = 'test-secret-key-for-jwt-testing';
 process.env.DB_HOST = 'localhost';
 process.env.DB_PORT = '5432';
-process.env.DB_NAME = 'tekvwarho_test';
+process.env.DB_NAME = 'tekvwa_test';
 process.env.DB_USER = 'postgres';
 process.env.DB_PASSWORD = 'postgres';
 
@@ -24,7 +24,7 @@ global.testUtils = {
         const jwt = require('jsonwebtoken');
         const defaultPayload = {
             id: 'test-user-id',
-            email: 'test@tekvwarho.com',
+            email: 'test@tekvwa.org',
             role: 'admin',
             name: 'Test User',
             permissions: {

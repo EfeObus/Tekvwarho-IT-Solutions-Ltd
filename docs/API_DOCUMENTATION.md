@@ -1,7 +1,7 @@
-# Tekvwarho IT Solutions - API Documentation
+# Tekvwa IT Solutions - API Documentation
 
-> **Version:** 1.0  
-> **Base URL:** `http://localhost:5500/api` (Development)  
+> **Version:** 1.0 
+> **Base URL:** `http://localhost:5500/api` (Development) 
 > **Authentication:** JWT Bearer Token
 
 ---
@@ -38,7 +38,7 @@ POST /api/admin/login
 **Request Body:**
 ```json
 {
-    "email": "admin@tekvwarho.com",
+    "email": "admin@tekvwa.org",
     "password": "your-password"
 }
 ```
@@ -54,7 +54,7 @@ POST /api/admin/login
     "mustChangePassword": false,
     "user": {
         "id": "uuid",
-        "email": "admin@tekvwarho.com",
+        "email": "admin@tekvwa.org",
         "name": "Admin User",
         "role": "admin",
         "department": "IT",
@@ -502,7 +502,7 @@ POST /api/admin/staff
 **Request Body:**
 ```json
 {
-    "email": "new@tekvwarho.com",
+    "email": "new@tekvwa.org",
     "password": "securepassword123",
     "name": "New Staff",
     "role": "staff",

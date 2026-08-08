@@ -1,20 +1,19 @@
 /**
  * Database Configuration
  * PostgreSQL connection using pg module
- * Supports both DATABASE_URL (Railway/Heroku) and individual env vars
+ * Supports both DATABASE_URL (hosted providers) and individual env vars (Cloud SQL)
  */
 
 const { Pool } = require('pg');
 
-// Determine if we're using Railway (DATABASE_URL with railway in the host)
-const isRailway = process.env.DATABASE_URL && process.env.DATABASE_URL.includes('railway');
+// A DATABASE_URL host implies a managed hosted Postgres provider that requires SSL
+const isHostedUrl = process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('localhost');
 
-// Configure pool - prefer DATABASE_URL for Railway/cloud deployments
+// Configure pool - prefer DATABASE_URL when set, otherwise individual vars (e.g. Cloud SQL socket)
 const poolConfig = process.env.DATABASE_URL
     ? {
         connectionString: process.env.DATABASE_URL,
-        // Always use SSL for Railway, regardless of NODE_ENV
-        ssl: isRailway || process.env.NODE_ENV === 'production'
+        ssl: isHostedUrl || process.env.NODE_ENV === 'production'
             ? { rejectUnauthorized: false }
             : false,
         max: 20,
@@ -24,7 +23,7 @@ const poolConfig = process.env.DATABASE_URL
     : {
         host: process.env.DB_HOST || 'localhost',
         port: process.env.DB_PORT || 5432,
-        database: process.env.DB_NAME || 'tekvwarho',
+        database: process.env.DB_NAME || 'tekvwa',
         user: process.env.DB_USER || 'postgres',
         password: process.env.DB_PASSWORD || '',
         max: 20,

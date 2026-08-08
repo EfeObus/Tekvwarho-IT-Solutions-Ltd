@@ -1,6 +1,6 @@
 # Backup & Disaster Recovery Policy
 
-## Tekvwarho IT Solutions Ltd
+## Tekvwa IT Solutions Ltd
 
 > **Version:** 1.0  
 > **Effective Date:** January 5, 2026  
@@ -10,7 +10,7 @@
 
 ## 1. Overview
 
-This document outlines the backup and disaster recovery procedures for Tekvwarho IT Solutions Ltd's systems and data. The goal is to ensure business continuity and minimize data loss in the event of system failures, security incidents, or natural disasters.
+This document outlines the backup and disaster recovery procedures for Tekvwa IT Solutions Ltd's systems and data. The goal is to ensure business continuity and minimize data loss in the event of system failures, security incidents, or natural disasters.
 
 ---
 
@@ -64,8 +64,8 @@ This document outlines the backup and disaster recovery procedures for Tekvwarho
 
 DATE=$(date +%Y%m%d_%H%M%S)
 BACKUP_DIR="/backups/database"
-DB_NAME="tekvwarho_IT_solutions"
-S3_BUCKET="tekvwarho-backups"
+DB_NAME="tekvwa_it_solutions"
+S3_BUCKET="tekvwa-backups"
 
 # Create backup
 pg_dump -Fc $DB_NAME > $BACKUP_DIR/full_$DATE.dump
@@ -84,7 +84,7 @@ pg_restore --list $BACKUP_DIR/full_$DATE.dump.gz > /dev/null 2>&1
 if [ $? -eq 0 ]; then
     echo "Backup verified successfully"
 else
-    echo "BACKUP VERIFICATION FAILED" | mail -s "Backup Alert" admin@tekvwarho.com
+    echo "BACKUP VERIFICATION FAILED" | mail -s "Backup Alert" admin@tekvwa.org
 fi
 ```
 
@@ -181,10 +181,10 @@ WHERE created_at < NOW() - INTERVAL '1 year';
 pm2 stop all
 
 # Restore database
-pg_restore -d tekvwarho_IT_solutions_restored /backups/latest.dump
+pg_restore -d tekvwa_it_solutions_restored /backups/latest.dump
 
 # Verify restoration
-psql -d tekvwarho_IT_solutions_restored -c "SELECT COUNT(*) FROM staff;"
+psql -d tekvwa_it_solutions_restored -c "SELECT COUNT(*) FROM staff;"
 
 # Switch connection
 # Update .env DATABASE_URL to restored database
@@ -222,8 +222,8 @@ pm2 start all
 
 ```bash
 # Revoke all tokens
-psql -d tekvwarho_IT_solutions -c "UPDATE refresh_tokens SET revoked_at = NOW();"
-psql -d tekvwarho_IT_solutions -c "UPDATE active_sessions SET is_active = false;"
+psql -d tekvwa_it_solutions -c "UPDATE refresh_tokens SET revoked_at = NOW();"
+psql -d tekvwa_it_solutions -c "UPDATE active_sessions SET is_active = false;"
 
 # Rotate JWT secret
 # Generate new secret and update .env
@@ -310,4 +310,4 @@ This policy will be reviewed:
 
 ---
 
-*For questions about this policy, contact: talk2efeprogress@gmail.com*
+*For questions about this policy, contact: info@tekvwa.org*

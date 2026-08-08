@@ -1,4 +1,4 @@
-# Tekvwarho IT Solutions Ltd - Website Wireframes
+# Tekvwa IT Solutions Ltd - Website Wireframes
 
 ## Table of Contents
 1. [Homepage](#homepage-wireframe)
@@ -14,162 +14,162 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                              NAVIGATION BAR                                  │
-│  ┌──────┐                                                                   │
-│  │ LOGO │    Services ▼    About    Portfolio    Blog    [Contact Us]      │
-│  └──────┘                                                                   │
+│ NAVIGATION BAR │
+│ ┌──────┐ │
+│ │ LOGO │ Services ▼ About Portfolio Blog [Contact Us] │
+│ └──────┘ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                              HERO SECTION                                    │
-│                                                                              │
-│           Transforming Businesses Through                                    │
-│           Innovative Technology Solutions                                    │
-│                                                                              │
-│    We help businesses in Canada and Nigeria leverage technology              │
-│    to solve real problems and accelerate growth.                             │
-│                                                                              │
-│    ┌─────────────────────┐    ┌─────────────────────┐                       │
-│    │ Get a Consultation  │    │   View Our Work     │                       │
-│    └─────────────────────┘    └─────────────────────┘                       │
-│                                                                              │
+│ HERO SECTION │
+│ │
+│ Transforming Businesses Through │
+│ Innovative Technology Solutions │
+│ │
+│ We help businesses in Canada and Nigeria leverage technology │
+│ to solve real problems and accelerate growth. │
+│ │
+│ ┌─────────────────────┐ ┌─────────────────────┐ │
+│ │ Get a Consultation │ │ View Our Work │ │
+│ └─────────────────────┘ └─────────────────────┘ │
+│ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           TRUST INDICATORS                                   │
-│                                                                              │
-│  ┌───────────┐   ┌───────────┐   ┌───────────┐   ┌───────────┐             │
-│  │    🏢     │   │    🌍     │   │    💻     │   │    🔒     │             │
-│  │ 2 Offices │   │ 2 Countries│  │ 20+ Tech  │   │  Certified │             │
-│  │  Globally │   │   Served  │   │  Stack    │   │   Team    │             │
-│  └───────────┘   └───────────┘   └───────────┘   └───────────┘             │
-│                                                                              │
+│ TRUST INDICATORS │
+│ │
+│ ┌───────────┐ ┌───────────┐ ┌───────────┐ ┌───────────┐ │
+│ │ │ │ │ │ │ │ │ │
+│ │ 2 Offices │ │ 2 Countries│ │ 20+ Tech │ │ Certified │ │
+│ │ Globally │ │ Served │ │ Stack │ │ Team │ │
+│ └───────────┘ └───────────┘ └───────────┘ └───────────┘ │
+│ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                          SERVICES SECTION                                    │
-│                                                                              │
-│                     What We Can Do For You                                   │
-│        Comprehensive IT solutions tailored to your business needs            │
-│                                                                              │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
-│  │                 │  │                 │  │                 │  │                 │
-│  │  💼             │  │  ⚙️             │  │  🌐             │  │  📊             │
-│  │                 │  │                 │  │                 │  │                 │
-│  │ IT Consulting   │  │ Software Dev    │  │ Website Dev     │  │ Data Analytics  │
-│  │                 │  │                 │  │                 │  │                 │
-│  │ Strategic tech  │  │ Custom apps     │  │ Modern, fast    │  │ Transform data  │
-│  │ guidance for    │  │ built for your  │  │ websites that   │  │ into actionable │
-│  │ your business   │  │ unique needs    │  │ convert         │  │ insights        │
-│  │                 │  │                 │  │                 │  │                 │
-│  │ [Learn More →]  │  │ [Learn More →]  │  │ [Learn More →]  │  │ [Learn More →]  │
-│  └─────────────────┘  └─────────────────┘  └─────────────────┘  └─────────────────┘
-│                                                                              │
+│ SERVICES SECTION │
+│ │
+│ What We Can Do For You │
+│ Comprehensive IT solutions tailored to your business needs │
+│ │
+│ ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
+│ │ │ │ │ │ │ │ │
+│ │ │ │ │ │ │ │ │
+│ │ │ │ │ │ │ │ │
+│ │ IT Consulting │ │ Software Dev │ │ Website Dev │ │ Data Analytics │
+│ │ │ │ │ │ │ │ │
+│ │ Strategic tech │ │ Custom apps │ │ Modern, fast │ │ Transform data │
+│ │ guidance for │ │ built for your │ │ websites that │ │ into actionable │
+│ │ your business │ │ unique needs │ │ convert │ │ insights │
+│ │ │ │ │ │ │ │ │
+│ │ [Learn More →] │ │ [Learn More →] │ │ [Learn More →] │ │ [Learn More →] │
+│ └─────────────────┘ └─────────────────┘ └─────────────────┘ └─────────────────┘
+│ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                        WHY CHOOSE US SECTION                                 │
-│                                                                              │
-│               Why Businesses Trust Tekvwarho                                 │
-│                                                                              │
-│  ┌────────────────────────────────┐  ┌────────────────────────────────────┐ │
-│  │                                │  │                                    │ │
-│  │  ✓ Business-First Approach     │  │  ✓ Experienced Team                │ │
-│  │    We focus on outcomes,       │  │    Skilled professionals with      │ │
-│  │    not just technology         │  │    years of industry experience    │ │
-│  │                                │  │                                    │ │
-│  ├────────────────────────────────┤  ├────────────────────────────────────┤ │
-│  │                                │  │                                    │ │
-│  │  ✓ Scalable Solutions          │  │  ✓ Transparent Communication       │ │
-│  │    Built to grow with          │  │    Regular updates and clear       │ │
-│  │    your business               │  │    project visibility              │ │
-│  │                                │  │                                    │ │
-│  └────────────────────────────────┘  └────────────────────────────────────┘ │
-│                                                                              │
+│ WHY CHOOSE US SECTION │
+│ │
+│ Why Businesses Trust Tekvwa │
+│ │
+│ ┌────────────────────────────────┐ ┌────────────────────────────────────┐ │
+│ │ │ │ │ │
+│ │ Business-First Approach │ │ Experienced Team │ │
+│ │ We focus on outcomes, │ │ Skilled professionals with │ │
+│ │ not just technology │ │ years of industry experience │ │
+│ │ │ │ │ │
+│ ├────────────────────────────────┤ ├────────────────────────────────────┤ │
+│ │ │ │ │ │
+│ │ Scalable Solutions │ │ Transparent Communication │ │
+│ │ Built to grow with │ │ Regular updates and clear │ │
+│ │ your business │ │ project visibility │ │
+│ │ │ │ │ │
+│ └────────────────────────────────┘ └────────────────────────────────────┘ │
+│ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                       OUR PROCESS SECTION                                    │
-│                                                                              │
-│                      How We Work With You                                    │
-│                                                                              │
-│   ┌─────┐        ┌─────┐        ┌─────┐        ┌─────┐        ┌─────┐      │
-│   │  1  │   →    │  2  │   →    │  3  │   →    │  4  │   →    │  5  │      │
-│   └─────┘        └─────┘        └─────┘        └─────┘        └─────┘      │
-│  Discover        Design         Build          Test          Deploy        │
-│                                                                              │
-│  Understanding   Creating the   Agile          Rigorous      Seamless      │
-│  your business   perfect        development    quality       launch &      │
-│  needs           solution       process        assurance     support       │
-│                                                                              │
+│ OUR PROCESS SECTION │
+│ │
+│ How We Work With You │
+│ │
+│ ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐ │
+│ │ 1 │ → │ 2 │ → │ 3 │ → │ 4 │ → │ 5 │ │
+│ └─────┘ └─────┘ └─────┘ └─────┘ └─────┘ │
+│ Discover Design Build Test Deploy │
+│ │
+│ Understanding Creating the Agile Rigorous Seamless │
+│ your business perfect development quality launch & │
+│ needs solution process assurance support │
+│ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                      INDUSTRIES SECTION                                      │
-│                                                                              │
-│                    Industries We Serve                                       │
-│                                                                              │
-│  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐           │
-│  │  🏦     │  │  🏥     │  │  🎓     │  │  🛒     │  │  🚀     │           │
-│  │ Finance │  │ Health  │  │Education│  │ Retail  │  │Startups │           │
-│  └─────────┘  └─────────┘  └─────────┘  └─────────┘  └─────────┘           │
-│                                                                              │
+│ INDUSTRIES SECTION │
+│ │
+│ Industries We Serve │
+│ │
+│ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ │
+│ │ │ │ │ │ │ │ │ │ │ │
+│ │ Finance │ │ Health │ │Education│ │ Retail │ │Startups │ │
+│ └─────────┘ └─────────┘ └─────────┘ └─────────┘ └─────────┘ │
+│ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                     TESTIMONIALS SECTION                                     │
-│                                                                              │
-│                   What Our Partners Say                                      │
-│                                                                              │
-│  ┌───────────────────────────────────────────────────────────────────────┐  │
-│  │                                                                       │  │
-│  │  "Tekvwarho brings a refreshing approach to technology consulting.   │  │
-│  │   Their focus on understanding business needs before jumping into    │  │
-│  │   solutions makes them a valuable partner."                          │  │
-│  │                                                                       │  │
-│  │                    — Future Client Testimonial                        │  │
-│  │                                                                       │  │
-│  └───────────────────────────────────────────────────────────────────────┘  │
-│                                                                              │
-│                         ● ○ ○                                               │
-│                                                                              │
+│ TESTIMONIALS SECTION │
+│ │
+│ What Our Partners Say │
+│ │
+│ ┌───────────────────────────────────────────────────────────────────────┐ │
+│ │ │ │
+│ │ "Tekvwa brings a refreshing approach to technology consulting. │ │
+│ │ Their focus on understanding business needs before jumping into │ │
+│ │ solutions makes them a valuable partner." │ │
+│ │ │ │
+│ │ — Future Client Testimonial │ │
+│ │ │ │
+│ └───────────────────────────────────────────────────────────────────────┘ │
+│ │
+│ ● ○ ○ │
+│ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                        CTA SECTION                                           │
-│                                                                              │
-│                Ready to Transform Your Business?                             │
-│                                                                              │
-│          Let's discuss how technology can solve your                         │
-│              challenges and accelerate your growth                           │
-│                                                                              │
-│              ┌───────────────────────────────┐                              │
-│              │  Book a Free Consultation     │                              │
-│              └───────────────────────────────┘                              │
-│                                                                              │
+│ CTA SECTION │
+│ │
+│ Ready to Transform Your Business? │
+│ │
+│ Let's discuss how technology can solve your │
+│ challenges and accelerate your growth │
+│ │
+│ ┌───────────────────────────────┐ │
+│ │ Book a Free Consultation │ │
+│ └───────────────────────────────┘ │
+│ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                            FOOTER                                            │
-│                                                                              │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐    │
-│  │              │  │              │  │              │  │              │    │
-│  │  TEKVWARHO   │  │  SERVICES    │  │  COMPANY     │  │  CONTACT     │    │
-│  │              │  │              │  │              │  │              │    │
-│  │  Transform   │  │  IT Consult  │  │  About Us    │  │  Canada:     │    │
-│  │  your        │  │  Software    │  │  Portfolio   │  │  [Address]   │    │
-│  │  business    │  │  Website     │  │  Blog        │  │              │    │
-│  │  with        │  │  Analytics   │  │  Careers     │  │  Nigeria:    │    │
-│  │  technology  │  │              │  │              │  │  [Address]   │    │
-│  │              │  │              │  │              │  │              │    │
-│  └──────────────┘  └──────────────┘  └──────────────┘  └──────────────┘    │
-│                                                                              │
-│  ─────────────────────────────────────────────────────────────────────────  │
-│                                                                              │
-│   © 2026 Tekvwarho IT Solutions Ltd. All rights reserved.                   │
-│                                                                              │
-│   [LinkedIn]  [Twitter]  [Facebook]  [GitHub]                               │
-│                                                                              │
+│ FOOTER │
+│ │
+│ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ │
+│ │ │ │ │ │ │ │ │ │
+│ │ TEKVWA │ │ SERVICES │ │ COMPANY │ │ CONTACT │ │
+│ │ │ │ │ │ │ │ │ │
+│ │ Transform │ │ IT Consult │ │ About Us │ │ Canada: │ │
+│ │ your │ │ Software │ │ Portfolio │ │ [Address] │ │
+│ │ business │ │ Website │ │ Blog │ │ │ │
+│ │ with │ │ Analytics │ │ Careers │ │ Nigeria: │ │
+│ │ technology │ │ │ │ │ │ [Address] │ │
+│ │ │ │ │ │ │ │ │ │
+│ └──────────────┘ └──────────────┘ └──────────────┘ └──────────────┘ │
+│ │
+│ ───────────────────────────────────────────────────────────────────────── │
+│ │
+│ © 2026 Tekvwa IT Solutions Ltd. All rights reserved. │
+│ │
+│ [LinkedIn] [Twitter] [Facebook] [GitHub] │
+│ │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -182,106 +182,106 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                              NAVIGATION BAR                                  │
-│  ┌──────┐                                                                   │
-│  │ LOGO │    Services ▼    About    Portfolio    Blog    [Contact Us]      │
-│  └──────┘                                                                   │
+│ NAVIGATION BAR │
+│ ┌──────┐ │
+│ │ LOGO │ Services ▼ About Portfolio Blog [Contact Us] │
+│ └──────┘ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           SERVICE HERO                                       │
-│                                                                              │
-│              [SERVICE NAME]                                                  │
-│                                                                              │
-│    [Compelling headline that addresses the outcome, not the service]        │
-│                                                                              │
-│    [Brief subtext explaining the value proposition - 2 lines max]           │
-│                                                                              │
-│    ┌─────────────────────────────┐                                          │
-│    │   Talk to an Expert         │                                          │
-│    └─────────────────────────────┘                                          │
-│                                                                              │
+│ SERVICE HERO │
+│ │
+│ [SERVICE NAME] │
+│ │
+│ [Compelling headline that addresses the outcome, not the service] │
+│ │
+│ [Brief subtext explaining the value proposition - 2 lines max] │
+│ │
+│ ┌─────────────────────────────┐ │
+│ │ Talk to an Expert │ │
+│ └─────────────────────────────┘ │
+│ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                     PROBLEMS WE SOLVE SECTION                                │
-│                                                                              │
-│              Does This Sound Familiar?                                       │
-│                                                                              │
-│  ┌─────────────────────────────────────────────────────────────────────────┐│
-│  │  ✗ Pain point 1                                                         ││
-│  │  ✗ Pain point 2                                                         ││
-│  │  ✗ Pain point 3                                                         ││
-│  │  ✗ Pain point 4                                                         ││
-│  └─────────────────────────────────────────────────────────────────────────┘│
-│                                                                              │
-│                    You're in the right place.                                │
-│                                                                              │
+│ PROBLEMS WE SOLVE SECTION │
+│ │
+│ Does This Sound Familiar? │
+│ │
+│ ┌─────────────────────────────────────────────────────────────────────────┐│
+│ │ Pain point 1 ││
+│ │ Pain point 2 ││
+│ │ Pain point 3 ││
+│ │ Pain point 4 ││
+│ └─────────────────────────────────────────────────────────────────────────┘│
+│ │
+│ You're in the right place. │
+│ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                      OUR APPROACH SECTION                                    │
-│                                                                              │
-│                   Our [Service] Approach                                     │
-│                                                                              │
-│   ┌───────────────┐   ┌───────────────┐   ┌───────────────┐                 │
-│   │               │   │               │   │               │                 │
-│   │  [Icon]       │   │  [Icon]       │   │  [Icon]       │                 │
-│   │               │   │               │   │               │                 │
-│   │  Step 1       │   │  Step 2       │   │  Step 3       │                 │
-│   │  Title        │   │  Title        │   │  Title        │                 │
-│   │               │   │               │   │               │                 │
-│   │  Description  │   │  Description  │   │  Description  │                 │
-│   │               │   │               │   │               │                 │
-│   └───────────────┘   └───────────────┘   └───────────────┘                 │
-│                                                                              │
+│ OUR APPROACH SECTION │
+│ │
+│ Our [Service] Approach │
+│ │
+│ ┌───────────────┐ ┌───────────────┐ ┌───────────────┐ │
+│ │ │ │ │ │ │ │
+│ │ [Icon] │ │ [Icon] │ │ [Icon] │ │
+│ │ │ │ │ │ │ │
+│ │ Step 1 │ │ Step 2 │ │ Step 3 │ │
+│ │ Title │ │ Title │ │ Title │ │
+│ │ │ │ │ │ │ │
+│ │ Description │ │ Description │ │ Description │ │
+│ │ │ │ │ │ │ │
+│ └───────────────┘ └───────────────┘ └───────────────┘ │
+│ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                    WHAT YOU GET SECTION                                      │
-│                                                                              │
-│                      What You Get                                            │
-│                                                                              │
-│  ┌─────────────────────────────┐  ┌─────────────────────────────┐           │
-│  │  ✓ Deliverable 1            │  │  ✓ Deliverable 3            │           │
-│  │    Description              │  │    Description              │           │
-│  ├─────────────────────────────┤  ├─────────────────────────────┤           │
-│  │  ✓ Deliverable 2            │  │  ✓ Deliverable 4            │           │
-│  │    Description              │  │    Description              │           │
-│  └─────────────────────────────┘  └─────────────────────────────┘           │
-│                                                                              │
+│ WHAT YOU GET SECTION │
+│ │
+│ What You Get │
+│ │
+│ ┌─────────────────────────────┐ ┌─────────────────────────────┐ │
+│ │ Deliverable 1 │ │ Deliverable 3 │ │
+│ │ Description │ │ Description │ │
+│ ├─────────────────────────────┤ ├─────────────────────────────┤ │
+│ │ Deliverable 2 │ │ Deliverable 4 │ │
+│ │ Description │ │ Description │ │
+│ └─────────────────────────────┘ └─────────────────────────────┘ │
+│ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                    TECH STACK SECTION                                        │
-│                                                                              │
-│                Technologies We Use                                           │
-│                                                                              │
-│  ┌─────┐  ┌─────┐  ┌─────┐  ┌─────┐  ┌─────┐  ┌─────┐  ┌─────┐  ┌─────┐   │
-│  │     │  │     │  │     │  │     │  │     │  │     │  │     │  │     │   │
-│  │Tech │  │Tech │  │Tech │  │Tech │  │Tech │  │Tech │  │Tech │  │Tech │   │
-│  │ 1   │  │ 2   │  │ 3   │  │ 4   │  │ 5   │  │ 6   │  │ 7   │  │ 8   │   │
-│  │     │  │     │  │     │  │     │  │     │  │     │  │     │  │     │   │
-│  └─────┘  └─────┘  └─────┘  └─────┘  └─────┘  └─────┘  └─────┘  └─────┘   │
-│                                                                              │
+│ TECH STACK SECTION │
+│ │
+│ Technologies We Use │
+│ │
+│ ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐ │
+│ │ │ │ │ │ │ │ │ │ │ │ │ │ │ │ │ │
+│ │Tech │ │Tech │ │Tech │ │Tech │ │Tech │ │Tech │ │Tech │ │Tech │ │
+│ │ 1 │ │ 2 │ │ 3 │ │ 4 │ │ 5 │ │ 6 │ │ 7 │ │ 8 │ │
+│ │ │ │ │ │ │ │ │ │ │ │ │ │ │ │ │ │
+│ └─────┘ └─────┘ └─────┘ └─────┘ └─────┘ └─────┘ └─────┘ └─────┘ │
+│ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           CTA SECTION                                        │
-│                                                                              │
-│                Ready to Get Started?                                         │
-│                                                                              │
-│            Let's discuss your [service] needs                                │
-│                                                                              │
-│    ┌─────────────────────────┐    ┌─────────────────────────┐               │
-│    │  Start Your Project     │    │   View Portfolio        │               │
-│    └─────────────────────────┘    └─────────────────────────┘               │
-│                                                                              │
+│ CTA SECTION │
+│ │
+│ Ready to Get Started? │
+│ │
+│ Let's discuss your [service] needs │
+│ │
+│ ┌─────────────────────────┐ ┌─────────────────────────┐ │
+│ │ Start Your Project │ │ View Portfolio │ │
+│ └─────────────────────────┘ └─────────────────────────┘ │
+│ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                            FOOTER                                            │
-│                        [Same as Homepage]                                    │
+│ FOOTER │
+│ [Same as Homepage] │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -291,115 +291,115 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                              NAVIGATION BAR                                  │
-│  ┌──────┐                                                                   │
-│  │ LOGO │    Services ▼    About    Portfolio    Blog    [Contact Us]      │
-│  └──────┘                                                                   │
+│ NAVIGATION BAR │
+│ ┌──────┐ │
+│ │ LOGO │ Services ▼ About Portfolio Blog [Contact Us] │
+│ └──────┘ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                            ABOUT HERO                                        │
-│                                                                              │
-│                         About Tekvwarho                                      │
-│                                                                              │
-│         Technology solutions that put your business first                    │
-│                                                                              │
+│ ABOUT HERO │
+│ │
+│ About Tekvwa │
+│ │
+│ Technology solutions that put your business first │
+│ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                         OUR STORY SECTION                                    │
-│                                                                              │
-│  ┌───────────────────────────┐  ┌───────────────────────────────────────┐   │
-│  │                           │  │                                       │   │
-│  │                           │  │  Our Story                            │   │
-│  │        [IMAGE]            │  │                                       │   │
-│  │                           │  │  Tekvwarho IT Solutions was founded   │   │
-│  │                           │  │  with a simple belief: technology     │   │
-│  │                           │  │  should solve real business problems, │   │
-│  │                           │  │  not create new ones.                 │   │
-│  │                           │  │                                       │   │
-│  │                           │  │  Based in both Canada and Nigeria,    │   │
-│  │                           │  │  we bridge continents to deliver      │   │
-│  │                           │  │  world-class technology solutions.    │   │
-│  │                           │  │                                       │   │
-│  └───────────────────────────┘  └───────────────────────────────────────┘   │
-│                                                                              │
+│ OUR STORY SECTION │
+│ │
+│ ┌───────────────────────────┐ ┌───────────────────────────────────────┐ │
+│ │ │ │ │ │
+│ │ │ │ Our Story │ │
+│ │ [IMAGE] │ │ │ │
+│ │ │ │ Tekvwa IT Solutions was founded │ │
+│ │ │ │ with a simple belief: technology │ │
+│ │ │ │ should solve real business problems, │ │
+│ │ │ │ not create new ones. │ │
+│ │ │ │ │ │
+│ │ │ │ Based in both Canada and Nigeria, │ │
+│ │ │ │ we bridge continents to deliver │ │
+│ │ │ │ world-class technology solutions. │ │
+│ │ │ │ │ │
+│ └───────────────────────────┘ └───────────────────────────────────────┘ │
+│ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                       MISSION & VISION SECTION                               │
-│                                                                              │
-│  ┌───────────────────────────────────┐  ┌───────────────────────────────────┐
-│  │                                   │  │                                   │
-│  │          🎯 Our Mission           │  │          🔭 Our Vision            │
-│  │                                   │  │                                   │
-│  │   To empower businesses with      │  │   To be the trusted technology   │
-│  │   innovative technology           │  │   partner for businesses across  │
-│  │   solutions that drive real       │  │   North America and Africa,      │
-│  │   growth and efficiency.          │  │   known for excellence and       │
-│  │                                   │  │   innovation.                    │
-│  │                                   │  │                                   │
-│  └───────────────────────────────────┘  └───────────────────────────────────┘
-│                                                                              │
+│ MISSION & VISION SECTION │
+│ │
+│ ┌───────────────────────────────────┐ ┌───────────────────────────────────┐
+│ │ │ │ │
+│ │ Our Mission │ │ Our Vision │
+│ │ │ │ │
+│ │ To empower businesses with │ │ To be the trusted technology │
+│ │ innovative technology │ │ partner for businesses across │
+│ │ solutions that drive real │ │ North America and Africa, │
+│ │ growth and efficiency. │ │ known for excellence and │
+│ │ │ │ innovation. │
+│ │ │ │ │
+│ └───────────────────────────────────┘ └───────────────────────────────────┘
+│ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                        CORE VALUES SECTION                                   │
-│                                                                              │
-│                         Our Core Values                                      │
-│                                                                              │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐         │
-│  │             │  │             │  │             │  │             │         │
-│  │  🤝         │  │  💡         │  │  📈         │  │  🎯         │         │
-│  │             │  │             │  │             │  │             │         │
-│  │  Integrity  │  │ Innovation  │  │  Growth     │  │ Excellence  │         │
-│  │             │  │             │  │             │  │             │         │
-│  │  We do      │  │ We embrace  │  │ We grow     │  │ We deliver  │         │
-│  │  what's     │  │ new ideas   │  │ with our    │  │ quality in  │         │
-│  │  right      │  │ and tech    │  │ clients     │  │ everything  │         │
-│  │             │  │             │  │             │  │             │         │
-│  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘         │
-│                                                                              │
+│ CORE VALUES SECTION │
+│ │
+│ Our Core Values │
+│ │
+│ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ │
+│ │ │ │ │ │ │ │ │ │
+│ │ │ │ │ │ │ │ │ │
+│ │ │ │ │ │ │ │ │ │
+│ │ Integrity │ │ Innovation │ │ Growth │ │ Excellence │ │
+│ │ │ │ │ │ │ │ │ │
+│ │ We do │ │ We embrace │ │ We grow │ │ We deliver │ │
+│ │ what's │ │ new ideas │ │ with our │ │ quality in │ │
+│ │ right │ │ and tech │ │ clients │ │ everything │ │
+│ │ │ │ │ │ │ │ │ │
+│ └─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘ │
+│ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                          GLOBAL PRESENCE                                     │
-│                                                                              │
-│                      Our Global Presence                                     │
-│                                                                              │
-│  ┌───────────────────────────────────────────────────────────────────────┐  │
-│  │                                                                       │  │
-│  │                         [WORLD MAP]                                   │  │
-│  │                                                                       │  │
-│  │           🇨🇦 Canada                    🇳🇬 Nigeria                   │  │
-│  │                                                                       │  │
-│  └───────────────────────────────────────────────────────────────────────┘  │
-│                                                                              │
-│  ┌───────────────────────────────┐  ┌───────────────────────────────────┐   │
-│  │                               │  │                                   │   │
-│  │   🇨🇦 Canada Office           │  │   🇳🇬 Nigeria Office             │   │
-│  │                               │  │                                   │   │
-│  │   Serving North American      │  │   Serving African markets         │   │
-│  │   markets                     │  │                                   │   │
-│  │                               │  │                                   │   │
-│  └───────────────────────────────┘  └───────────────────────────────────┘   │
-│                                                                              │
+│ GLOBAL PRESENCE │
+│ │
+│ Our Global Presence │
+│ │
+│ ┌───────────────────────────────────────────────────────────────────────┐ │
+│ │ │ │
+│ │ [WORLD MAP] │ │
+│ │ │ │
+│ │ Canada Nigeria │ │
+│ │ │ │
+│ └───────────────────────────────────────────────────────────────────────┘ │
+│ │
+│ ┌───────────────────────────────┐ ┌───────────────────────────────────┐ │
+│ │ │ │ │ │
+│ │ Canada Office │ │ Nigeria Office │ │
+│ │ │ │ │ │
+│ │ Serving North American │ │ Serving African markets │ │
+│ │ markets │ │ │ │
+│ │ │ │ │ │
+│ └───────────────────────────────┘ └───────────────────────────────────┘ │
+│ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           CTA SECTION                                        │
-│                                                                              │
-│                     Let's Build Something Great                              │
-│                                                                              │
-│              ┌───────────────────────────────┐                              │
-│              │       Get in Touch            │                              │
-│              └───────────────────────────────┘                              │
-│                                                                              │
+│ CTA SECTION │
+│ │
+│ Let's Build Something Great │
+│ │
+│ ┌───────────────────────────────┐ │
+│ │ Get in Touch │ │
+│ └───────────────────────────────┘ │
+│ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                            FOOTER                                            │
-│                        [Same as Homepage]                                    │
+│ FOOTER │
+│ [Same as Homepage] │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -409,71 +409,71 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                              NAVIGATION BAR                                  │
-│  ┌──────┐                                                                   │
-│  │ LOGO │    Services ▼    About    Portfolio    Blog    [Contact Us]      │
-│  └──────┘                                                                   │
+│ NAVIGATION BAR │
+│ ┌──────┐ │
+│ │ LOGO │ Services ▼ About Portfolio Blog [Contact Us] │
+│ └──────┘ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                         PORTFOLIO HERO                                       │
-│                                                                              │
-│                          Our Work                                            │
-│                                                                              │
-│              Solutions that make a real difference                           │
-│                                                                              │
+│ PORTFOLIO HERO │
+│ │
+│ Our Work │
+│ │
+│ Solutions that make a real difference │
+│ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                        FILTER SECTION                                        │
-│                                                                              │
-│   [All]  [Software Development]  [Website]  [Data Analytics]  [Consulting]  │
-│                                                                              │
+│ FILTER SECTION │
+│ │
+│ [All] [Software Development] [Website] [Data Analytics] [Consulting] │
+│ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                       PROJECTS GRID                                          │
-│                                                                              │
-│  ┌─────────────────────────────┐  ┌─────────────────────────────┐           │
-│  │                             │  │                             │           │
-│  │     [PROJECT IMAGE]         │  │     [PROJECT IMAGE]         │           │
-│  │                             │  │                             │           │
-│  ├─────────────────────────────┤  ├─────────────────────────────┤           │
-│  │  Project Title              │  │  Project Title              │           │
-│  │  Category                   │  │  Category                   │           │
-│  │  Brief description          │  │  Brief description          │           │
-│  └─────────────────────────────┘  └─────────────────────────────┘           │
-│                                                                              │
-│  ┌─────────────────────────────┐  ┌─────────────────────────────┐           │
-│  │                             │  │                             │           │
-│  │     [PROJECT IMAGE]         │  │     [PROJECT IMAGE]         │           │
-│  │                             │  │                             │           │
-│  ├─────────────────────────────┤  ├─────────────────────────────┤           │
-│  │  Project Title              │  │  Project Title              │           │
-│  │  Category                   │  │  Category                   │           │
-│  │  Brief description          │  │  Brief description          │           │
-│  └─────────────────────────────┘  └─────────────────────────────┘           │
-│                                                                              │
-│                   [COMING SOON PLACEHOLDER]                                  │
-│       As a new company, we're building our portfolio.                        │
-│       Your project could be our next success story!                          │
-│                                                                              │
+│ PROJECTS GRID │
+│ │
+│ ┌─────────────────────────────┐ ┌─────────────────────────────┐ │
+│ │ │ │ │ │
+│ │ [PROJECT IMAGE] │ │ [PROJECT IMAGE] │ │
+│ │ │ │ │ │
+│ ├─────────────────────────────┤ ├─────────────────────────────┤ │
+│ │ Project Title │ │ Project Title │ │
+│ │ Category │ │ Category │ │
+│ │ Brief description │ │ Brief description │ │
+│ └─────────────────────────────┘ └─────────────────────────────┘ │
+│ │
+│ ┌─────────────────────────────┐ ┌─────────────────────────────┐ │
+│ │ │ │ │ │
+│ │ [PROJECT IMAGE] │ │ [PROJECT IMAGE] │ │
+│ │ │ │ │ │
+│ ├─────────────────────────────┤ ├─────────────────────────────┤ │
+│ │ Project Title │ │ Project Title │ │
+│ │ Category │ │ Category │ │
+│ │ Brief description │ │ Brief description │ │
+│ └─────────────────────────────┘ └─────────────────────────────┘ │
+│ │
+│ [COMING SOON PLACEHOLDER] │
+│ As a new company, we're building our portfolio. │
+│ Your project could be our next success story! │
+│ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           CTA SECTION                                        │
-│                                                                              │
-│               Be Part of Our Growing Portfolio                               │
-│                                                                              │
-│              ┌───────────────────────────────┐                              │
-│              │   Start Your Project Today    │                              │
-│              └───────────────────────────────┘                              │
-│                                                                              │
+│ CTA SECTION │
+│ │
+│ Be Part of Our Growing Portfolio │
+│ │
+│ ┌───────────────────────────────┐ │
+│ │ Start Your Project Today │ │
+│ └───────────────────────────────┘ │
+│ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                            FOOTER                                            │
-│                        [Same as Homepage]                                    │
+│ FOOTER │
+│ [Same as Homepage] │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -483,94 +483,94 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                              NAVIGATION BAR                                  │
-│  ┌──────┐                                                                   │
-│  │ LOGO │    Services ▼    About    Portfolio    Blog    [Contact Us]      │
-│  └──────┘                                                                   │
+│ NAVIGATION BAR │
+│ ┌──────┐ │
+│ │ LOGO │ Services ▼ About Portfolio Blog [Contact Us] │
+│ └──────┘ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                          CONTACT HERO                                        │
-│                                                                              │
-│                         Let's Talk                                           │
-│                                                                              │
-│          Ready to start your project? We're here to help.                    │
-│                                                                              │
+│ CONTACT HERO │
+│ │
+│ Let's Talk │
+│ │
+│ Ready to start your project? We're here to help. │
+│ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                    CONTACT FORM & INFO                                       │
-│                                                                              │
-│  ┌─────────────────────────────────────────────┐  ┌───────────────────────┐ │
-│  │                                             │  │                       │ │
-│  │              GET IN TOUCH                   │  │   CONTACT INFO        │ │
-│  │                                             │  │                       │ │
-│  │  ┌─────────────────────────────────────┐   │  │   📧 Email            │ │
-│  │  │  Your Name                          │   │  │   hello@tekvwarho.com │ │
-│  │  └─────────────────────────────────────┘   │  │                       │ │
-│  │                                             │  │   📱 Phone            │ │
-│  │  ┌─────────────────────────────────────┐   │  │   +1 (XXX) XXX-XXXX   │ │
-│  │  │  Email Address                      │   │  │   +234 XXX XXX XXXX   │ │
-│  │  └─────────────────────────────────────┘   │  │                       │ │
-│  │                                             │  │   🕐 Business Hours   │ │
-│  │  ┌─────────────────────────────────────┐   │  │   Mon-Fri: 9AM-6PM    │ │
-│  │  │  Company Name (Optional)            │   │  │                       │ │
-│  │  └─────────────────────────────────────┘   │  │   ─────────────────   │ │
-│  │                                             │  │                       │ │
-│  │  ┌─────────────────────────────────────┐   │  │   OFFICES             │ │
-│  │  │  Service Interested In        ▼     │   │  │                       │ │
-│  │  └─────────────────────────────────────┘   │  │   🇨🇦 Canada          │ │
-│  │                                             │  │   [Address]           │ │
-│  │  ┌─────────────────────────────────────┐   │  │                       │ │
-│  │  │                                     │   │  │   🇳🇬 Nigeria         │ │
-│  │  │  Tell us about your project...      │   │  │   [Address]           │ │
-│  │  │                                     │   │  │                       │ │
-│  │  │                                     │   │  │   ─────────────────   │ │
-│  │  └─────────────────────────────────────┘   │  │                       │ │
-│  │                                             │  │   FOLLOW US           │ │
-│  │  ┌─────────────────────────────────────┐   │  │                       │ │
-│  │  │        Send Message                 │   │  │   [Li] [Tw] [Fb]      │ │
-│  │  └─────────────────────────────────────┘   │  │                       │ │
-│  │                                             │  │                       │ │
-│  └─────────────────────────────────────────────┘  └───────────────────────┘ │
-│                                                                              │
+│ CONTACT FORM & INFO │
+│ │
+│ ┌─────────────────────────────────────────────┐ ┌───────────────────────┐ │
+│ │ │ │ │ │
+│ │ GET IN TOUCH │ │ CONTACT INFO │ │
+│ │ │ │ │ │
+│ │ ┌─────────────────────────────────────┐ │ │ Email │ │
+│ │ │ Your Name │ │ │ hello@tekvwa.org │ │
+│ │ └─────────────────────────────────────┘ │ │ │ │
+│ │ │ │ Phone │ │
+│ │ ┌─────────────────────────────────────┐ │ │ +1 (XXX) XXX-XXXX │ │
+│ │ │ Email Address │ │ │ +234 XXX XXX XXXX │ │
+│ │ └─────────────────────────────────────┘ │ │ │ │
+│ │ │ │ Business Hours │ │
+│ │ ┌─────────────────────────────────────┐ │ │ Mon-Fri: 9AM-6PM │ │
+│ │ │ Company Name (Optional) │ │ │ │ │
+│ │ └─────────────────────────────────────┘ │ │ ───────────────── │ │
+│ │ │ │ │ │
+│ │ ┌─────────────────────────────────────┐ │ │ OFFICES │ │
+│ │ │ Service Interested In ▼ │ │ │ │ │
+│ │ └─────────────────────────────────────┘ │ │ Canada │ │
+│ │ │ │ [Address] │ │
+│ │ ┌─────────────────────────────────────┐ │ │ │ │
+│ │ │ │ │ │ Nigeria │ │
+│ │ │ Tell us about your project... │ │ │ [Address] │ │
+│ │ │ │ │ │ │ │
+│ │ │ │ │ │ ───────────────── │ │
+│ │ └─────────────────────────────────────┘ │ │ │ │
+│ │ │ │ FOLLOW US │ │
+│ │ ┌─────────────────────────────────────┐ │ │ │ │
+│ │ │ Send Message │ │ │ [Li] [Tw] [Fb] │ │
+│ │ └─────────────────────────────────────┘ │ │ │ │
+│ │ │ │ │ │
+│ └─────────────────────────────────────────────┘ └───────────────────────┘ │
+│ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                      BOOK A CALL SECTION                                     │
-│                                                                              │
-│                   Prefer to Schedule a Call?                                 │
-│                                                                              │
-│  ┌───────────────────────────────────────────────────────────────────────┐  │
-│  │                                                                       │  │
-│  │                      [CALENDAR EMBED PLACEHOLDER]                     │  │
-│  │                                                                       │  │
-│  │                    Book a 30-min Discovery Call                       │  │
-│  │                                                                       │  │
-│  └───────────────────────────────────────────────────────────────────────┘  │
-│                                                                              │
+│ BOOK A CALL SECTION │
+│ │
+│ Prefer to Schedule a Call? │
+│ │
+│ ┌───────────────────────────────────────────────────────────────────────┐ │
+│ │ │ │
+│ │ [CALENDAR EMBED PLACEHOLDER] │ │
+│ │ │ │
+│ │ Book a 30-min Discovery Call │ │
+│ │ │ │
+│ └───────────────────────────────────────────────────────────────────────┘ │
+│ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           FAQ SECTION                                        │
-│                                                                              │
-│                   Frequently Asked Questions                                 │
-│                                                                              │
-│  ┌───────────────────────────────────────────────────────────────────────┐  │
-│  │  + What is your typical project timeline?                             │  │
-│  ├───────────────────────────────────────────────────────────────────────┤  │
-│  │  + How do you price your services?                                    │  │
-│  ├───────────────────────────────────────────────────────────────────────┤  │
-│  │  + Do you work with startups?                                         │  │
-│  ├───────────────────────────────────────────────────────────────────────┤  │
-│  │  + What industries do you specialize in?                              │  │
-│  └───────────────────────────────────────────────────────────────────────┘  │
-│                                                                              │
+│ FAQ SECTION │
+│ │
+│ Frequently Asked Questions │
+│ │
+│ ┌───────────────────────────────────────────────────────────────────────┐ │
+│ │ + What is your typical project timeline? │ │
+│ ├───────────────────────────────────────────────────────────────────────┤ │
+│ │ + How do you price your services? │ │
+│ ├───────────────────────────────────────────────────────────────────────┤ │
+│ │ + Do you work with startups? │ │
+│ ├───────────────────────────────────────────────────────────────────────┤ │
+│ │ + What industries do you specialize in? │ │
+│ └───────────────────────────────────────────────────────────────────────┘ │
+│ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                            FOOTER                                            │
-│                        [Same as Homepage]                                    │
+│ FOOTER │
+│ [Same as Homepage] │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -580,87 +580,87 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                              NAVIGATION BAR                                  │
-│  ┌──────┐                                                                   │
-│  │ LOGO │    Services ▼    About    Portfolio    Blog    [Contact Us]      │
-│  └──────┘                                                                   │
+│ NAVIGATION BAR │
+│ ┌──────┐ │
+│ │ LOGO │ Services ▼ About Portfolio Blog [Contact Us] │
+│ └──────┘ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           BLOG HERO                                          │
-│                                                                              │
-│                      Insights & Resources                                    │
-│                                                                              │
-│          Thoughts on technology, business, and digital transformation        │
-│                                                                              │
+│ BLOG HERO │
+│ │
+│ Insights & Resources │
+│ │
+│ Thoughts on technology, business, and digital transformation │
+│ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                       FEATURED POST                                          │
-│                                                                              │
-│  ┌───────────────────────────────────────────────────────────────────────┐  │
-│  │                                                                       │  │
-│  │  ┌─────────────────────────┐   ┌─────────────────────────────────┐   │  │
-│  │  │                         │   │                                 │   │  │
-│  │  │     [FEATURED IMAGE]    │   │   CATEGORY TAG                  │   │  │
-│  │  │                         │   │                                 │   │  │
-│  │  │                         │   │   Featured Article Title        │   │  │
-│  │  │                         │   │   Goes Here                     │   │  │
-│  │  │                         │   │                                 │   │  │
-│  │  │                         │   │   Brief excerpt from the        │   │  │
-│  │  │                         │   │   article to entice readers...  │   │  │
-│  │  │                         │   │                                 │   │  │
-│  │  │                         │   │   Read More →                   │   │  │
-│  │  │                         │   │                                 │   │  │
-│  │  └─────────────────────────┘   └─────────────────────────────────┘   │  │
-│  │                                                                       │  │
-│  └───────────────────────────────────────────────────────────────────────┘  │
-│                                                                              │
+│ FEATURED POST │
+│ │
+│ ┌───────────────────────────────────────────────────────────────────────┐ │
+│ │ │ │
+│ │ ┌─────────────────────────┐ ┌─────────────────────────────────┐ │ │
+│ │ │ │ │ │ │ │
+│ │ │ [FEATURED IMAGE] │ │ CATEGORY TAG │ │ │
+│ │ │ │ │ │ │ │
+│ │ │ │ │ Featured Article Title │ │ │
+│ │ │ │ │ Goes Here │ │ │
+│ │ │ │ │ │ │ │
+│ │ │ │ │ Brief excerpt from the │ │ │
+│ │ │ │ │ article to entice readers... │ │ │
+│ │ │ │ │ │ │ │
+│ │ │ │ │ Read More → │ │ │
+│ │ │ │ │ │ │ │
+│ │ └─────────────────────────┘ └─────────────────────────────────┘ │ │
+│ │ │ │
+│ └───────────────────────────────────────────────────────────────────────┘ │
+│ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                      CATEGORY FILTER                                         │
-│                                                                              │
-│   [All]  [Digital Transformation]  [Software]  [Analytics]  [Industry]      │
-│                                                                              │
+│ CATEGORY FILTER │
+│ │
+│ [All] [Digital Transformation] [Software] [Analytics] [Industry] │
+│ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                       BLOG POSTS GRID                                        │
-│                                                                              │
-│  ┌─────────────────────┐  ┌─────────────────────┐  ┌─────────────────────┐  │
-│  │                     │  │                     │  │                     │  │
-│  │   [POST IMAGE]      │  │   [POST IMAGE]      │  │   [POST IMAGE]      │  │
-│  │                     │  │                     │  │                     │  │
-│  ├─────────────────────┤  ├─────────────────────┤  ├─────────────────────┤  │
-│  │  Category           │  │  Category           │  │  Category           │  │
-│  │                     │  │                     │  │                     │  │
-│  │  Post Title         │  │  Post Title         │  │  Post Title         │  │
-│  │                     │  │                     │  │                     │  │
-│  │  Brief excerpt...   │  │  Brief excerpt...   │  │  Brief excerpt...   │  │
-│  │                     │  │                     │  │                     │  │
-│  │  📅 Date            │  │  📅 Date            │  │  📅 Date            │  │
-│  └─────────────────────┘  └─────────────────────┘  └─────────────────────┘  │
-│                                                                              │
-│                   [COMING SOON PLACEHOLDER]                                  │
-│       Blog content coming soon. Check back for insights!                     │
-│                                                                              │
+│ BLOG POSTS GRID │
+│ │
+│ ┌─────────────────────┐ ┌─────────────────────┐ ┌─────────────────────┐ │
+│ │ │ │ │ │ │ │
+│ │ [POST IMAGE] │ │ [POST IMAGE] │ │ [POST IMAGE] │ │
+│ │ │ │ │ │ │ │
+│ ├─────────────────────┤ ├─────────────────────┤ ├─────────────────────┤ │
+│ │ Category │ │ Category │ │ Category │ │
+│ │ │ │ │ │ │ │
+│ │ Post Title │ │ Post Title │ │ Post Title │ │
+│ │ │ │ │ │ │ │
+│ │ Brief excerpt... │ │ Brief excerpt... │ │ Brief excerpt... │ │
+│ │ │ │ │ │ │ │
+│ │ Date │ │ Date │ │ Date │ │
+│ └─────────────────────┘ └─────────────────────┘ └─────────────────────┘ │
+│ │
+│ [COMING SOON PLACEHOLDER] │
+│ Blog content coming soon. Check back for insights! │
+│ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                      NEWSLETTER SECTION                                      │
-│                                                                              │
-│                  Stay Updated with Our Insights                              │
-│                                                                              │
-│  ┌───────────────────────────────────┐  ┌─────────────────┐                 │
-│  │  Enter your email                 │  │   Subscribe     │                 │
-│  └───────────────────────────────────┘  └─────────────────┘                 │
-│                                                                              │
+│ NEWSLETTER SECTION │
+│ │
+│ Stay Updated with Our Insights │
+│ │
+│ ┌───────────────────────────────────┐ ┌─────────────────┐ │
+│ │ Enter your email │ │ Subscribe │ │
+│ └───────────────────────────────────┘ └─────────────────┘ │
+│ │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                            FOOTER                                            │
-│                        [Same as Homepage]                                    │
+│ FOOTER │
+│ [Same as Homepage] │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 

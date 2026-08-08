@@ -54,10 +54,14 @@ router.post('/track', async (req, res) => {
         }
 
         // Create analytics event
+        const safePageUrl = (typeof pageUrl === 'string' && pageUrl.trim())
+            ? pageUrl.trim().slice(0, 500)
+            : '/unknown';
+
         await db.query(
             `INSERT INTO analytics_events (id, visitor_id, event_type, page_url, referrer, metadata)
              VALUES ($1, $2, $3, $4, $5, $6)`,
-            [uuidv4(), actualVisitorId, eventType || 'page_view', pageUrl, referrer, metadata ? JSON.stringify(metadata) : null]
+            [uuidv4(), actualVisitorId, eventType || 'page_view', safePageUrl, referrer, metadata ? JSON.stringify(metadata) : null]
         );
 
         res.json({ success: true, visitorId: actualVisitorId });

@@ -1,13 +1,13 @@
 # Deployment Guide
 
-> **Version:** 1.0  
+> **Version:** 1.0 
 > **Last Updated:** January 5, 2026
 
-This guide covers deploying Tekvwarho IT Solutions to various environments.
+This guide covers deploying Tekvwa IT Solutions to various environments.
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Prerequisites](#prerequisites)
 - [Environment Configuration](#environment-configuration)
@@ -55,14 +55,14 @@ PORT=5500
 NODE_ENV=production
 
 # Database
-DATABASE_URL=postgresql://user:password@localhost:5432/tekvwarho_IT_solutions
+DATABASE_URL=postgresql://user:password@localhost:5432/tekvwa_it_solutions
 
 # Authentication (MUST be unique, strong secrets)
 JWT_SECRET=generate-a-256-bit-random-string-here
 JWT_REFRESH_SECRET=generate-another-256-bit-random-string
 
 # Admin Account
-ADMIN_EMAIL=admin@tekvwarho.com
+ADMIN_EMAIL=admin@tekvwa.org
 ADMIN_PASSWORD=strong-initial-password
 
 # Email Configuration
@@ -71,8 +71,8 @@ SMTP_PORT=587
 SMTP_SECURE=false
 SMTP_USER=your-email@gmail.com
 SMTP_PASS=your-app-password
-EMAIL_FROM=noreply@tekvwarho.com
-ADMIN_NOTIFICATION_EMAIL=admin@tekvwarho.com
+EMAIL_FROM=noreply@tekvwa.org
+ADMIN_NOTIFICATION_EMAIL=admin@tekvwa.org
 
 # Rate Limiting (optional)
 RATE_LIMIT_WINDOW_MS=900000
@@ -108,9 +108,9 @@ cp .env.example .env
 # Edit .env with your configuration
 
 # 4. Set up database
-createdb tekvwarho_IT_solutions
-psql -d tekvwarho_IT_solutions -f database/schema.sql
-psql -d tekvwarho_IT_solutions -f database/migrations/003_saved_replies_drafts.sql
+createdb tekvwa_it_solutions
+psql -d tekvwa_it_solutions -f database/schema.sql
+psql -d tekvwa_it_solutions -f database/migrations/003_saved_replies_drafts.sql
 
 # 5. Start development server
 npm run dev
@@ -167,14 +167,14 @@ sudo apt install -y nginx
 sudo -u postgres psql
 
 # Create database and user
-CREATE DATABASE tekvwarho_IT_solutions;
-CREATE USER tekvwarho_user WITH ENCRYPTED PASSWORD 'your-secure-password';
-GRANT ALL PRIVILEGES ON DATABASE tekvwarho_IT_solutions TO tekvwarho_user;
+CREATE DATABASE tekvwa_it_solutions;
+CREATE USER tekvwa_user WITH ENCRYPTED PASSWORD 'your-secure-password';
+GRANT ALL PRIVILEGES ON DATABASE tekvwa_it_solutions TO tekvwa_user;
 \q
 
 # Import schema
-psql -U tekvwarho_user -d tekvwarho_IT_solutions -f database/schema.sql
-psql -U tekvwarho_user -d tekvwarho_IT_solutions -f database/migrations/003_saved_replies_drafts.sql
+psql -U tekvwa_user -d tekvwa_it_solutions -f database/schema.sql
+psql -U tekvwa_user -d tekvwa_it_solutions -f database/migrations/003_saved_replies_drafts.sql
 ```
 
 #### 3. Deploy Application
@@ -182,18 +182,18 @@ psql -U tekvwarho_user -d tekvwarho_IT_solutions -f database/migrations/003_save
 ```bash
 # Clone repository
 cd /var/www
-sudo git clone https://github.com/EfeObus/Tekvwarho-IT-Solutions-Ltd.git tekvwarho
-cd tekvwarho
+sudo git clone https://github.com/EfeObus/Tekvwarho-IT-Solutions-Ltd.git tekvwa
+cd tekvwa
 
 # Install production dependencies
 npm install --production
 
 # Create .env file
 sudo cp .env.example .env
-sudo nano .env  # Configure for production
+sudo nano .env # Configure for production
 
 # Start with PM2
-pm2 start server/index.js --name tekvwarho
+pm2 start server/index.js --name tekvwa
 pm2 save
 pm2 startup
 ```
@@ -201,7 +201,7 @@ pm2 startup
 #### 4. Configure Nginx
 
 ```nginx
-# /etc/nginx/sites-available/tekvwarho
+# /etc/nginx/sites-available/tekvwa
 server {
     listen 80;
     server_name yourdomain.com www.yourdomain.com;
@@ -262,7 +262,7 @@ server {
 
 ```bash
 # Enable site
-sudo ln -s /etc/nginx/sites-available/tekvwarho /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/tekvwa /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl restart nginx
 ```
@@ -302,7 +302,7 @@ npm install -g heroku
 heroku login
 
 # Create app
-heroku create tekvwarho-it-solutions
+heroku create tekvwa-it-solutions
 
 # Add PostgreSQL
 heroku addons:create heroku-postgresql:hobby-dev
@@ -323,23 +323,51 @@ git push heroku main
 3. Follow production deployment steps
 4. Configure firewall (UFW)
 
-### Railway
+### Google Cloud (current production setup)
+
+Tekvwa runs on Cloud Run + Cloud SQL behind a global HTTPS load balancer at [tekvwa.org](https://tekvwa.org). Cloud Run's built-in domain mapping isn't available in every region (it wasn't for `northamerica-northeast1`), so this uses a load balancer + serverless NEG instead, which works in any region.
 
 ```bash
-# Install Railway CLI
-npm install -g @railway/cli
+# One-time setup
+gcloud projects create tekvwa-it-solutions --name="Tekvwa IT Solutions"
+gcloud config set project tekvwa-it-solutions
+gcloud billing projects link tekvwa-it-solutions --billing-account=<ACCOUNT_ID>
+gcloud services enable run.googleapis.com sqladmin.googleapis.com cloudbuild.googleapis.com \
+  artifactregistry.googleapis.com secretmanager.googleapis.com compute.googleapis.com
 
-# Login
-railway login
+# Cloud SQL (Postgres)
+gcloud sql instances create tekvwa-db --database-version=POSTGRES_15 \
+  --tier=db-g1-small --region=northamerica-northeast1 --storage-size=10GB --storage-auto-increase
+gcloud sql databases create tekvwa --instance=tekvwa-db
+gcloud sql users create tekvwa_app --instance=tekvwa-db --password=<DB_PASSWORD>
 
-# Initialize project
-railway init
+# Secrets (JWT_SECRET, DB_PASSWORD, SMTP_PASS, ADMIN_PASSWORD)
+echo -n "<value>" | gcloud secrets create <secret-name> --data-file=-
 
-# Add PostgreSQL
-railway add -p postgresql
+# Deploy (builds from the existing Dockerfile via Cloud Build)
+gcloud run deploy tekvwa-web --source . --region=northamerica-northeast1 \
+  --allow-unauthenticated \
+  --add-cloudsql-instances=tekvwa-it-solutions:northamerica-northeast1:tekvwa-db \
+  --set-env-vars="NODE_ENV=production,DB_HOST=/cloudsql/tekvwa-it-solutions:northamerica-northeast1:tekvwa-db,DB_NAME=tekvwa,DB_USER=tekvwa_app,..." \
+  --set-secrets="DB_PASSWORD=tekvwa-db-password:latest,JWT_SECRET=tekvwa-jwt-secret:latest,..."
+```
 
-# Deploy
-railway up
+Custom domain (load balancer + managed SSL cert, since Cloud Run domain-mappings aren't available in every region):
+
+```bash
+gcloud compute addresses create tekvwa-web-ip --global
+gcloud compute network-endpoint-groups create tekvwa-web-neg --region=northamerica-northeast1 \
+  --network-endpoint-type=serverless --cloud-run-service=tekvwa-web
+gcloud compute backend-services create tekvwa-web-backend --global
+gcloud compute backend-services add-backend tekvwa-web-backend --global \
+  --network-endpoint-group=tekvwa-web-neg --network-endpoint-group-region=northamerica-northeast1
+gcloud compute url-maps create tekvwa-web-urlmap --default-service=tekvwa-web-backend
+gcloud compute ssl-certificates create tekvwa-web-cert --domains=tekvwa.org,www.tekvwa.org --global
+gcloud compute target-https-proxies create tekvwa-web-https-proxy \
+  --url-map=tekvwa-web-urlmap --ssl-certificates=tekvwa-web-cert
+gcloud compute forwarding-rules create tekvwa-web-https-rule \
+  --address=tekvwa-web-ip --global --target-https-proxy=tekvwa-web-https-proxy --ports=443
+# Then point the domain's A record (root and www) at the reserved IP.
 ```
 
 ---
@@ -413,7 +441,7 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 
 ```bash
 # View logs
-pm2 logs tekvwarho
+pm2 logs tekvwa
 
 # Monitor processes
 pm2 monit
@@ -425,8 +453,8 @@ pm2 status
 ### Application Logging
 
 Logs are stored in:
-- `~/.pm2/logs/tekvwarho-out.log` (stdout)
-- `~/.pm2/logs/tekvwarho-error.log` (stderr)
+- `~/.pm2/logs/tekvwa-out.log` (stdout)
+- `~/.pm2/logs/tekvwa-error.log` (stderr)
 
 ### Log Rotation
 
@@ -457,13 +485,13 @@ See [BACKUP_RECOVERY.md](./BACKUP_RECOVERY.md) for complete backup procedures.
 
 ```bash
 # Database backup
-pg_dump -h localhost -U tekvwarho_user -d tekvwarho_IT_solutions > backup_$(date +%Y%m%d).sql
+pg_dump -h localhost -U tekvwa_user -d tekvwa_it_solutions > backup_$(date +%Y%m%d).sql
 
 # Compressed backup
-pg_dump -h localhost -U tekvwarho_user -d tekvwarho_IT_solutions | gzip > backup_$(date +%Y%m%d).sql.gz
+pg_dump -h localhost -U tekvwa_user -d tekvwa_it_solutions | gzip > backup_$(date +%Y%m%d).sql.gz
 
 # Restore
-psql -h localhost -U tekvwarho_user -d tekvwarho_IT_solutions < backup.sql
+psql -h localhost -U tekvwa_user -d tekvwa_it_solutions < backup.sql
 ```
 
 ### Automated Backups
@@ -474,7 +502,7 @@ cat > /home/ubuntu/backup.sh << 'EOF'
 #!/bin/bash
 BACKUP_DIR=/home/ubuntu/backups
 DATE=$(date +%Y%m%d_%H%M%S)
-pg_dump -h localhost -U tekvwarho_user tekvwarho_IT_solutions | gzip > $BACKUP_DIR/db_$DATE.sql.gz
+pg_dump -h localhost -U tekvwa_user tekvwa_it_solutions | gzip > $BACKUP_DIR/db_$DATE.sql.gz
 find $BACKUP_DIR -mtime +7 -delete
 EOF
 
@@ -507,7 +535,7 @@ kill -9 <PID>
 sudo systemctl status postgresql
 
 # Check connection
-psql -h localhost -U tekvwarho_user -d tekvwarho_IT_solutions
+psql -h localhost -U tekvwa_user -d tekvwa_it_solutions
 
 # Check logs
 sudo tail -f /var/log/postgresql/postgresql-14-main.log
@@ -517,11 +545,11 @@ sudo tail -f /var/log/postgresql/postgresql-14-main.log
 
 ```bash
 # Restart application
-pm2 restart tekvwarho
+pm2 restart tekvwa
 
 # Delete and restart
-pm2 delete tekvwarho
-pm2 start server/index.js --name tekvwarho
+pm2 delete tekvwa
+pm2 start server/index.js --name tekvwa
 
 # Clear PM2 logs
 pm2 flush
@@ -557,4 +585,4 @@ sudo certbot renew --force-renewal
 
 ## Support
 
-For deployment assistance, contact **talk2efeprogress@gmail.com**
+For deployment assistance, contact **info@tekvwa.org**

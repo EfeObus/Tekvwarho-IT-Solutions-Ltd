@@ -11,6 +11,7 @@ const Visitor = require('../models/Visitor');
 const Staff = require('../models/Staff');
 const { sendContactNotification, sendContactConfirmation } = require('../services/emailService');
 const AuditService = require('../services/auditService');
+const { authMiddleware, hasPermission } = require('../middleware/auth');
 
 // Validation rules
 const contactValidation = [
@@ -92,9 +93,9 @@ router.post('/', contactValidation, async (req, res) => {
 
 /**
  * GET /api/contact
- * Get all messages (admin only - add auth middleware in production)
+ * Get all messages (admin only)
  */
-router.get('/', async (req, res) => {
+router.get('/', authMiddleware, hasPermission('can_manage_messages'), async (req, res) => {
     try {
         const { status, limit, offset } = req.query;
         const messages = await Message.findAll({
@@ -116,7 +117,7 @@ router.get('/', async (req, res) => {
  * GET /api/contact/:id
  * Get a single message
  */
-router.get('/:id', async (req, res) => {
+router.get('/:id', authMiddleware, hasPermission('can_manage_messages'), async (req, res) => {
     try {
         const message = await Message.findById(req.params.id);
         if (!message) {
@@ -146,7 +147,7 @@ router.get('/:id', async (req, res) => {
  * PATCH /api/contact/:id/status
  * Update message status
  */
-router.patch('/:id/status', async (req, res) => {
+router.patch('/:id/status', authMiddleware, hasPermission('can_manage_messages'), async (req, res) => {
     try {
         const { status, assignedTo, staffId } = req.body;
         const validStatuses = ['new', 'in_progress', 'converted', 'archived'];
@@ -193,7 +194,7 @@ router.patch('/:id/status', async (req, res) => {
  * POST /api/contact/:id/reply
  * Reply to a message
  */
-router.post('/:id/reply', [
+router.post('/:id/reply', authMiddleware, hasPermission('can_manage_messages'), [
     body('content').trim().notEmpty().withMessage('Reply content is required'),
     body('staffId').notEmpty().withMessage('Staff ID is required')
 ], async (req, res) => {

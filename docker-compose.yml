@@ -1,4 +1,4 @@
-# Tekvwarho IT Solutions - Docker Compose Configuration
+# Tekvwa IT Solutions - Docker Compose Configuration
 # Run with: docker-compose up -d
 
 version: '3.8'
@@ -11,7 +11,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: tekvwarho-app
+    container_name: tekvwa-app
     restart: unless-stopped
     ports:
       - "${PORT:-5500}:5500"
@@ -20,7 +20,7 @@ services:
       - PORT=5500
       - DB_HOST=postgres
       - DB_PORT=5432
-      - DB_NAME=${DB_NAME:-tekvwarho}
+      - DB_NAME=${DB_NAME:-tekvwa}
       - DB_USER=${DB_USER:-postgres}
       - DB_PASSWORD=${DB_PASSWORD:-postgres}
       - JWT_SECRET=${JWT_SECRET}
@@ -29,14 +29,14 @@ services:
       - SMTP_USER=${SMTP_USER}
       - SMTP_PASS=${SMTP_PASS}
       - EMAIL_FROM=${EMAIL_FROM}
-      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@tekvwarho.com}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-TekvwarhoAdmin2026!}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-info@tekvwa.org}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-TekvwaAdmin2026!}
       - SITE_URL=${SITE_URL:-http://localhost:5500}
     depends_on:
       postgres:
         condition: service_healthy
     networks:
-      - tekvwarho-network
+      - tekvwa-network
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5500/api/health"]
       interval: 30s
@@ -49,21 +49,21 @@ services:
   # ===========================================
   postgres:
     image: postgres:16-alpine
-    container_name: tekvwarho-db
+    container_name: tekvwa-db
     restart: unless-stopped
     ports:
       - "${DB_PORT:-5432}:5432"
     environment:
-      - POSTGRES_DB=${DB_NAME:-tekvwarho}
+      - POSTGRES_DB=${DB_NAME:-tekvwa}
       - POSTGRES_USER=${DB_USER:-postgres}
       - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
     networks:
-      - tekvwarho-network
+      - tekvwa-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-tekvwarho}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-tekvwa}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -73,7 +73,7 @@ services:
   # ===========================================
   nginx:
     image: nginx:alpine
-    container_name: tekvwarho-nginx
+    container_name: tekvwa-nginx
     restart: unless-stopped
     ports:
       - "80:80"
@@ -84,7 +84,7 @@ services:
     depends_on:
       - app
     networks:
-      - tekvwarho-network
+      - tekvwa-network
     profiles:
       - production
 
@@ -92,7 +92,7 @@ services:
 # Networks
 # ===========================================
 networks:
-  tekvwarho-network:
+  tekvwa-network:
     driver: bridge
 
 # ===========================================

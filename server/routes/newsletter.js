@@ -8,6 +8,7 @@ const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const pool = require('../config/database');
 const { v4: uuidv4 } = require('uuid');
+const { authMiddleware, adminOnly } = require('../middleware/auth');
 
 // Validation rules
 const subscribeValidation = [
@@ -123,7 +124,7 @@ router.post('/unsubscribe', async (req, res) => {
  * GET /api/newsletter/subscribers
  * List all subscribers (admin only)
  */
-router.get('/subscribers', async (req, res) => {
+router.get('/subscribers', authMiddleware, adminOnly, async (req, res) => {
     try {
         const { active } = req.query;
 

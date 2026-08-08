@@ -9,7 +9,7 @@ const { body, validationResult } = require('express-validator');
 const Consultation = require('../models/Consultation');
 const Visitor = require('../models/Visitor');
 const Staff = require('../models/Staff');
-const { sendBookingConfirmation, sendBookingNotification } = require('../services/emailService');
+const { sendBookingConfirmation, sendBookingNotification, sendBookingStatusConfirmed, sendBookingStatusCancelled } = require('../services/emailService');
 const { authMiddleware, hasPermission } = require('../middleware/auth');
 const db = require('../config/database');
 const AuditService = require('../services/auditService');
@@ -27,10 +27,10 @@ const bookingValidation = [
 ];
 
 /**
- * POST /api/consultation/book
- * Book a new consultation (public endpoint)
+ * Shared handler for booking a consultation, used by both
+ * POST /api/consultation/book and POST /api/consultations (alias)
  */
-router.post('/book', bookingValidation, async (req, res) => {
+const bookConsultation = async (req, res) => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -126,23 +126,25 @@ router.post('/book', bookingValidation, async (req, res) => {
             message: 'Failed to book consultation. Please try again.'
         });
     }
-});
+};
+
+/**
+ * POST /api/consultation/book
+ * Book a new consultation (public endpoint)
+ */
+router.post('/book', bookingValidation, bookConsultation);
 
 /**
  * POST /api/consultations
  * Book a new consultation (alias for /book)
  */
-router.post('/', bookingValidation, async (req, res) => {
-    // Forward to /book handler logic
-    req.url = '/book';
-    router.handle(req, res, () => {});
-});
+router.post('/', bookingValidation, bookConsultation);
 
 /**
  * GET /api/consultations/stats or /api/admin/consultations/stats
  * Get consultation stats for a staff member
  */
-router.get('/stats', async (req, res) => {
+router.get('/stats', authMiddleware, hasPermission('can_manage_consultations'), async (req, res) => {
     try {
         const { assigned_to } = req.query;
         const today = new Date().toISOString().split('T')[0];
@@ -251,7 +253,7 @@ router.get('/slots', async (req, res) => {
  * GET /api/consultations
  * Get all consultations (admin) or filtered by assigned_to (staff)
  */
-router.get('/', async (req, res) => {
+router.get('/', authMiddleware, hasPermission('can_manage_consultations'), async (req, res) => {
     try {
         const { status, startDate, endDate, limit, offset, assigned_to, date_from, date_to } = req.query;
         const consultations = await Consultation.findAll({
@@ -276,7 +278,7 @@ router.get('/', async (req, res) => {
  * GET /api/consultations/upcoming
  * Get upcoming consultations
  */
-router.get('/upcoming', async (req, res) => {
+router.get('/upcoming', authMiddleware, hasPermission('can_manage_consultations'), async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 5;
         const consultations = await Consultation.getUpcoming(limit);
@@ -294,7 +296,7 @@ router.get('/upcoming', async (req, res) => {
  * GET /api/consultations/:id
  * Get a single consultation
  */
-router.get('/:id', async (req, res) => {
+router.get('/:id', authMiddleware, hasPermission('can_manage_consultations'), async (req, res) => {
     try {
         const consultation = await Consultation.findById(req.params.id);
         if (!consultation) {
@@ -317,7 +319,7 @@ router.get('/:id', async (req, res) => {
  * PATCH /api/consultations/:id
  * Update a consultation
  */
-router.patch('/:id', async (req, res) => {
+router.patch('/:id', authMiddleware, hasPermission('can_manage_consultations'), async (req, res) => {
     try {
         const consultation = await Consultation.update(req.params.id, req.body);
         if (!consultation) {
@@ -353,7 +355,7 @@ router.patch('/:id', async (req, res) => {
  * PATCH /api/consultations/:id/status
  * Update consultation status
  */
-router.patch('/:id/status', async (req, res) => {
+router.patch('/:id/status', authMiddleware, hasPermission('can_manage_consultations'), async (req, res) => {
     try {
         const { status, assignedTo, staffId } = req.body;
         const validStatuses = ['pending', 'confirmed', 'completed', 'cancelled'];
@@ -383,6 +385,15 @@ router.patch('/:id/status', async (req, res) => {
             // Log assignment if different
             if (assignedTo && assignedTo !== oldConsultation?.assigned_to) {
                 await AuditService.logAssignment(staffId, 'consultation', req.params.id, assignedTo, req.ip);
+            }
+        }
+
+        // Notify the customer when staff confirms or cancels (skip no-op updates)
+        if (status !== oldConsultation?.status) {
+            if (status === 'confirmed') {
+                sendBookingStatusConfirmed(consultation).catch(err => console.error('Email error:', err));
+            } else if (status === 'cancelled') {
+                sendBookingStatusCancelled(consultation).catch(err => console.error('Email error:', err));
             }
         }
 

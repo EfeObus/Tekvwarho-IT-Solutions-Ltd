@@ -1,5 +1,5 @@
 /**
- * Tekvwarho IT Solutions - Cookie Consent Manager
+ * Tekvwa IT Solutions - Cookie Consent Manager
  * Version: 1.0.0
  * 
  * GDPR and CCPA compliant cookie consent management
@@ -12,7 +12,7 @@
     // Cookie consent configuration
     const CookieConsent = {
         // Cookie settings
-        cookieName: 'tekvwarho_cookie_consent',
+        cookieName: 'tekvwa_cookie_consent',
         cookieExpiry: 365, // days
         version: '1.0',
 

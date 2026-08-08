@@ -115,7 +115,7 @@ class SavedRepliesManager {
                             <div class="reply-preview">${this.escapeHtml(reply.content.substring(0, 100))}${reply.content.length > 100 ? '...' : ''}</div>
                             <div class="reply-meta">
                                 <span class="reply-category">${this.formatCategoryName(reply.category)}</span>
-                                ${reply.is_global ? '<span class="reply-global" title="Available to all staff">🌐</span>' : ''}
+                                ${reply.is_global ? '<span class="reply-global" title="Available to all staff"><i class="fas fa-globe"></i></span>' : ''}
                                 ${reply.use_count > 0 ? `<span class="reply-usage">Used ${reply.use_count}x</span>` : ''}
                             </div>
                             <div class="reply-actions">
@@ -606,10 +606,10 @@ class DraftManager {
         if (!this.statusElement) return;
         
         const statusMessages = {
-            typing: '✏️ Typing...',
-            saving: '💾 Saving draft...',
-            saved: '✅ Draft saved',
-            error: '❌ Error saving draft',
+            typing: 'Typing...',
+            saving: 'Saving draft...',
+            saved: 'Draft saved',
+            error: 'Error saving draft',
             cleared: ''
         };
         
@@ -632,7 +632,7 @@ class DraftManager {
         const notification = document.createElement('div');
         notification.className = 'draft-notification';
         notification.innerHTML = `
-            <span>📝 Draft restored</span>
+            <span><i class="fas fa-file-pen"></i> Draft restored</span>
             <button class="discard-draft">Discard</button>
         `;
         

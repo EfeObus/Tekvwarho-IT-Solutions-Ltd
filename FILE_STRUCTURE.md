@@ -1,38 +1,38 @@
 # File Structure
 
-> **Version:** 1.2  
+> **Version:** 1.2 
 > **Last Updated:** January 5, 2026
 
-Detailed breakdown of the Tekvwarho IT Solutions project structure.
+Detailed breakdown of the Tekvwa IT Solutions project structure.
 
 ---
 
 ## Root Directory
 
 ```
-tekvwarho-it-solutions/
-├── 📄 README.md                    # Main project documentation
-├── 📄 ROADMAP.md                   # Security & Feature Roadmap
-├── 📄 SECURITY_POLICY.md           # Security policies and procedures
-├── 📄 BACKUP_RECOVERY.md           # Backup and disaster recovery plan
-├── 📄 TECH_STACK.md                # Technology stack documentation
-├── 📄 FILE_STRUCTURE.md            # This file - structure overview
-├── 📄 API_DOCUMENTATION.md         # API reference (duplicate in /docs)
-├── 📄 package.json                 # Node.js project configuration
-├── 📄 package-lock.json            # Dependency lock file
-├── 📄 .env.example                 # Environment variables template
-├── 📄 .env                         # Local environment variables (not in git)
-├── 📄 .gitignore                   # Git ignore rules
+tekvwa-it-solutions/
+├── README.md # Main project documentation
+├── ROADMAP.md # Security & Feature Roadmap
+├── SECURITY_POLICY.md # Security policies and procedures
+├── BACKUP_RECOVERY.md # Backup and disaster recovery plan
+├── TECH_STACK.md # Technology stack documentation
+├── FILE_STRUCTURE.md # This file - structure overview
+├── API_DOCUMENTATION.md # API reference (duplicate in /docs)
+├── package.json # Node.js project configuration
+├── package-lock.json # Dependency lock file
+├── .env.example # Environment variables template
+├── .env # Local environment variables (not in git)
+├── .gitignore # Git ignore rules
 │
-├── 📂 admin/                       # Admin dashboard frontend
-├── 📂 server/                      # Backend Node.js application
-├── 📂 database/                    # Database schema and migrations
-├── 📂 docs/                        # Additional documentation
-├── 📂 css/                         # Public website styles
-├── 📂 js/                          # Public website JavaScript
-├── 📂 img/                         # Images and assets
-├── 📂 users/                       # User uploads/data
-└── 📂 node_modules/                # npm dependencies (not in git)
+├── admin/ # Admin dashboard frontend
+├── server/ # Backend Node.js application
+├── database/ # Database schema and migrations
+├── docs/ # Additional documentation
+├── css/ # Public website styles
+├── js/ # Public website JavaScript
+├── img/ # Images and assets
+├── users/ # User uploads/data
+└── node_modules/ # npm dependencies (not in git)
 ```
 
 ---
@@ -338,7 +338,7 @@ PORT=5500
 NODE_ENV=development
 
 # Database
-DATABASE_URL=postgresql://user:password@localhost:5432/tekvwarho_IT_solutions
+DATABASE_URL=postgresql://user:password@localhost:5432/tekvwa_it_solutions
 
 # Authentication
 JWT_SECRET=your-jwt-secret
@@ -349,10 +349,10 @@ SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your-email@gmail.com
 SMTP_PASS=your-app-password
-EMAIL_FROM=noreply@tekvwarho.com
+EMAIL_FROM=noreply@tekvwa.org
 
 # Admin
-ADMIN_EMAIL=admin@tekvwarho.com
+ADMIN_EMAIL=admin@tekvwa.org
 ADMIN_PASSWORD=your-secure-password
 ```
 
@@ -361,10 +361,10 @@ ADMIN_PASSWORD=your-secure-password
 ## Scripts
 
 ```bash
-npm start          # Start production server
-npm run dev        # Start development server (nodemon)
-npm run db:init    # Initialize database
-npm run db:seed    # Seed sample data
-npm test           # Run tests
+npm start # Start production server
+npm run dev # Start development server (nodemon)
+npm run db:init # Initialize database
+npm run db:seed # Seed sample data
+npm test # Run tests
 ```
 

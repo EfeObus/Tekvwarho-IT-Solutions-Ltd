@@ -4,7 +4,7 @@
  *
  * Seeds the database with sample data for development and testing.
  * WARNING: This will insert sample data - do not run in production!
- * Supports Railway DATABASE_URL and local PostgreSQL
+ * Supports DATABASE_URL (hosted providers) and local PostgreSQL
  */
 
 require('dotenv').config();
@@ -12,7 +12,7 @@ const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 
-// Configure pool - prefer DATABASE_URL for Railway/cloud deployments
+// Configure pool - prefer DATABASE_URL when set, otherwise local Postgres
 const poolConfig = process.env.DATABASE_URL
     ? {
         connectionString: process.env.DATABASE_URL,
@@ -21,7 +21,7 @@ const poolConfig = process.env.DATABASE_URL
     : {
         host: process.env.DB_HOST || 'localhost',
         port: process.env.DB_PORT || 5432,
-        database: process.env.DB_NAME || 'tekvwarho',
+        database: process.env.DB_NAME || 'tekvwa',
         user: process.env.DB_USER || 'postgres',
         password: process.env.DB_PASSWORD || ''
     };
@@ -29,17 +29,17 @@ const poolConfig = process.env.DATABASE_URL
 const pool = new Pool(poolConfig);
 
 async function seedDatabase() {
-    console.log('\n🌱 Starting database seeding...\n');
+    console.log('\nStarting database seeding...\n');
 
     try {
         // =====================
         // Seed Staff Members
         // =====================
-        console.log('👥 Seeding staff members...');
+        console.log('Seeding staff members...');
 
         const staffMembers = [
             {
-                email: 'john.doe@tekvwarho.com',
+                email: 'john.doe@tekvwa.org',
                 password: 'Staff123!',
                 name: 'John Doe',
                 role: 'manager',
@@ -51,7 +51,7 @@ async function seedDatabase() {
                 can_view_analytics: true
             },
             {
-                email: 'jane.smith@tekvwarho.com',
+                email: 'jane.smith@tekvwa.org',
                 password: 'Staff123!',
                 name: 'Jane Smith',
                 role: 'staff',
@@ -63,7 +63,7 @@ async function seedDatabase() {
                 can_view_analytics: false
             },
             {
-                email: 'mike.wilson@tekvwarho.com',
+                email: 'mike.wilson@tekvwa.org',
                 password: 'Staff123!',
                 name: 'Mike Wilson',
                 role: 'staff',
@@ -101,17 +101,17 @@ async function seedDatabase() {
                     ]
                 );
                 staffIds.push(result.rows[0].id);
-                console.log(`  ✓ Created staff: ${staff.email}`);
+                console.log(`Created staff: ${staff.email}`);
             } else {
                 staffIds.push(existingStaff.rows[0].id);
-                console.log(`  - Staff exists: ${staff.email}`);
+                console.log(`- Staff exists: ${staff.email}`);
             }
         }
 
         // =====================
         // Seed Visitors
         // =====================
-        console.log('\n👤 Seeding visitors...');
+        console.log('\nSeeding visitors...');
 
         const visitors = [
             { name: 'Alice Johnson', email: 'alice.johnson@example.com', source: 'google' },
@@ -135,17 +135,17 @@ async function seedDatabase() {
                     [visitor.name, visitor.email, visitor.source, Math.floor(Math.random() * 10) + 1]
                 );
                 visitorIds.push(result.rows[0].id);
-                console.log(`  ✓ Created visitor: ${visitor.email}`);
+                console.log(`Created visitor: ${visitor.email}`);
             } else {
                 visitorIds.push(existingVisitor.rows[0].id);
-                console.log(`  - Visitor exists: ${visitor.email}`);
+                console.log(`- Visitor exists: ${visitor.email}`);
             }
         }
 
         // =====================
         // Seed Messages
         // =====================
-        console.log('\n📧 Seeding contact messages...');
+        console.log('\nSeeding contact messages...');
 
         const services = ['IT Consulting', 'Software Development', 'Website Development', 'Data Analytics'];
         const messages = [
@@ -207,16 +207,16 @@ async function seedDatabase() {
                      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
                     [visitorId, msg.name, msg.email, msg.company, msg.service, msg.message, msg.status, assignedTo]
                 );
-                console.log(`  ✓ Created message from: ${msg.email}`);
+                console.log(`Created message from: ${msg.email}`);
             } else {
-                console.log(`  - Message exists from: ${msg.email}`);
+                console.log(`- Message exists from: ${msg.email}`);
             }
         }
 
         // =====================
         // Seed Consultations
         // =====================
-        console.log('\n📅 Seeding consultations...');
+        console.log('\nSeeding consultations...');
 
         const today = new Date();
         const consultations = [
@@ -288,16 +288,16 @@ async function seedDatabase() {
                         consult.booking_time, consult.notes, consult.status, assignedTo
                     ]
                 );
-                console.log(`  ✓ Created consultation for: ${consult.email}`);
+                console.log(`Created consultation for: ${consult.email}`);
             } else {
-                console.log(`  - Consultation exists for: ${consult.email}`);
+                console.log(`- Consultation exists for: ${consult.email}`);
             }
         }
 
         // =====================
         // Seed Newsletter Subscribers
         // =====================
-        console.log('\n📰 Seeding newsletter subscribers...');
+        console.log('\nSeeding newsletter subscribers...');
 
         const subscribers = [
             { email: 'subscriber1@example.com', name: 'Subscriber One' },
@@ -318,16 +318,16 @@ async function seedDatabase() {
                     'INSERT INTO newsletter_subscribers (email, name, source) VALUES ($1, $2, $3)',
                     [sub.email, sub.name, 'seed']
                 );
-                console.log(`  ✓ Created subscriber: ${sub.email}`);
+                console.log(`Created subscriber: ${sub.email}`);
             } else {
-                console.log(`  - Subscriber exists: ${sub.email}`);
+                console.log(`- Subscriber exists: ${sub.email}`);
             }
         }
 
         // =====================
         // Seed Analytics Events
         // =====================
-        console.log('\n📊 Seeding analytics events...');
+        console.log('\nSeeding analytics events...');
 
         const eventTypes = ['page_view', 'form_submit', 'chat_start', 'booking'];
         const pages = ['/', '/it-consulting.html', '/software-development.html', '/website-development.html', '/data-analytics.html', '/contact.html', '/book-consultation.html'];
@@ -345,29 +345,29 @@ async function seedDatabase() {
                 [visitorId, eventType, pageUrl, eventDate]
             );
         }
-        console.log('  ✓ Created 50 analytics events');
+        console.log('Created 50 analytics events');
 
         // =====================
         // Summary
         // =====================
         console.log('\n' + '='.repeat(50));
-        console.log('🎉 Database seeding complete!');
+        console.log('Database seeding complete!');
         console.log('='.repeat(50));
-        console.log('\n📋 Sample Login Credentials:');
+        console.log('\nSample Login Credentials:');
         console.log('-'.repeat(50));
         console.log('Admin:');
-        console.log(`  Email: ${process.env.ADMIN_EMAIL || 'admin@tekvwarho.com'}`);
-        console.log(`  Password: ${process.env.ADMIN_PASSWORD || 'TekvwarhoAdmin2026!'}`);
+        console.log(`Email: ${process.env.ADMIN_EMAIL || 'admin@tekvwa.org'}`);
+        console.log(`Password: ${process.env.ADMIN_PASSWORD || 'TekvwaAdmin2026!'}`);
         console.log('\nStaff Members:');
         staffMembers.forEach(staff => {
-            console.log(`  ${staff.name} (${staff.role})`);
-            console.log(`    Email: ${staff.email}`);
-            console.log(`    Password: ${staff.password}`);
+            console.log(`${staff.name} (${staff.role})`);
+            console.log(`Email: ${staff.email}`);
+            console.log(`Password: ${staff.password}`);
         });
         console.log('-'.repeat(50) + '\n');
 
     } catch (error) {
-        console.error('\n❌ Seeding failed:', error);
+        console.error('\nSeeding failed:', error);
         process.exit(1);
     } finally {
         await pool.end();

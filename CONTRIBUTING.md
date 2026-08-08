@@ -1,13 +1,13 @@
-# Contributing to Tekvwarho IT Solutions
+# Contributing to Tekvwa IT Solutions
 
-> **Version:** 1.0  
+> **Version:** 1.0 
 > **Last Updated:** January 5, 2026
 
-Thank you for considering contributing to Tekvwarho IT Solutions! This document provides guidelines and standards for contributing to this project.
+Thank you for considering contributing to Tekvwa IT Solutions! This document provides guidelines and standards for contributing to this project.
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Code of Conduct](#code-of-conduct)
 - [Getting Started](#getting-started)
@@ -68,8 +68,8 @@ Thank you for considering contributing to Tekvwarho IT Solutions! This document 
 
 4. **Initialize database**
    ```bash
-   createdb tekvwarho_IT_solutions
-   psql -d tekvwarho_IT_solutions -f database/schema.sql
+   createdb tekvwa_it_solutions
+   psql -d tekvwa_it_solutions -f database/schema.sql
    ```
 
 5. **Start development server**
@@ -84,11 +84,11 @@ Thank you for considering contributing to Tekvwarho IT Solutions! This document 
 ### Branch Naming Convention
 
 ```
-feature/    - New features (feature/add-user-export)
-bugfix/     - Bug fixes (bugfix/fix-login-error)
-security/   - Security updates (security/update-jwt-expiry)
-docs/       - Documentation (docs/update-api-docs)
-refactor/   - Code refactoring (refactor/clean-auth-logic)
+feature/ - New features (feature/add-user-export)
+bugfix/ - Bug fixes (bugfix/fix-login-error)
+security/ - Security updates (security/update-jwt-expiry)
+docs/ - Documentation (docs/update-api-docs)
+refactor/ - Code refactoring (refactor/clean-auth-logic)
 ```
 
 ### Workflow
@@ -300,13 +300,13 @@ docs(api): update authentication documentation
 
 ### Before Submitting
 
-1. ✅ Code follows style guidelines
-2. ✅ All tests pass
-3. ✅ New code has appropriate tests
-4. ✅ Documentation is updated
-5. ✅ No console.log statements left behind
-6. ✅ No commented-out code
-7. ✅ Branch is up to date with main
+1. Code follows style guidelines
+2. All tests pass
+3. New code has appropriate tests
+4. Documentation is updated
+5. No console.log statements left behind
+6. No commented-out code
+7. Branch is up to date with main
 
 ### PR Template
 
@@ -409,29 +409,29 @@ describe('POST /api/admin/login', () => {
 
 ### DO
 
-- ✅ Use parameterized queries for all database operations
-- ✅ Validate and sanitize all user input
-- ✅ Use bcrypt for password hashing
-- ✅ Implement rate limiting on sensitive endpoints
-- ✅ Use HTTPS in production
-- ✅ Log security events to audit log
-- ✅ Use environment variables for secrets
+- Use parameterized queries for all database operations
+- Validate and sanitize all user input
+- Use bcrypt for password hashing
+- Implement rate limiting on sensitive endpoints
+- Use HTTPS in production
+- Log security events to audit log
+- Use environment variables for secrets
 
 ### DON'T
 
-- ❌ Never log passwords or tokens
-- ❌ Never commit secrets to repository
-- ❌ Never trust user input
-- ❌ Never expose stack traces in production
-- ❌ Never disable security headers
-- ❌ Never use eval() or similar
+- Never log passwords or tokens
+- Never commit secrets to repository
+- Never trust user input
+- Never expose stack traces in production
+- Never disable security headers
+- Never use eval() or similar
 
 ### Reporting Security Issues
 
 If you discover a security vulnerability:
 
 1. **DO NOT** open a public issue
-2. Email **talk2efeprogress@gmail.com** with:
+2. Email **info@tekvwa.org** with:
    - Description of vulnerability
    - Steps to reproduce
    - Potential impact
@@ -441,10 +441,10 @@ If you discover a security vulnerability:
 
 ## Questions?
 
-Contact **talk2efeprogress@gmail.com** for any questions about contributing.
+Contact **info@tekvwa.org** for any questions about contributing.
 
 ---
 
 <p align="center">
-  <strong>Thank you for contributing to Tekvwarho IT Solutions!</strong>
+  <strong>Thank you for contributing to Tekvwa IT Solutions!</strong>
 </p>

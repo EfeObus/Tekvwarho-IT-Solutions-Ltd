@@ -1,4 +1,4 @@
-# Tekvwarho IT Solutions - Website Navigation Guide
+# Tekvwa IT Solutions - Website Navigation Guide
 
 This document provides a comprehensive overview of all website links and how to access different areas of the application.
 
@@ -51,8 +51,8 @@ http://localhost:5500/admin/login.html
 ```
 
 ### Default Admin Credentials
-- **Email:** `admin@tekvwarho.com`
-- **Password:** `TekvwarhoAdmin2026!`
+- **Email:** `admin@tekvwa.org`
+- **Password:** `TekvwaAdmin2026!`
 
 ### Admin Pages
 
@@ -187,7 +187,7 @@ Query Parameters:
 ### For Administrators
 
 1. **Login**: Navigate to `http://localhost:5500/admin/login.html`
-2. **Use credentials**: `admin@tekvwarho.com` / `TekvwarhoAdmin2026!`
+2. **Use credentials**: `admin@tekvwa.org` / `TekvwaAdmin2026!`
 3. **First-time setup**: Change your password when prompted
 4. **Add staff**: Go to Staff Management to add team members
 

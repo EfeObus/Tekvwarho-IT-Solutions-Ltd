@@ -1,60 +1,60 @@
-# Tekvwarho IT Solutions Ltd - Security & Feature Roadmap
+# Tekvwa IT Solutions Ltd - Security & Feature Roadmap
 
-> **Document Version:** 1.3  
-> **Created:** January 5, 2026  
-> **Last Updated:** January 5, 2026  
-> **Status:** Active Implementation  
+> **Document Version:** 1.3 
+> **Created:** January 5, 2026 
+> **Last Updated:** January 5, 2026 
+> **Status:** Active Implementation 
 > **Priority:** Critical gaps first, then enhancements
 
 ---
 
-## 📋 Executive Summary
+## Executive Summary
 
 This roadmap addresses identified gaps in security, operational resilience, product maturity, and business compliance. Implementation follows a phased approach prioritizing security and compliance first.
 
 ---
 
-## 🎯 Implementation Phases
+## Implementation Phases
 
 | Phase | Focus Area | Timeline | Status |
 |-------|------------|----------|--------|
-| **Phase 1** | Security & Compliance | Week 1-2 | ✅ Complete |
-| **Phase 2** | Operational Resilience | Week 3-4 | 🔄 In Progress |
-| **Phase 3** | Product & UX Maturity | Week 5-6 | ✅ Complete |
-| **Phase 4** | Business & Legal | Week 7 | ✅ Complete |
-| **Phase 5** | Documentation & Diagrams | Week 8 | ✅ Complete |
+| **Phase 1** | Security & Compliance | Week 1-2 | Complete |
+| **Phase 2** | Operational Resilience | Week 3-4 | In Progress |
+| **Phase 3** | Product & UX Maturity | Week 5-6 | Complete |
+| **Phase 4** | Business & Legal | Week 7 | Complete |
+| **Phase 5** | Documentation & Diagrams | Week 8 | Complete |
 
 ---
 
-## ✅ Completed Items Summary
+## Completed Items Summary
 
 | Item | Status | Files Created/Modified |
 |------|--------|----------------------|
-| Refresh Tokens & Session Management | ✅ | `server/services/tokenManager.js`, `server/routes/auth.js` |
-| Rate Limiting & Abuse Protection | ✅ | `server/middleware/rateLimiter.js` |
-| Input Sanitization & XSS Protection | ✅ | `server/middleware/sanitizer.js` |
-| Security Headers (CSP) | ✅ | `server/middleware/securityHeaders.js` |
-| Global Error Handler | ✅ | `server/middleware/errorHandler.js` |
-| Legal Pages (Privacy, Terms, Cookies) | ✅ | `privacy-policy.html`, `terms-of-service.html`, `cookie-policy.html` |
-| Onboarding & Empty States | ✅ | `admin/js/onboarding.js`, `admin/css/onboarding.css` |
-| Architecture Diagrams | ✅ | `docs/ARCHITECTURE.md` |
-| Security Policy Documentation | ✅ | `SECURITY_POLICY.md` |
-| Backup & Recovery Documentation | ✅ | `BACKUP_RECOVERY.md` |
-| Search, Filters & Pagination | ✅ | `server/utils/queryBuilder.js`, `server/middleware/pagination.js`, `server/routes/messages.js`, `admin/js/components/dataTable.js`, `admin/css/dataTable.css` |
-| Drafts & Saved Replies | ✅ | `server/models/SavedReply.js`, `server/models/Draft.js`, `server/routes/savedReplies.js`, `admin/js/components/savedReplies.js`, `admin/css/savedReplies.css`, `database/migrations/003_saved_replies_drafts.sql` |
-| API Documentation | ✅ | `docs/API_DOCUMENTATION.md` |
-| Database Schema Documentation | ✅ | `docs/DATABASE_SCHEMA.md` |
-| README Update | ✅ | `README.md` (comprehensive update with all features) |
-| Tech Stack Documentation | ✅ | `TECH_STACK.md` (updated with security features) |
-| File Structure Documentation | ✅ | `FILE_STRUCTURE.md` (updated with new files) |
-| Contributing Guide | ✅ | `CONTRIBUTING.md` |
-| Deployment Guide | ✅ | `DEPLOYMENT.md` |
+| Refresh Tokens & Session Management | | `server/services/tokenManager.js`, `server/routes/auth.js` |
+| Rate Limiting & Abuse Protection | | `server/middleware/rateLimiter.js` |
+| Input Sanitization & XSS Protection | | `server/middleware/sanitizer.js` |
+| Security Headers (CSP) | | `server/middleware/securityHeaders.js` |
+| Global Error Handler | | `server/middleware/errorHandler.js` |
+| Legal Pages (Privacy, Terms, Cookies) | | `privacy-policy.html`, `terms-of-service.html`, `cookie-policy.html` |
+| Onboarding & Empty States | | `admin/js/onboarding.js`, `admin/css/onboarding.css` |
+| Architecture Diagrams | | `docs/ARCHITECTURE.md` |
+| Security Policy Documentation | | `SECURITY_POLICY.md` |
+| Backup & Recovery Documentation | | `BACKUP_RECOVERY.md` |
+| Search, Filters & Pagination | | `server/utils/queryBuilder.js`, `server/middleware/pagination.js`, `server/routes/messages.js`, `admin/js/components/dataTable.js`, `admin/css/dataTable.css` |
+| Drafts & Saved Replies | | `server/models/SavedReply.js`, `server/models/Draft.js`, `server/routes/savedReplies.js`, `admin/js/components/savedReplies.js`, `admin/css/savedReplies.css`, `database/migrations/003_saved_replies_drafts.sql` |
+| API Documentation | | `docs/API_DOCUMENTATION.md` |
+| Database Schema Documentation | | `docs/DATABASE_SCHEMA.md` |
+| README Update | | `README.md` (comprehensive update with all features) |
+| Tech Stack Documentation | | `TECH_STACK.md` (updated with security features) |
+| File Structure Documentation | | `FILE_STRUCTURE.md` (updated with new files) |
+| Contributing Guide | | `CONTRIBUTING.md` |
+| Deployment Guide | | `DEPLOYMENT.md` |
 
 ---
 
-## 🔴 Phase 1: Security & Compliance ✅ COMPLETE
+## Phase 1: Security & Compliance COMPLETE
 
-### 1.1 Refresh Tokens & Session Management ✅
+### 1.1 Refresh Tokens & Session Management 
 
 **Current State:** JWT access tokens only (long-lived, no rotation)
 
@@ -69,11 +69,11 @@ This roadmap addresses identified gaps in security, operational resilience, prod
 
 ```
 Files to Create/Modify:
-├── server/middleware/tokenManager.js    # Token generation & validation
-├── server/routes/auth.js                # Refresh endpoint
-├── database/schema.sql                  # refresh_tokens table
-├── admin/js/admin.js                    # Auto-refresh logic
-└── server/services/sessionService.js    # Session management
+├── server/middleware/tokenManager.js # Token generation & validation
+├── server/routes/auth.js # Refresh endpoint
+├── database/schema.sql # refresh_tokens table
+├── admin/js/admin.js # Auto-refresh logic
+└── server/services/sessionService.js # Session management
 ```
 
 **Database Changes:**
@@ -131,9 +131,9 @@ CREATE TABLE active_sessions (
 
 ```
 Files to Create/Modify:
-├── server/middleware/rateLimiter.js     # Rate limiting logic
-├── server/middleware/botProtection.js   # Basic bot detection
-└── server/config/rateLimits.js          # Rate limit configurations
+├── server/middleware/rateLimiter.js # Rate limiting logic
+├── server/middleware/botProtection.js # Basic bot detection
+└── server/config/rateLimits.js # Rate limit configurations
 ```
 
 **Rate Limit Configurations:**
@@ -178,10 +178,10 @@ Retry-After: 60 (on 429)
 
 ```
 Files to Create/Modify:
-├── server/middleware/sanitizer.js       # Input sanitization
+├── server/middleware/sanitizer.js # Input sanitization
 ├── server/middleware/securityHeaders.js # Security headers
-├── server/utils/htmlEscape.js           # HTML escaping utilities
-└── server/config/csp.js                 # Content Security Policy
+├── server/utils/htmlEscape.js # HTML escaping utilities
+└── server/config/csp.js # Content Security Policy
 ```
 
 **Sanitization Rules:**
@@ -255,17 +255,17 @@ Files to Create/Modify:
 - Emergency access: Documented break-glass procedure
 
 ### Storage Rules
-- ❌ Never commit secrets to version control
-- ❌ Never log secrets
-- ❌ Never expose in error messages
-- ✅ Use environment variables
-- ✅ Encrypt at rest
-- ✅ Audit access logs
+- Never commit secrets to version control
+- Never log secrets
+- Never expose in error messages
+- Use environment variables
+- Encrypt at rest
+- Audit access logs
 ```
 
 ---
 
-## 🔵 Phase 2: Operational Resilience
+## Phase 2: Operational Resilience
 
 ### 2.1 Error Handling & Observability
 
@@ -282,11 +282,11 @@ Files to Create/Modify:
 
 ```
 Files to Create/Modify:
-├── server/middleware/errorHandler.js    # Global error handler
-├── server/middleware/requestId.js       # Request ID generation
-├── server/utils/logger.js               # Structured logger
-├── server/utils/AppError.js             # Custom error classes
-└── server/config/logging.js             # Log configuration
+├── server/middleware/errorHandler.js # Global error handler
+├── server/middleware/requestId.js # Request ID generation
+├── server/utils/logger.js # Structured logger
+├── server/utils/AppError.js # Custom error classes
+└── server/config/logging.js # Log configuration
 ```
 
 **Error Response Format:**
@@ -348,12 +348,12 @@ Files to Create/Modify:
 
 ```
 Files to Create/Modify:
-├── server/jobs/queue.js                 # Job queue manager
-├── server/jobs/workers/emailWorker.js   # Email job processor
-├── server/jobs/workers/exportWorker.js  # Export job processor
+├── server/jobs/queue.js # Job queue manager
+├── server/jobs/workers/emailWorker.js # Email job processor
+├── server/jobs/workers/exportWorker.js # Export job processor
 ├── server/jobs/workers/performanceWorker.js # Performance calc
-├── database/schema.sql                  # job_queue table
-└── server/routes/jobs.js                # Job status API
+├── database/schema.sql # job_queue table
+└── server/routes/jobs.js # Job status API
 ```
 
 **Database Schema:**
@@ -453,7 +453,7 @@ retryDelay = baseDelay * Math.pow(2, attemptNumber);
 
 ---
 
-## 🟢 Phase 3: Product & UX Maturity
+## Phase 3: Product & UX Maturity
 
 ### 3.1 Onboarding & Empty States
 
@@ -469,10 +469,10 @@ retryDelay = baseDelay * Math.pow(2, attemptNumber);
 
 ```
 Files to Create/Modify:
-├── admin/js/onboarding.js               # Onboarding logic
-├── admin/css/onboarding.css             # Onboarding styles
-├── admin/partials/empty-states.html     # Empty state templates
-└── database/schema.sql                  # onboarding_progress table
+├── admin/js/onboarding.js # Onboarding logic
+├── admin/css/onboarding.css # Onboarding styles
+├── admin/partials/empty-states.html # Empty state templates
+└── database/schema.sql # onboarding_progress table
 ```
 
 **Empty States to Create:**
@@ -515,11 +515,11 @@ const onboardingSteps = [
 
 ```
 Files to Create/Modify:
-├── server/utils/queryBuilder.js         # Dynamic query building
-├── server/middleware/pagination.js      # Pagination middleware
-├── admin/js/components/search.js        # Search component
-├── admin/js/components/filters.js       # Filter component
-└── admin/js/components/pagination.js    # Pagination component
+├── server/utils/queryBuilder.js # Dynamic query building
+├── server/middleware/pagination.js # Pagination middleware
+├── admin/js/components/search.js # Search component
+├── admin/js/components/filters.js # Filter component
+└── admin/js/components/pagination.js # Pagination component
 ```
 
 **Search Endpoints:**
@@ -573,10 +573,10 @@ CREATE INDEX idx_messages_status_created ON messages(status, created_at DESC);
 
 ```
 Files to Create/Modify:
-├── server/routes/templates.js           # Template CRUD
-├── database/schema.sql                  # reply_templates, drafts tables
-├── admin/js/components/drafts.js        # Draft auto-save
-└── admin/js/components/templates.js     # Template picker
+├── server/routes/templates.js # Template CRUD
+├── database/schema.sql # reply_templates, drafts tables
+├── admin/js/components/drafts.js # Draft auto-save
+└── admin/js/components/templates.js # Template picker
 ```
 
 **Database Schema:**
@@ -626,7 +626,7 @@ CREATE TABLE drafts (
 
 ---
 
-## 🟡 Phase 4: Business & Legal Completeness
+## Phase 4: Business & Legal Completeness
 
 ### 4.1 Legal Pages
 
@@ -640,9 +640,9 @@ CREATE TABLE drafts (
 
 **Pages to Create:**
 ```
-├── privacy-policy.html     # Privacy Policy
-├── terms-of-service.html   # Terms of Service
-└── cookie-policy.html      # Cookie Policy
+├── privacy-policy.html # Privacy Policy
+├── terms-of-service.html # Terms of Service
+└── cookie-policy.html # Cookie Policy
 ```
 
 **Privacy Policy Sections:**
@@ -687,9 +687,9 @@ CREATE TABLE drafts (
 
 **User Rights API:**
 ```
-POST /api/data/export-request    # Request data export
-POST /api/data/deletion-request  # Request data deletion
-GET /api/admin/data/requests     # Admin: view requests
+POST /api/data/export-request # Request data export
+POST /api/data/deletion-request # Request data deletion
+GET /api/admin/data/requests # Admin: view requests
 POST /api/admin/data/process/:id # Admin: process request
 ```
 
@@ -720,14 +720,14 @@ POST /api/admin/data/process/:id # Admin: process request
 **Implementation:**
 ```
 Files to Create/Modify:
-├── css/accessibility.css        # A11y specific styles
-├── js/accessibility.js          # A11y helpers
-└── All HTML files               # Add ARIA, fix semantics
+├── css/accessibility.css # A11y specific styles
+├── js/accessibility.js # A11y helpers
+└── All HTML files # Add ARIA, fix semantics
 ```
 
 ---
 
-## 🟣 Phase 5: Documentation & Diagrams
+## Phase 5: Documentation & Diagrams
 
 ### 5.1 Architecture Diagram
 
@@ -735,65 +735,65 @@ Files to Create/Modify:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        CLIENT LAYER                              │
+│ CLIENT LAYER │
 ├─────────────────────────────────────────────────────────────────┤
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐   │
-│  │ Public Site  │  │Admin Dashboard│  │   Mobile/API Client │   │
-│  │  (HTML/JS)   │  │  (HTML/JS)   │  │      (Future)        │   │
-│  └──────────────┘  └──────────────┘  └──────────────────────┘   │
+│ ┌──────────────┐ ┌──────────────┐ ┌──────────────────────┐ │
+│ │ Public Site │ │Admin Dashboard│ │ Mobile/API Client │ │
+│ │ (HTML/JS) │ │ (HTML/JS) │ │ (Future) │ │
+│ └──────────────┘ └──────────────┘ └──────────────────────┘ │
 └─────────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                      TRANSPORT LAYER                             │
+│ TRANSPORT LAYER │
 ├─────────────────────────────────────────────────────────────────┤
-│  ┌──────────────────────┐       ┌──────────────────────┐        │
-│  │   HTTP/HTTPS:5500    │       │   WebSocket:5500     │        │
-│  │   REST API           │       │   /ws/chat           │        │
-│  └──────────────────────┘       └──────────────────────┘        │
+│ ┌──────────────────────┐ ┌──────────────────────┐ │
+│ │ HTTP/HTTPS:5500 │ │ WebSocket:5500 │ │
+│ │ REST API │ │ /ws/chat │ │
+│ └──────────────────────┘ └──────────────────────┘ │
 └─────────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                    APPLICATION LAYER                             │
+│ APPLICATION LAYER │
 ├─────────────────────────────────────────────────────────────────┤
-│  ┌────────────────────────────────────────────────────────┐     │
-│  │                 Express.js Server                       │     │
-│  ├────────────────────────────────────────────────────────┤     │
-│  │  Middleware Pipeline:                                   │     │
-│  │  ┌─────────┐ ┌──────────┐ ┌──────────┐ ┌───────────┐   │     │
-│  │  │ CORS    │→│BodyParser│→│ RateLimiter│→│ Auth/JWT  │   │     │
-│  │  └─────────┘ └──────────┘ └──────────┘ └───────────┘   │     │
-│  ├────────────────────────────────────────────────────────┤     │
-│  │  Route Handlers:                                        │     │
-│  │  /api/admin  /api/messages  /api/chats  /api/consult   │     │
-│  │  /api/analytics  /api/settings  /api/audit             │     │
-│  └────────────────────────────────────────────────────────┘     │
+│ ┌────────────────────────────────────────────────────────┐ │
+│ │ Express.js Server │ │
+│ ├────────────────────────────────────────────────────────┤ │
+│ │ Middleware Pipeline: │ │
+│ │ ┌─────────┐ ┌──────────┐ ┌──────────┐ ┌───────────┐ │ │
+│ │ │ CORS │→│BodyParser│→│ RateLimiter│→│ Auth/JWT │ │ │
+│ │ └─────────┘ └──────────┘ └──────────┘ └───────────┘ │ │
+│ ├────────────────────────────────────────────────────────┤ │
+│ │ Route Handlers: │ │
+│ │ /api/admin /api/messages /api/chats /api/consult │ │
+│ │ /api/analytics /api/settings /api/audit │ │
+│ └────────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                     SERVICE LAYER                                │
+│ SERVICE LAYER │
 ├─────────────────────────────────────────────────────────────────┤
-│  ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌────────────┐    │
-│  │ Audit      │ │ Email      │ │ Performance│ │ Session    │    │
-│  │ Service    │ │ Service    │ │ Service    │ │ Service    │    │
-│  └────────────┘ └────────────┘ └────────────┘ └────────────┘    │
+│ ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌────────────┐ │
+│ │ Audit │ │ Email │ │ Performance│ │ Session │ │
+│ │ Service │ │ Service │ │ Service │ │ Service │ │
+│ └────────────┘ └────────────┘ └────────────┘ └────────────┘ │
 └─────────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                      DATA LAYER                                  │
+│ DATA LAYER │
 ├─────────────────────────────────────────────────────────────────┤
-│  ┌────────────────────────────────────────────────────────┐     │
-│  │              PostgreSQL Database                        │     │
-│  │  ┌──────┐ ┌────────┐ ┌─────────────┐ ┌───────────┐     │     │
-│  │  │staff │ │messages│ │consultations│ │chat_sessions│    │     │
-│  │  └──────┘ └────────┘ └─────────────┘ └───────────┘     │     │
-│  │  ┌──────────┐ ┌────────┐ ┌────────┐ ┌──────────┐       │     │
-│  │  │audit_logs│ │settings│ │visitors│ │job_queue │       │     │
-│  │  └──────────┘ └────────┘ └────────┘ └──────────┘       │     │
-│  └────────────────────────────────────────────────────────┘     │
+│ ┌────────────────────────────────────────────────────────┐ │
+│ │ PostgreSQL Database │ │
+│ │ ┌──────┐ ┌────────┐ ┌─────────────┐ ┌───────────┐ │ │
+│ │ │staff │ │messages│ │consultations│ │chat_sessions│ │ │
+│ │ └──────┘ └────────┘ └─────────────┘ └───────────┘ │ │
+│ │ ┌──────────┐ ┌────────┐ ┌────────┐ ┌──────────┐ │ │
+│ │ │audit_logs│ │settings│ │visitors│ │job_queue │ │ │
+│ │ └──────────┘ └────────┘ └────────┘ └──────────┘ │ │
+│ └────────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -801,63 +801,63 @@ Files to Create/Modify:
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│                    REQUEST LIFECYCLE                              │
+│ REQUEST LIFECYCLE │
 └──────────────────────────────────────────────────────────────────┘
 
 Client Request
      │
      ▼
 ┌──────────────────┐
-│  Rate Limiter    │──── 429 Too Many Requests
-│  Check IP/Route  │
+│ Rate Limiter │──── 429 Too Many Requests
+│ Check IP/Route │
 └────────┬─────────┘
          │
          ▼
 ┌──────────────────┐
-│  Request ID      │──── Generate: req_abc123xyz
-│  Generation      │
+│ Request ID │──── Generate: req_abc123xyz
+│ Generation │
 └────────┬─────────┘
          │
          ▼
 ┌──────────────────┐
-│  Body Parser     │──── 400 Invalid JSON
-│  JSON Validation │
+│ Body Parser │──── 400 Invalid JSON
+│ JSON Validation │
 └────────┬─────────┘
          │
          ▼
 ┌──────────────────┐
-│  Input Sanitizer │──── Sanitize XSS/HTML
-│  XSS Prevention  │
+│ Input Sanitizer │──── Sanitize XSS/HTML
+│ XSS Prevention │
 └────────┬─────────┘
          │
          ▼
 ┌──────────────────┐
-│  Auth Middleware │──── 401 Unauthorized
-│  JWT Validation  │──── 403 Forbidden
+│ Auth Middleware │──── 401 Unauthorized
+│ JWT Validation │──── 403 Forbidden
 └────────┬─────────┘
          │
          ▼
 ┌──────────────────┐
-│  Route Handler   │──── Business Logic
-│  Controller      │
+│ Route Handler │──── Business Logic
+│ Controller │
 └────────┬─────────┘
          │
          ▼
 ┌──────────────────┐
-│  Database Query  │──── 500 DB Error
-│  PostgreSQL      │
+│ Database Query │──── 500 DB Error
+│ PostgreSQL │
 └────────┬─────────┘
          │
          ▼
 ┌──────────────────┐
-│  Audit Logger    │──── Log Action
-│  Record Action   │
+│ Audit Logger │──── Log Action
+│ Record Action │
 └────────┬─────────┘
          │
          ▼
 ┌──────────────────┐
-│  Response        │──── 200/201 Success
-│  Formatter       │
+│ Response │──── 200/201 Success
+│ Formatter │
 └────────┬─────────┘
          │
          ▼
@@ -868,63 +868,63 @@ Client Request
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│                  WEBSOCKET CHAT LIFECYCLE                         │
+│ WEBSOCKET CHAT LIFECYCLE │
 └──────────────────────────────────────────────────────────────────┘
 
 Visitor Opens Chat Widget
          │
          ▼
 ┌────────────────────┐
-│ Connect WebSocket  │
-│ ws://host/ws/chat  │
+│ Connect WebSocket │
+│ ws://host/ws/chat │
 └─────────┬──────────┘
           │
           ▼
 ┌────────────────────┐
-│ Server: Generate   │
-│ Session ID         │
-│ (visitor_xxxxx)    │
+│ Server: Generate │
+│ Session ID │
+│ (visitor_xxxxx) │
 └─────────┬──────────┘
           │
           ▼
 ┌────────────────────┐
-│ Server: Send       │──────────────────────┐
-│ { type: 'connected'│                      │
-│   sessionId: '...' }                      │
-└─────────┬──────────┘                      │
-          │                                  │
+│ Server: Send │──────────────────────┐
+│ { type: 'connected'│ │
+│ sessionId: '...' } │
+└─────────┬──────────┘ │
+          │ │
           │◄────────────────────────────────┘
           ▼
 ┌────────────────────┐
-│ Visitor: Send Msg  │
+│ Visitor: Send Msg │
 │ { type: 'message', │
-│   content: 'Hi' }  │
+│ content: 'Hi' } │
 └─────────┬──────────┘
           │
           ▼
 ┌────────────────────┐
-│ Server: Store in   │
-│ chat_messages      │
+│ Server: Store in │
+│ chat_messages │
 └─────────┬──────────┘
           │
           ▼
 ┌────────────────────┐
-│ Server: Broadcast  │────► Admin Dashboard
-│ to Admin WebSocket │      (Real-time update)
+│ Server: Broadcast │────► Admin Dashboard
+│ to Admin WebSocket │ (Real-time update)
 └─────────┬──────────┘
           │
           ▼
 ┌────────────────────┐
-│ Admin: Reply       │────► Server
+│ Admin: Reply │────► Server
 │ { type: 'message', │
-│   sessionId: '...' │
-│   content: '...' } │
+│ sessionId: '...' │
+│ content: '...' } │
 └─────────┬──────────┘
           │
           ▼
 ┌────────────────────┐
-│ Server: Route to   │────► Visitor Widget
-│ Visitor Session    │      (Shows message)
+│ Server: Route to │────► Visitor Widget
+│ Visitor Session │ (Shows message)
 └────────────────────┘
 ```
 
@@ -932,28 +932,28 @@ Visitor Opens Chat Widget
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
-│                        RBAC PERMISSION MATRIX                         │
+│ RBAC PERMISSION MATRIX │
 ├────────────────────┬──────────┬──────────┬──────────┬────────────────┤
-│ Permission         │  Admin   │ Manager  │  Staff   │ Custom Role    │
+│ Permission │ Admin │ Manager │ Staff │ Custom Role │
 ├────────────────────┼──────────┼──────────┼──────────┼────────────────┤
-│ View Dashboard     │    ✅    │    ✅    │    ✅    │ If assigned    │
-│ Manage Messages    │    ✅    │    ✅    │    ⚙️    │ can_manage_msg │
-│ Manage Chats       │    ✅    │    ✅    │    ⚙️    │ can_manage_chat│
-│ Manage Consults    │    ✅    │    ✅    │    ⚙️    │ can_manage_cons│
-│ View Analytics     │    ✅    │    ✅    │    ⚙️    │ can_view_anlytc│
-│ Manage Staff       │    ✅    │    ❌    │    ❌    │ Admin only     │
-│ Manage Settings    │    ✅    │    ❌    │    ❌    │ Admin only     │
-│ View Audit Logs    │    ✅    │    ✅    │    ❌    │ Admin/Manager  │
-│ Export Data        │    ✅    │    ✅    │    ❌    │ Admin/Manager  │
-│ Performance View   │    ✅    │    ✅    │   Own    │ Admin/Manager  │
+│ View Dashboard │ │ │ │ If assigned │
+│ Manage Messages │ │ │ │ can_manage_msg │
+│ Manage Chats │ │ │ │ can_manage_chat│
+│ Manage Consults │ │ │ │ can_manage_cons│
+│ View Analytics │ │ │ │ can_view_anlytc│
+│ Manage Staff │ │ │ │ Admin only │
+│ Manage Settings │ │ │ │ Admin only │
+│ View Audit Logs │ │ │ │ Admin/Manager │
+│ Export Data │ │ │ │ Admin/Manager │
+│ Performance View │ │ │ Own │ Admin/Manager │
 ├────────────────────┴──────────┴──────────┴──────────┴────────────────┤
-│ ✅ = Full Access   ⚙️ = If permission granted   ❌ = No Access       │
+│ = Full Access = If permission granted = No Access │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 📊 Progress Tracking
+## Progress Tracking
 
 ### Phase 1 Progress
 - [ ] 1.1 Refresh Tokens & Session Management
@@ -984,7 +984,7 @@ Visitor Opens Chat Widget
 
 ---
 
-## 📅 Timeline
+## Timeline
 
 ```
 Week 1-2: Phase 1 (Security)
@@ -1015,7 +1015,7 @@ Week 8: Phase 5 (Documentation)
 
 ---
 
-## ✅ Definition of Done
+## Definition of Done
 
 Each feature is complete when:
 
@@ -1029,7 +1029,7 @@ Each feature is complete when:
 
 ---
 
-## 📞 Contacts
+## Contacts
 
 | Role | Name | Responsibility |
 |------|------|----------------|

@@ -1,5 +1,5 @@
-# Tekvwarho IT Solutions - Robots.txt
-# https://tekvwarho.com
+# Tekvwa IT Solutions - Robots.txt
+# https://tekvwa.org
 
 User-agent: *
 Allow: /
@@ -19,7 +19,7 @@ Allow: /js/
 Allow: /img/
 
 # Sitemap location
-Sitemap: https://tekvwarho.com/sitemap.xml
+Sitemap: https://tekvwa.org/sitemap.xml
 
 # Crawl delay (optional - be respectful to server resources)
 Crawl-delay: 10

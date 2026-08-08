@@ -1,6 +1,6 @@
 /**
  * Onboarding & Empty States Module
- * Tekvwarho IT Solutions - Admin Dashboard
+ * Tekvwa IT Solutions - Admin Dashboard
  * 
  * Provides first-time user guidance and helpful empty states
  */
@@ -10,9 +10,9 @@ const OnboardingManager = {
     steps: [
         {
             id: 'welcome',
-            title: 'Welcome to Tekvwarho Admin',
+            title: 'Welcome to Tekvwa Admin',
             description: 'Let\'s get you set up to manage your business effectively.',
-            icon: '👋',
+            icon: '<i class="fas fa-hand"></i>',
             action: null,
             completed: true // Always completed after first view
         },
@@ -20,7 +20,7 @@ const OnboardingManager = {
             id: 'profile',
             title: 'Complete Your Profile',
             description: 'Add your name and contact details for better communication.',
-            icon: '👤',
+            icon: '<i class="fas fa-user"></i>',
             action: () => window.location.href = 'settings.html#profile',
             checkComplete: () => OnboardingManager.checkProfileComplete()
         },
@@ -28,7 +28,7 @@ const OnboardingManager = {
             id: 'business_hours',
             title: 'Set Business Hours',
             description: 'Configure when you\'re available for consultations.',
-            icon: '🕐',
+            icon: '<i class="fas fa-clock"></i>',
             action: () => window.location.href = 'settings.html#hours',
             checkComplete: () => OnboardingManager.checkBusinessHoursSet()
         },
@@ -36,7 +36,7 @@ const OnboardingManager = {
             id: 'email_templates',
             title: 'Customize Email Templates',
             description: 'Personalize the emails sent to your clients.',
-            icon: '📧',
+            icon: '<i class="fas fa-envelope"></i>',
             action: () => window.location.href = 'settings.html#templates',
             checkComplete: () => OnboardingManager.checkTemplatesCustomized()
         },
@@ -44,7 +44,7 @@ const OnboardingManager = {
             id: 'first_staff',
             title: 'Add Team Member',
             description: 'Invite colleagues to help manage inquiries.',
-            icon: '👥',
+            icon: '<i class="fas fa-users"></i>',
             action: () => window.location.href = 'staff.html?action=add',
             checkComplete: () => OnboardingManager.checkStaffAdded()
         },
@@ -52,14 +52,14 @@ const OnboardingManager = {
             id: 'test_chat',
             title: 'Test Live Chat',
             description: 'Preview how customers interact with your chat widget.',
-            icon: '💬',
+            icon: '<i class="fas fa-comment"></i>',
             action: () => window.open('../index.html#chat-test', '_blank'),
             checkComplete: () => OnboardingManager.checkChatTested()
         }
     ],
 
     // Storage key for onboarding progress
-    STORAGE_KEY: 'tekvwarho_onboarding',
+    STORAGE_KEY: 'tekvwa_onboarding',
 
     /**
      * Initialize onboarding system
@@ -122,34 +122,34 @@ const OnboardingManager = {
         modal.innerHTML = `
             <div class="onboarding-modal">
                 <div class="onboarding-modal-content">
-                    <div class="onboarding-icon">👋</div>
-                    <h2>Welcome to Tekvwarho Admin!</h2>
+                    <div class="onboarding-icon"><i class="fas fa-hand"></i></div>
+                    <h2>Welcome to Tekvwa Admin!</h2>
                     <p>We're excited to have you here. This dashboard helps you manage customer inquiries, consultations, and team communication all in one place.</p>
                     
                     <div class="onboarding-features">
                         <div class="onboarding-feature">
-                            <span class="feature-icon">📬</span>
+                            <span class="feature-icon"><i class="fas fa-inbox"></i></span>
                             <div>
                                 <strong>Messages</strong>
                                 <span>Manage customer inquiries</span>
                             </div>
                         </div>
                         <div class="onboarding-feature">
-                            <span class="feature-icon">💬</span>
+                            <span class="feature-icon"><i class="fas fa-comments"></i></span>
                             <div>
                                 <strong>Live Chat</strong>
                                 <span>Real-time customer support</span>
                             </div>
                         </div>
                         <div class="onboarding-feature">
-                            <span class="feature-icon">📅</span>
+                            <span class="feature-icon"><i class="fas fa-calendar-check"></i></span>
                             <div>
                                 <strong>Consultations</strong>
                                 <span>Schedule & manage bookings</span>
                             </div>
                         </div>
                         <div class="onboarding-feature">
-                            <span class="feature-icon">📊</span>
+                            <span class="feature-icon"><i class="fas fa-chart-line"></i></span>
                             <div>
                                 <strong>Analytics</strong>
                                 <span>Track your performance</span>
@@ -309,7 +309,7 @@ const OnboardingManager = {
         widget.innerHTML = `
             <div class="onboarding-widget-header">
                 <div class="onboarding-widget-title">
-                    <span class="onboarding-icon-sm">🚀</span>
+                    <span class="onboarding-icon-sm"><i class="fas fa-rocket"></i></span>
                     <div>
                         <h3>Getting Started</h3>
                         <span class="progress-text">${percentage}% complete</span>
@@ -385,7 +385,7 @@ const OnboardingManager = {
         const toast = document.createElement('div');
         toast.className = 'celebration-toast';
         toast.innerHTML = `
-            <span class="celebration-icon">🎉</span>
+            <span class="celebration-icon"><i class="fas fa-trophy"></i></span>
             <div class="celebration-content">
                 <strong>Congratulations!</strong>
                 <span>You've completed the setup. You're all ready to go!</span>
@@ -418,7 +418,7 @@ const OnboardingManager = {
     async checkBusinessHoursSet() {
         // This would check the server for business hours configuration
         try {
-            const settings = JSON.parse(localStorage.getItem('tekvwarho_settings') || '{}');
+            const settings = JSON.parse(localStorage.getItem('tekvwa_settings') || '{}');
             return !!settings.businessHoursConfigured;
         } catch {
             return false;
@@ -427,7 +427,7 @@ const OnboardingManager = {
 
     async checkTemplatesCustomized() {
         try {
-            const settings = JSON.parse(localStorage.getItem('tekvwarho_settings') || '{}');
+            const settings = JSON.parse(localStorage.getItem('tekvwa_settings') || '{}');
             return !!settings.templatesCustomized;
         } catch {
             return false;
@@ -446,7 +446,7 @@ const OnboardingManager = {
             }
         } catch {
             // Fallback to localStorage
-            const progress = JSON.parse(localStorage.getItem('tekvwarho_onboarding') || '{}');
+            const progress = JSON.parse(localStorage.getItem('tekvwa_onboarding') || '{}');
             return progress.completedSteps?.includes('first_staff') || false;
         }
         return false;
@@ -454,7 +454,7 @@ const OnboardingManager = {
 
     async checkChatTested() {
         try {
-            const settings = JSON.parse(localStorage.getItem('tekvwarho_settings') || '{}');
+            const settings = JSON.parse(localStorage.getItem('tekvwa_settings') || '{}');
             return !!settings.chatTested;
         } catch {
             return false;
@@ -599,7 +599,7 @@ const EmptyStates = {
             <p class="empty-state-description">${config.description}</p>
             ${config.tips ? `
                 <div class="empty-state-tips">
-                    <span class="tips-label">💡 Tips:</span>
+                    <span class="tips-label"><i class="fas fa-lightbulb"></i> Tips:</span>
                     <ul>
                         ${config.tips.map(tip => `<li>${tip}</li>`).join('')}
                     </ul>

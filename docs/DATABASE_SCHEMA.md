@@ -1,4 +1,4 @@
-# Tekvwarho IT Solutions - Database Schema Documentation
+# Tekvwa IT Solutions - Database Schema Documentation
 
 > **Version:** 1.0  
 > **Database:** PostgreSQL  
@@ -10,7 +10,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────┐
-│                          TEKVWARHO IT SOLUTIONS DATABASE                             │
+│                          TEKVWA IT SOLUTIONS DATABASE                             │
 └─────────────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────┐      ┌──────────────────────┐      ┌─────────────────────┐

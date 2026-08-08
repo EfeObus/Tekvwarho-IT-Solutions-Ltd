@@ -1,6 +1,6 @@
 /**
  * Admin Dashboard JavaScript
- * Tekvwarho IT Solutions Ltd
+ * Tekvwa IT Solutions Ltd
  * 
  * Security Features:
  * - JWT access tokens (15 min) + refresh tokens (7 days)
@@ -1012,13 +1012,12 @@ const AdminApp = (function() {
         chatWs.onopen = () => {
             console.log('Admin chat connected');
             
-            // Authenticate with staff info
-            if (currentUser) {
+            // Authenticate with the verified access token (server derives identity from it)
+            const wsAuthToken = localStorage.getItem('adminToken');
+            if (wsAuthToken) {
                 chatWs.send(JSON.stringify({
                     type: 'authenticate',
-                    staffId: currentUser.id,
-                    staffName: currentUser.name || currentUser.email,
-                    role: currentUser.role
+                    token: wsAuthToken
                 }));
             }
             

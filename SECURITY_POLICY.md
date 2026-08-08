@@ -1,9 +1,9 @@
 # Security Policy
 
-## Tekvwarho IT Solutions Ltd - Security Implementation
+## Tekvwa IT Solutions Ltd - Security Implementation
 
-> **Version:** 1.0  
-> **Effective Date:** January 5, 2026  
+> **Version:** 1.0 
+> **Effective Date:** January 5, 2026 
 > **Last Updated:** January 5, 2026
 
 ---
@@ -58,13 +58,13 @@
 
 ### 2.3 Storage Rules
 
-✅ **DO:**
+ **DO:**
 - Use environment variables
 - Use secret management services (in production)
 - Encrypt at rest
 - Audit access logs
 
-❌ **DON'T:**
+ **DON'T:**
 - Commit secrets to version control
 - Log secrets
 - Expose in error messages
@@ -262,7 +262,7 @@ In production, the following are blocked on sensitive endpoints:
 
 ### 10.1 Standards
 
-- PIPEDA (Canada)
+- Nigeria Data Protection Act 2023 (NDPA) / NDPR
 - Industry best practices
 - OWASP Top 10 mitigation
 
@@ -277,7 +277,7 @@ In production, the following are blocked on sensitive endpoints:
 
 ## Contact
 
-**Security Concerns:** talk2efeprogress@gmail.com
+**Security Concerns:** info@tekvwa.org
 
 ---
 
