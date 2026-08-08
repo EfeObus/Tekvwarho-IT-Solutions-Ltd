@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="alternate icon" type="image/png" href="/img/tekvwa-icon-192.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Handbook &amp; Code of Conduct | Tekvwa Admin</title>
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="css/onboarding.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .doc-content {
+            max-width: 760px;
+            line-height: 1.7;
+        }
+        .doc-content h2 { margin-top: 0; }
+        .doc-content h3 { margin-top: 24px; color: var(--admin-primary, #0066CC); }
+        .doc-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .ack-banner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            background: #FFF3E2;
+            border: 1px solid #F5C97A;
+            color: #8A5A0A;
+            padding: 14px 18px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .ack-banner.acknowledged {
+            background: #E7F7EE;
+            border-color: #9BE0BB;
+            color: #0F8A4B;
+        }
+        .ack-list-table th, .ack-list-table td { padding: 10px 14px; }
+        .doc-edit-area {
+            width: 100%;
+            min-height: 400px;
+            font-family: monospace;
+            font-size: 13px;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #E2E8F0;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Tekvwa IT Solutions</h2>
+                <span class="subtitle">Admin Dashboard</span>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <span class="nav-section-title">Main</span>
+                    <a href="index.html" class="nav-item">
+                        <i class="fas fa-home"></i> Dashboard
+                    </a>
+                    <a href="messages.html" class="nav-item">
+                        <i class="fas fa-envelope"></i> Messages
+                        <span class="badge" id="messages-badge">0</span>
+                    </a>
+                    <a href="chats.html" class="nav-item">
+                        <i class="fas fa-comments"></i> Live Chats
+                        <span class="badge" id="chats-badge">0</span>
+                    </a>
+                    <a href="consultations.html" class="nav-item">
+                        <i class="fas fa-calendar-alt"></i> Consultations
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <span class="nav-section-title">Management</span>
+                    <a href="staff.html" class="nav-item">
+                        <i class="fas fa-users"></i> Staff
+                    </a>
+                    <a href="payroll.html" class="nav-item">
+                        <i class="fas fa-money-check-dollar"></i> Payroll
+                    </a>
+                    <a href="analytics.html" class="nav-item">
+                        <i class="fas fa-chart-bar"></i> Analytics
+                    </a>
+                    <a href="performance.html" class="nav-item">
+                        <i class="fas fa-chart-line"></i> Performance
+                    </a>
+                    <a href="audit.html" class="nav-item">
+                        <i class="fas fa-history"></i> Audit Logs
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <span class="nav-section-title">Settings</span>
+                    <a href="handbook.html" class="nav-item active">
+                        <i class="fas fa-book"></i> Handbook
+                    </a>
+                    <a href="profile.html" class="nav-item">
+                        <i class="fas fa-user-circle"></i> My Profile
+                    </a>
+                    <a href="settings.html" class="nav-item">
+                        <i class="fas fa-cog"></i> Settings
+                    </a>
+                    <a href="../index.html" class="nav-item">
+                        <i class="fas fa-globe"></i> View Website
+                    </a>
+                    <a href="#" class="nav-item" id="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Header -->
+            <header class="admin-header">
+                <div class="header-left">
+                    <button class="sidebar-toggle" id="sidebar-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Handbook &amp; Code of Conduct</h1>
+                </div>
+                <div class="header-right">
+                    <div class="user-dropdown" id="user-dropdown">
+                        <div class="user-avatar" id="user-avatar">A</div>
+                        <div class="user-info">
+                            <div class="user-name" id="user-name">Admin</div>
+                            <div class="user-role" id="user-role">Administrator</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <div class="admin-content">
+                <div class="doc-tabs">
+                    <button class="btn btn-sm btn-primary" id="tab-handbook">Employee Handbook</button>
+                    <button class="btn btn-sm btn-outline" id="tab-conduct">Code of Conduct</button>
+                </div>
+
+                <div id="ack-banner" class="ack-banner" style="display: none;">
+                    <span id="ack-banner-text">You have not yet acknowledged this document.</span>
+                    <button class="btn btn-sm btn-primary" id="ack-btn">
+                        <i class="fas fa-check"></i> I Have Read and Agree
+                    </button>
+                </div>
+
+                <div class="card" style="margin-bottom: 20px;">
+                    <div class="card-header">
+                        <h3 id="doc-title">Employee Handbook</h3>
+                        <div class="action-buttons">
+                            <span class="text-muted text-sm" id="doc-version"></span>
+                            <button class="btn btn-sm btn-outline" id="edit-btn" style="display: none;">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="doc-content" id="doc-content"></div>
+                        <div id="doc-edit-panel" style="display: none;">
+                            <textarea class="doc-edit-area" id="doc-edit-area"></textarea>
+                            <div style="margin-top: 12px; display: flex; gap: 8px;">
+                                <button class="btn btn-primary" id="save-doc-btn">
+                                    <i class="fas fa-save"></i> Save (new version)
+                                </button>
+                                <button class="btn btn-secondary" id="cancel-edit-btn">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Acknowledgment tracker (HR/admin only) -->
+                <div class="card" id="ack-tracker-card" style="display: none;">
+                    <div class="card-header">
+                        <h3>Who's Acknowledged This Version</h3>
+                    </div>
+                    <div class="card-body" style="padding: 0;">
+                        <div class="table-responsive">
+                            <table class="data-table ack-list-table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Department</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ack-tbody">
+                                    <tr><td colspan="3" class="text-center text-muted" style="padding: 40px;">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/admin.js"></script>
+    <script>
+        const HandbookPage = {
+            currentType: 'handbook',
+            currentUser: null,
+            editing: false,
+
+            async init() {
+                this.currentUser = AdminApp.getCurrentUser();
+                this.bindEvents();
+                await this.load('handbook');
+            },
+
+            bindEvents() {
+                document.getElementById('tab-handbook').addEventListener('click', () => this.switchTab('handbook'));
+                document.getElementById('tab-conduct').addEventListener('click', () => this.switchTab('code_of_conduct'));
+                document.getElementById('ack-btn').addEventListener('click', () => this.acknowledge());
+                document.getElementById('edit-btn').addEventListener('click', () => this.startEdit());
+                document.getElementById('cancel-edit-btn').addEventListener('click', () => this.cancelEdit());
+                document.getElementById('save-doc-btn').addEventListener('click', () => this.saveEdit());
+            },
+
+            switchTab(type) {
+                this.currentType = type;
+                document.getElementById('tab-handbook').classList.toggle('btn-primary', type === 'handbook');
+                document.getElementById('tab-handbook').classList.toggle('btn-outline', type !== 'handbook');
+                document.getElementById('tab-conduct').classList.toggle('btn-primary', type === 'code_of_conduct');
+                document.getElementById('tab-conduct').classList.toggle('btn-outline', type !== 'code_of_conduct');
+                this.cancelEdit();
+                this.load(type);
+            },
+
+            async load(type) {
+                const docRes = await AdminApp.apiRequest(`/documents/${type}`);
+                if (!docRes || !docRes.success) return;
+
+                const doc = docRes.data;
+                document.getElementById('doc-title').textContent = doc.title;
+                document.getElementById('doc-version').textContent = `Version ${doc.version} · Updated ${new Date(doc.updated_at).toLocaleDateString()}`;
+                document.getElementById('doc-content').innerHTML = doc.content;
+                document.getElementById('doc-edit-area').value = doc.content;
+
+                const isAdmin = this.currentUser?.role === 'admin';
+                const isHrOrAdmin = isAdmin || this.currentUser?.role === 'hr';
+                document.getElementById('edit-btn').style.display = isAdmin ? 'inline-flex' : 'none';
+                document.getElementById('ack-tracker-card').style.display = isHrOrAdmin ? 'block' : 'none';
+
+                const statusRes = await AdminApp.apiRequest(`/documents/${type}/my-status`);
+                if (statusRes && statusRes.success) {
+                    const banner = document.getElementById('ack-banner');
+                    if (statusRes.data.acknowledged) {
+                        banner.style.display = 'flex';
+                        banner.classList.add('acknowledged');
+                        document.getElementById('ack-banner-text').textContent = `Acknowledged on ${new Date(statusRes.data.acknowledgedAt).toLocaleDateString()}`;
+                        document.getElementById('ack-btn').style.display = 'none';
+                    } else {
+                        banner.style.display = 'flex';
+                        banner.classList.remove('acknowledged');
+                        document.getElementById('ack-banner-text').textContent = 'You have not yet acknowledged this document.';
+                        document.getElementById('ack-btn').style.display = 'inline-flex';
+                    }
+                }
+
+                if (isHrOrAdmin) {
+                    this.loadAcknowledgments(type);
+                }
+            },
+
+            async loadAcknowledgments(type) {
+                const res = await AdminApp.apiRequest(`/documents/${type}/acknowledgments`);
+                const tbody = document.getElementById('ack-tbody');
+                if (!res || !res.success) {
+                    tbody.innerHTML = '<tr><td colspan="3" class="text-center text-danger">Failed to load</td></tr>';
+                    return;
+                }
+                if (!res.data.length) {
+                    tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted" style="padding: 40px;">No active staff found</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = res.data.map(s => `
+                    <tr>
+                        <td>${s.name}</td>
+                        <td>${s.department || '-'}</td>
+                        <td>${s.acknowledged_at
+                            ? `<span class="badge badge-success">Acknowledged ${new Date(s.acknowledged_at).toLocaleDateString()}</span>`
+                            : '<span class="badge badge-warning">Pending</span>'}</td>
+                    </tr>
+                `).join('');
+            },
+
+            async acknowledge() {
+                const res = await AdminApp.apiRequest(`/documents/${this.currentType}/acknowledge`, { method: 'POST' });
+                if (res && res.success) {
+                    AdminApp.showNotification('Acknowledgment recorded', 'success');
+                    this.load(this.currentType);
+                }
+            },
+
+            startEdit() {
+                this.editing = true;
+                document.getElementById('doc-content').style.display = 'none';
+                document.getElementById('doc-edit-panel').style.display = 'block';
+            },
+
+            cancelEdit() {
+                this.editing = false;
+                document.getElementById('doc-content').style.display = 'block';
+                document.getElementById('doc-edit-panel').style.display = 'none';
+            },
+
+            async saveEdit() {
+                const content = document.getElementById('doc-edit-area').value.trim();
+                if (!content) return;
+                const res = await AdminApp.apiRequest(`/documents/${this.currentType}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ content })
+                });
+                if (res && res.success) {
+                    AdminApp.showNotification('Document updated - staff will be asked to re-acknowledge', 'success');
+                    this.cancelEdit();
+                    this.load(this.currentType);
+                } else {
+                    AdminApp.showNotification(res?.message || 'Failed to save', 'error');
+                }
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof AdminApp !== 'undefined') {
+                const authOk = AdminApp.init();
+                if (authOk !== false) {
+                    HandbookPage.init();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

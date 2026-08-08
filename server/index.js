@@ -33,6 +33,7 @@ const performanceRoutes = require('./routes/performance');
 const newsletterRoutes = require('./routes/newsletter');
 const messagesRoutes = require('./routes/messages');
 const savedRepliesRoutes = require('./routes/savedReplies');
+const documentsRoutes = require('./routes/documents');
 
 // Import middleware
 const { securityHeaders, corsOptions, botProtection } = require('./middleware/securityHeaders');
@@ -135,6 +136,7 @@ app.use('/api', notesTagsRoutes);
 app.use('/api/audit', auditExportRoutes);
 app.use('/api/export', auditExportRoutes);
 app.use('/api/performance', performanceRoutes);
+app.use('/api/documents', documentsRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
