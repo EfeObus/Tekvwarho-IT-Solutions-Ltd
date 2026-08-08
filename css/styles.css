@@ -1377,6 +1377,58 @@ select.form-control {
     box-shadow: var(--shadow-sm);
 }
 
+.team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 320px));
+    justify-content: center;
+    gap: var(--spacing-xl);
+}
+
+.team-card {
+    background-color: var(--color-white);
+    padding: var(--spacing-2xl);
+    border-radius: var(--radius-lg);
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-fast);
+}
+
+.team-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.team-avatar {
+    width: 96px;
+    height: 96px;
+    border-radius: var(--radius-full);
+    margin: 0 auto var(--spacing-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+    color: var(--color-white);
+    font-size: var(--font-size-3xl);
+    font-weight: 700;
+}
+
+.team-card h4 {
+    margin-bottom: var(--spacing-xs);
+}
+
+.team-role {
+    color: var(--color-primary);
+    font-weight: 600;
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--spacing-sm);
+}
+
+.team-card p {
+    font-size: var(--font-size-sm);
+    color: var(--color-gray);
+    margin-bottom: 0;
+}
+
 .location-flag {
     font-size: var(--font-size-5xl);
     margin-bottom: var(--spacing-md);

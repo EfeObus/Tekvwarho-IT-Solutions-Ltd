@@ -98,9 +98,26 @@ app.use('/api/contact', (req, res, next) => {
     }
     next();
 }, contactRoutes);
-app.use('/api/newsletter', newsletterLimiter, newsletterRoutes);
-app.use('/api/consultation', bookingLimiter, consultationRoutes);
-app.use('/api/consultations', consultationRoutes);
+// Note: newsletterLimiter only applies to the public subscribe/unsubscribe
+// endpoints - not to admin's GET /subscribers list.
+const newsletterLimiterGuard = (req, res, next) => {
+    if (req.method === 'POST' && (req.path === '/subscribe' || req.path === '/unsubscribe')) {
+        return newsletterLimiter(req, res, next);
+    }
+    next();
+};
+app.use('/api/newsletter', newsletterLimiterGuard, newsletterRoutes);
+// Note: bookingLimiter only applies to the public booking-creation endpoints
+// (POST /book or POST /) - not to staff/admin listing, filtering, or updating
+// consultations, which routinely need far more than a handful of requests/hour.
+const consultationBookingLimiterGuard = (req, res, next) => {
+    if (req.method === 'POST' && (req.path === '/' || req.path === '/book')) {
+        return bookingLimiter(req, res, next);
+    }
+    next();
+};
+app.use('/api/consultation', consultationBookingLimiterGuard, consultationRoutes);
+app.use('/api/consultations', consultationBookingLimiterGuard, consultationRoutes);
 
 // Chat routes
 app.use('/api/chat', chatRoutes);

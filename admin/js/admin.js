@@ -1588,13 +1588,13 @@ const AdminApp = (function() {
 
     async function viewConsultation(id) {
         const data = await apiRequest(`/consultation/${id}`);
-        
+
         if (!data || !data.success) {
             showToast('Failed to load consultation', 'error');
             return;
         }
-        
-        const c = data.consultation;
+
+        const c = data.data;
         const modal = document.getElementById('consultation-modal');
         const detail = document.getElementById('consultation-detail');
         
