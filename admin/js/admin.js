@@ -1187,7 +1187,7 @@ const AdminApp = (function() {
     async function loadChatSessions() {
         // Only load active sessions to match dashboard count
         const data = await apiRequest('/chat/sessions?status=active');
-        
+
         if (data && data.success) {
             renderChatSessions(data.sessions);
             // Update the sidebar badge as well
@@ -1196,6 +1196,113 @@ const AdminApp = (function() {
                 chatsBadge.textContent = data.sessions?.length || 0;
             }
         }
+    }
+
+    // ========================================
+    // Chat History (closed sessions, read-only)
+    // ========================================
+
+    async function loadChatHistory() {
+        const container = document.getElementById('chat-sessions');
+        if (container) container.innerHTML = '<div class="empty-state"><p>Loading history...</p></div>';
+
+        const data = await apiRequest('/chat/sessions?status=closed&limit=100');
+        if (data && data.success) {
+            renderChatHistorySessions(data.sessions);
+        } else if (container) {
+            container.innerHTML = '<div class="empty-state"><p>Failed to load chat history</p></div>';
+        }
+    }
+
+    function renderChatHistorySessions(sessions) {
+        const container = document.getElementById('chat-sessions');
+        if (!container) return;
+
+        if (!sessions || !sessions.length) {
+            container.innerHTML = '<div class="empty-state"><p>No closed conversations yet</p></div>';
+            return;
+        }
+
+        container.innerHTML = sessions.map(session => {
+            const staffName = session.assigned_to_name || session.staff_name;
+            const staffBadge = staffName
+                ? `<span class="claimed-badge" style="font-size: 10px; background: #2c3e50; color: white; padding: 2px 6px; border-radius: 4px; margin-left: 8px;">${escapeHtml(staffName)}</span>`
+                : '';
+
+            return `
+                <div class="message-item" data-history-session="${session.id}" onclick="AdminApp.viewHistorySession('${session.id}')">
+                    <div class="message-avatar">${(session.visitor_name || 'V').charAt(0).toUpperCase()}</div>
+                    <div class="message-content">
+                        <div class="message-header">
+                            <span class="message-sender">${escapeHtml(session.visitor_name || 'Visitor')}</span>
+                            ${staffBadge}
+                            <span class="message-time">${formatRelativeTime(session.ended_at || session.created_at)}</span>
+                        </div>
+                        <div class="message-preview">${escapeHtml(session.visitor_email || '')}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    async function viewHistorySession(sessionId) {
+        document.querySelectorAll('#chat-sessions .message-item').forEach(item => {
+            item.classList.toggle('active', item.dataset.historySession === sessionId);
+        });
+
+        const data = await apiRequest(`/chat/sessions/${sessionId}`);
+        if (!data || !data.success) {
+            showToast('Failed to load conversation', 'error');
+            return;
+        }
+
+        const session = data.data;
+        document.getElementById('chat-visitor-name').textContent = session.visitor_name || 'Visitor';
+        renderChatMessages(session.messages);
+
+        // Read-only: hide live-chat controls, show the closed banner
+        document.getElementById('chat-input-area').style.display = 'none';
+        document.getElementById('close-chat-btn').style.display = 'none';
+        document.getElementById('transfer-chat-btn').style.display = 'none';
+        document.getElementById('release-chat-btn').style.display = 'none';
+        const banner = document.getElementById('chat-closed-banner');
+        if (banner) banner.style.display = 'block';
+    }
+
+    function setChatTab(mode) {
+        const activeBtn = document.getElementById('chat-tab-active');
+        const historyBtn = document.getElementById('chat-tab-history');
+        const title = document.getElementById('chat-list-title');
+        const banner = document.getElementById('chat-closed-banner');
+
+        if (mode === 'history') {
+            activeBtn.classList.replace('btn-primary', 'btn-outline');
+            historyBtn.classList.replace('btn-outline', 'btn-primary');
+            if (title) title.textContent = 'Chat History';
+            loadChatHistory();
+        } else {
+            historyBtn.classList.replace('btn-primary', 'btn-outline');
+            activeBtn.classList.replace('btn-outline', 'btn-primary');
+            if (title) title.textContent = 'Active Chats';
+            if (banner) banner.style.display = 'none';
+            loadChatSessions();
+        }
+
+        // Reset the detail pane
+        document.getElementById('chat-visitor-name').textContent = 'Select a chat';
+        document.getElementById('chat-messages').innerHTML = `
+            <div class="empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <h3>No Chat Selected</h3>
+                <p>Select a chat from the list${mode === 'history' ? '' : ' to start responding'}</p>
+            </div>
+        `;
+        document.getElementById('chat-input-area').style.display = 'none';
+        document.getElementById('close-chat-btn').style.display = 'none';
+        document.getElementById('transfer-chat-btn').style.display = 'none';
+        document.getElementById('release-chat-btn').style.display = 'none';
     }
 
     function renderChatSessions(sessions) {
@@ -1436,6 +1543,11 @@ const AdminApp = (function() {
         if (closeBtn) {
             closeBtn.addEventListener('click', closeChatSession);
         }
+
+        const activeTabBtn = document.getElementById('chat-tab-active');
+        const historyTabBtn = document.getElementById('chat-tab-history');
+        if (activeTabBtn) activeTabBtn.addEventListener('click', () => setChatTab('active'));
+        if (historyTabBtn) historyTabBtn.addEventListener('click', () => setChatTab('history'));
     }
 
     function sendChatMessage() {
@@ -1825,6 +1937,7 @@ const AdminApp = (function() {
         goToPage,
         initChatPage,
         selectChatSession,
+        viewHistorySession,
         showTransferModal,
         executeTransfer,
         releaseChat,

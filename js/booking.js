@@ -24,6 +24,20 @@
     function init() {
         renderCalendar();
         setupEventListeners();
+        setStep(1);
+    }
+
+    // Update the 3-step progress indicator
+    function setStep(step) {
+        document.querySelectorAll('.booking-step').forEach(el => {
+            const n = parseInt(el.dataset.step, 10);
+            el.classList.toggle('active', n === step);
+            el.classList.toggle('completed', n < step);
+        });
+        document.querySelectorAll('.step-connector').forEach(el => {
+            const n = parseInt(el.dataset.connector, 10);
+            el.classList.toggle('completed', n < step);
+        });
     }
 
     // Setup event listeners
@@ -43,6 +57,7 @@
         document.getElementById('back-to-calendar').addEventListener('click', () => {
             document.getElementById('booking-form-container').style.display = 'none';
             document.querySelector('.booking-container').style.display = 'grid';
+            setStep(1);
         });
 
         // Booking form
@@ -138,7 +153,7 @@
     // Fetch available slots from API
     async function fetchAvailableSlots(date) {
         const slotsContainer = document.getElementById('time-slots');
-        slotsContainer.innerHTML = '<p class="loading">Loading available times...</p>';
+        slotsContainer.innerHTML = '<p class="loading"><i class="fas fa-spinner fa-spin"></i> Loading available times...</p>';
         
         try {
             const response = await fetch(`/api/consultation/slots?date=${date}`);
@@ -163,7 +178,12 @@
         const slotsContainer = document.getElementById('time-slots');
         
         if (!selectedDate) {
-            slotsContainer.innerHTML = '<p class="placeholder">Select a date first</p>';
+            slotsContainer.innerHTML = `
+                <div class="placeholder">
+                    <i class="fas fa-calendar-day"></i>
+                    <p>Pick a date on the left to see open time slots</p>
+                </div>
+            `;
             return;
         }
         
@@ -222,7 +242,8 @@
         
         document.querySelector('.booking-container').style.display = 'none';
         document.getElementById('booking-form-container').style.display = 'block';
-        
+        setStep(2);
+
         // Scroll to form
         document.getElementById('booking-form-container').scrollIntoView({ behavior: 'smooth' });
     }
@@ -297,7 +318,8 @@
         
         document.getElementById('booking-form-container').style.display = 'none';
         document.getElementById('booking-success').style.display = 'block';
-        
+        setStep(3);
+
         // Scroll to success message
         document.getElementById('booking-success').scrollIntoView({ behavior: 'smooth' });
     }
@@ -318,7 +340,8 @@
         // Show calendar
         document.getElementById('booking-success').style.display = 'none';
         document.querySelector('.booking-container').style.display = 'grid';
-        
+        setStep(1);
+
         // Re-render calendar
         renderCalendar();
         

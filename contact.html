@@ -109,6 +109,7 @@
                                 <option value="software-development">Software Development</option>
                                 <option value="website-development">Website Development</option>
                                 <option value="data-analytics">Data Analytics</option>
+                                <option value="careers">Careers / Job Inquiry</option>
                                 <option value="not-sure">Not Sure Yet</option>
                             </select>
                         </div>
@@ -341,5 +342,20 @@
     <script src="js/main.js"></script>
     <script src="js/chat-widget.js"></script>
     <script src="js/cookie-consent.js"></script>
+    <script>
+        // Prefill the form when arriving from the careers page CTA
+        (function () {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('source') === 'careers') {
+                const serviceField = document.getElementById('service');
+                const messageField = document.getElementById('message');
+                if (serviceField) serviceField.value = 'careers';
+                if (messageField) {
+                    messageField.value = "I'm interested in future opportunities at Tekvwa IT Solutions. Here's a bit about my background: ";
+                    messageField.focus();
+                }
+            }
+        })();
+    </script>
 </body>
 </html>
