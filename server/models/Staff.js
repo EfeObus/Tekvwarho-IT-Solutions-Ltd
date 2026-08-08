@@ -234,7 +234,9 @@ const Staff = {
      */
     async getSalaryInfo(id) {
         const result = await db.query(
-            `SELECT id, name, email, department, base_salary, salary_currency, hire_date
+            `SELECT id, name, email, department, base_salary, housing_allowance,
+                    transport_allowance, utility_allowance, meal_allowance,
+                    salary_currency, hire_date
              FROM staff WHERE id = $1`,
             [id]
         );
@@ -242,17 +244,22 @@ const Staff = {
     },
 
     /**
-     * Set a staff member's base salary. Kept separate from update() and
-     * always gated to admin-only at the route level, so an Accountant can
-     * process payroll without being able to grant themselves or anyone
-     * else a raise.
+     * Set a staff member's full salary structure (Basic + Nigerian standard
+     * allowances: Housing, Transport, Utility, Meal/Entertainment). Kept
+     * separate from update() and always gated to admin-only at the route
+     * level, so an Accountant can process payroll without being able to
+     * grant themselves or anyone else a raise.
      */
-    async updateSalary(id, baseSalary, currency = 'NGN') {
+    async updateSalary(id, { baseSalary, housingAllowance = 0, transportAllowance = 0, utilityAllowance = 0, mealAllowance = 0, currency = 'NGN' }) {
         const result = await db.query(
-            `UPDATE staff SET base_salary = $1, salary_currency = $2, updated_at = CURRENT_TIMESTAMP
-             WHERE id = $3
-             RETURNING id, name, email, base_salary, salary_currency`,
-            [baseSalary, currency, id]
+            `UPDATE staff SET
+                base_salary = $1, housing_allowance = $2, transport_allowance = $3,
+                utility_allowance = $4, meal_allowance = $5, salary_currency = $6,
+                updated_at = CURRENT_TIMESTAMP
+             WHERE id = $7
+             RETURNING id, name, email, base_salary, housing_allowance,
+                       transport_allowance, utility_allowance, meal_allowance, salary_currency`,
+            [baseSalary, housingAllowance, transportAllowance, utilityAllowance, mealAllowance, currency, id]
         );
         return result.rows[0];
     },

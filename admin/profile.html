@@ -136,6 +136,25 @@
                     </form>
                 </div>
 
+                <div class="settings-card" style="background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 24px; margin-bottom: 24px;">
+                    <h3 style="margin-top: 0; margin-bottom: 20px;">My Paystubs</h3>
+                    <div class="table-responsive">
+                        <table class="data-table" id="paystubs-table">
+                            <thead>
+                                <tr>
+                                    <th>Pay Period</th>
+                                    <th>Net Pay</th>
+                                    <th>Generated</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="paystubs-tbody">
+                                <tr><td colspan="4" class="text-center text-muted" style="padding: 30px;">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
                 <div class="settings-card" style="background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 24px;">
                     <h3 style="margin-top: 0; margin-bottom: 20px;">Change Password</h3>
                     <form id="password-form">
@@ -193,7 +212,55 @@
                     if (user.role !== 'admin' && user.role !== 'manager') {
                         document.getElementById('profile-department').disabled = true;
                     }
+
+                    this.loadPaystubs(user.id);
                 }
+            },
+
+            formatNaira(amount) {
+                if (amount === null || amount === undefined) return '—';
+                return '₦' + Number(amount).toLocaleString('en-NG', { minimumFractionDigits: 0 });
+            },
+
+            async loadPaystubs(staffId) {
+                const tbody = document.getElementById('paystubs-tbody');
+                const response = await AdminApp.apiRequest(`/paystubs/staff/${staffId}`);
+                if (!response || !response.success) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Failed to load paystubs</td></tr>';
+                    return;
+                }
+                if (!response.data.length) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted" style="padding: 30px;">No paystubs yet</td></tr>';
+                    return;
+                }
+                const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                tbody.innerHTML = response.data.map(p => `
+                    <tr>
+                        <td>${monthNames[p.pay_period_month - 1]} ${p.pay_period_year}</td>
+                        <td>${this.formatNaira(p.net_pay)}</td>
+                        <td>${new Date(p.generated_at).toLocaleDateString()}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline" onclick="ProfilePage.downloadPaystub('${p.id}', ${p.pay_period_month}, ${p.pay_period_year})">
+                                <i class="fas fa-download"></i> PDF
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            },
+
+            async downloadPaystub(id, month, year) {
+                const token = localStorage.getItem('adminToken');
+                const response = await fetch(`/api/paystubs/${id}/pdf`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) return;
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `payslip-${year}-${String(month).padStart(2, '0')}.pdf`;
+                a.click();
+                window.URL.revokeObjectURL(url);
             },
 
             async saveProfile() {

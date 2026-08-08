@@ -143,15 +143,18 @@
                                     <tr>
                                         <th>Name</th>
                                         <th>Department</th>
-                                        <th>Role</th>
-                                        <th>Hire Date</th>
-                                        <th>Monthly Salary</th>
+                                        <th>Basic</th>
+                                        <th>Housing</th>
+                                        <th>Transport</th>
+                                        <th>Utility</th>
+                                        <th>Meal</th>
+                                        <th>Gross</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="payroll-tbody">
                                     <tr>
-                                        <td colspan="6" class="text-center text-muted" style="padding: 60px;">
+                                        <td colspan="9" class="text-center text-muted" style="padding: 60px;">
                                             Loading payroll...
                                         </td>
                                     </tr>
@@ -166,9 +169,9 @@
 
     <!-- Set Salary Modal (admin only) -->
     <div class="modal-overlay" id="salary-modal">
-        <div class="modal" style="max-width: 420px;">
+        <div class="modal" style="max-width: 480px;">
             <div class="modal-header">
-                <h3>Set Monthly Salary</h3>
+                <h3>Set Monthly Salary Structure</h3>
                 <button class="modal-close" id="salary-modal-close">
                     <i class="fas fa-times"></i>
                 </button>
@@ -177,15 +180,77 @@
                 <p class="text-muted mb-3">Setting salary for <strong id="salary-staff-name"></strong></p>
                 <input type="hidden" id="salary-staff-id">
                 <div class="form-group">
-                    <label for="salary-amount">Monthly Salary (NGN) *</label>
-                    <input type="number" id="salary-amount" class="form-control" min="0" step="1000" placeholder="e.g. 250000">
+                    <label for="salary-basic">Basic Salary (NGN) *</label>
+                    <input type="number" id="salary-basic" class="form-control" min="0" step="1000" placeholder="e.g. 250000">
                 </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="salary-housing">Housing Allowance</label>
+                        <input type="number" id="salary-housing" class="form-control" min="0" step="1000" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="salary-transport">Transport Allowance</label>
+                        <input type="number" id="salary-transport" class="form-control" min="0" step="1000" value="0">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="salary-utility">Utility Allowance</label>
+                        <input type="number" id="salary-utility" class="form-control" min="0" step="1000" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="salary-meal">Meal / Entertainment Allowance</label>
+                        <input type="number" id="salary-meal" class="form-control" min="0" step="1000" value="0">
+                    </div>
+                </div>
+                <p class="text-muted text-sm">Gross: <strong id="salary-gross-preview">₦0</strong></p>
                 <div id="salary-error" class="alert alert-danger" style="display: none;"></div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" id="salary-cancel-btn">Cancel</button>
                 <button class="btn btn-primary" id="salary-save-btn">
                     <i class="fas fa-save"></i> Save Salary
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generate Paystub Modal (accountant/admin) -->
+    <div class="modal-overlay" id="paystub-modal">
+        <div class="modal" style="max-width: 420px;">
+            <div class="modal-header">
+                <h3>Generate Paystub</h3>
+                <button class="modal-close" id="paystub-modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-3">Generating payslip for <strong id="paystub-staff-name"></strong></p>
+                <input type="hidden" id="paystub-staff-id">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="paystub-month">Month *</label>
+                        <select id="paystub-month" class="form-control"></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="paystub-year">Year *</label>
+                        <input type="number" id="paystub-year" class="form-control" min="2020" max="2100">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="paystub-deductions">Deductions (NGN)</label>
+                    <input type="number" id="paystub-deductions" class="form-control" min="0" step="100" value="0">
+                </div>
+                <div class="form-group">
+                    <label for="paystub-deductions-note">Deductions Note</label>
+                    <input type="text" id="paystub-deductions-note" class="form-control" placeholder="e.g. Pension 8%, absence deduction">
+                </div>
+                <div id="paystub-error" class="alert alert-danger" style="display: none;"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="paystub-cancel-btn">Cancel</button>
+                <button class="btn btn-primary" id="paystub-generate-btn">
+                    <i class="fas fa-file-invoice-dollar"></i> Generate
                 </button>
             </div>
         </div>
@@ -216,9 +281,20 @@
             },
 
             bindEvents() {
-                document.getElementById('salary-modal-close').addEventListener('click', () => this.closeModal());
-                document.getElementById('salary-cancel-btn').addEventListener('click', () => this.closeModal());
+                document.getElementById('salary-modal-close').addEventListener('click', () => this.closeSalaryModal());
+                document.getElementById('salary-cancel-btn').addEventListener('click', () => this.closeSalaryModal());
                 document.getElementById('salary-save-btn').addEventListener('click', () => this.saveSalary());
+                ['salary-basic', 'salary-housing', 'salary-transport', 'salary-utility', 'salary-meal'].forEach(id => {
+                    document.getElementById(id).addEventListener('input', () => this.updateGrossPreview());
+                });
+
+                document.getElementById('paystub-modal-close').addEventListener('click', () => this.closePaystubModal());
+                document.getElementById('paystub-cancel-btn').addEventListener('click', () => this.closePaystubModal());
+                document.getElementById('paystub-generate-btn').addEventListener('click', () => this.generatePaystub());
+
+                const monthSelect = document.getElementById('paystub-month');
+                const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                monthSelect.innerHTML = monthNames.map((m, i) => `<option value="${i + 1}">${m}</option>`).join('');
             },
 
             async load() {
@@ -232,14 +308,14 @@
                 } catch (error) {
                     console.error('Failed to load payroll:', error);
                     document.getElementById('payroll-tbody').innerHTML = `
-                        <tr><td colspan="6" class="text-center text-danger">Failed to load payroll data</td></tr>
+                        <tr><td colspan="9" class="text-center text-danger">Failed to load payroll data</td></tr>
                     `;
                 }
             },
 
             updateStats(staff) {
                 document.getElementById('stat-headcount').textContent = staff.length;
-                const total = staff.reduce((sum, s) => sum + (parseFloat(s.base_salary) || 0), 0);
+                const total = staff.reduce((sum, s) => sum + (parseFloat(s.gross_salary) || 0), 0);
                 document.getElementById('stat-monthly-total').textContent = this.formatNaira(total);
                 document.getElementById('stat-unset').textContent = staff.filter(s => !s.base_salary).length;
             },
@@ -247,9 +323,10 @@
             renderTable(staff) {
                 const tbody = document.getElementById('payroll-tbody');
                 const isAdmin = this.currentUserRole === 'admin';
+                const canGeneratePaystub = isAdmin || this.currentUserRole === 'accountant';
 
                 if (!staff.length) {
-                    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted" style="padding: 60px;">No active employees found</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted" style="padding: 60px;">No active employees found</td></tr>`;
                     return;
                 }
 
@@ -257,39 +334,63 @@
                     <tr>
                         <td><strong>${this.escapeHtml(s.name)}</strong></td>
                         <td>${this.escapeHtml(s.department || '-')}</td>
-                        <td>${this.escapeHtml((s.role || '').charAt(0).toUpperCase() + (s.role || '').slice(1))}</td>
-                        <td>${s.hire_date ? new Date(s.hire_date).toLocaleDateString() : '-'}</td>
                         <td>${this.formatNaira(s.base_salary)}</td>
+                        <td>${this.formatNaira(s.housing_allowance)}</td>
+                        <td>${this.formatNaira(s.transport_allowance)}</td>
+                        <td>${this.formatNaira(s.utility_allowance)}</td>
+                        <td>${this.formatNaira(s.meal_allowance)}</td>
+                        <td><strong>${this.formatNaira(s.gross_salary)}</strong></td>
                         <td>
-                            ${isAdmin ? `
-                                <button class="btn btn-sm btn-outline" onclick="PayrollPage.openSalaryModal('${s.id}', '${this.escapeHtml(s.name).replace(/'/g, "\\'")}', ${s.base_salary || 0})">
-                                    <i class="fas fa-edit"></i> Set Salary
-                                </button>
-                            ` : '<span class="text-muted text-sm">View only</span>'}
+                            <div class="action-buttons">
+                                ${isAdmin ? `
+                                    <button class="btn btn-sm btn-outline" onclick="PayrollPage.openSalaryModal('${s.id}')">
+                                        <i class="fas fa-edit"></i> Set Salary
+                                    </button>
+                                ` : ''}
+                                ${canGeneratePaystub ? `
+                                    <button class="btn btn-sm btn-primary" onclick="PayrollPage.openPaystubModal('${s.id}', '${this.escapeHtml(s.name).replace(/'/g, "\\'")}')">
+                                        <i class="fas fa-file-invoice-dollar"></i> Paystub
+                                    </button>
+                                ` : ''}
+                                ${!isAdmin && !canGeneratePaystub ? '<span class="text-muted text-sm">View only</span>' : ''}
+                            </div>
                         </td>
                     </tr>
                 `).join('');
             },
 
-            openSalaryModal(id, name, currentSalary) {
-                document.getElementById('salary-staff-id').value = id;
-                document.getElementById('salary-staff-name').textContent = name;
-                document.getElementById('salary-amount').value = currentSalary || '';
+            openSalaryModal(id) {
+                const staff = this.staffList.find(s => s.id === id);
+                if (!staff) return;
+                document.getElementById('salary-staff-id').value = staff.id;
+                document.getElementById('salary-staff-name').textContent = staff.name;
+                document.getElementById('salary-basic').value = staff.base_salary || '';
+                document.getElementById('salary-housing').value = staff.housing_allowance || 0;
+                document.getElementById('salary-transport').value = staff.transport_allowance || 0;
+                document.getElementById('salary-utility').value = staff.utility_allowance || 0;
+                document.getElementById('salary-meal').value = staff.meal_allowance || 0;
                 document.getElementById('salary-error').style.display = 'none';
+                this.updateGrossPreview();
                 document.getElementById('salary-modal').classList.add('active');
             },
 
-            closeModal() {
+            updateGrossPreview() {
+                const val = (id) => parseFloat(document.getElementById(id).value) || 0;
+                const gross = val('salary-basic') + val('salary-housing') + val('salary-transport') + val('salary-utility') + val('salary-meal');
+                document.getElementById('salary-gross-preview').textContent = this.formatNaira(gross);
+            },
+
+            closeSalaryModal() {
                 document.getElementById('salary-modal').classList.remove('active');
             },
 
             async saveSalary() {
                 const id = document.getElementById('salary-staff-id').value;
-                const amount = document.getElementById('salary-amount').value;
+                const basic = document.getElementById('salary-basic').value;
                 const errorDiv = document.getElementById('salary-error');
 
-                if (!amount || parseFloat(amount) < 0) {
-                    errorDiv.textContent = 'Enter a valid salary amount';
+                if (!basic || parseFloat(basic) < 0) {
+                    errorDiv.textContent = 'Enter a valid basic salary amount';
                     errorDiv.style.display = 'block';
                     return;
                 }
@@ -297,11 +398,18 @@
                 try {
                     const response = await AdminApp.apiRequest(`/admin/staff/${id}/salary`, {
                         method: 'PUT',
-                        body: JSON.stringify({ baseSalary: parseFloat(amount), currency: 'NGN' })
+                        body: JSON.stringify({
+                            baseSalary: parseFloat(basic),
+                            housingAllowance: parseFloat(document.getElementById('salary-housing').value) || 0,
+                            transportAllowance: parseFloat(document.getElementById('salary-transport').value) || 0,
+                            utilityAllowance: parseFloat(document.getElementById('salary-utility').value) || 0,
+                            mealAllowance: parseFloat(document.getElementById('salary-meal').value) || 0,
+                            currency: 'NGN'
+                        })
                     });
 
                     if (response.success) {
-                        this.closeModal();
+                        this.closeSalaryModal();
                         await this.load();
                         AdminApp.showNotification('Salary updated', 'success');
                     } else {
@@ -312,6 +420,65 @@
                     errorDiv.textContent = 'An error occurred';
                     errorDiv.style.display = 'block';
                 }
+            },
+
+            openPaystubModal(id, name) {
+                document.getElementById('paystub-staff-id').value = id;
+                document.getElementById('paystub-staff-name').textContent = name;
+                const now = new Date();
+                document.getElementById('paystub-month').value = now.getMonth() + 1;
+                document.getElementById('paystub-year').value = now.getFullYear();
+                document.getElementById('paystub-deductions').value = 0;
+                document.getElementById('paystub-deductions-note').value = '';
+                document.getElementById('paystub-error').style.display = 'none';
+                document.getElementById('paystub-modal').classList.add('active');
+            },
+
+            closePaystubModal() {
+                document.getElementById('paystub-modal').classList.remove('active');
+            },
+
+            async generatePaystub() {
+                const staffId = document.getElementById('paystub-staff-id').value;
+                const month = parseInt(document.getElementById('paystub-month').value, 10);
+                const year = parseInt(document.getElementById('paystub-year').value, 10);
+                const deductions = parseFloat(document.getElementById('paystub-deductions').value) || 0;
+                const deductionsNote = document.getElementById('paystub-deductions-note').value;
+                const errorDiv = document.getElementById('paystub-error');
+
+                try {
+                    const response = await AdminApp.apiRequest('/paystubs', {
+                        method: 'POST',
+                        body: JSON.stringify({ staffId, month, year, deductions, deductionsNote })
+                    });
+
+                    if (response.success) {
+                        this.closePaystubModal();
+                        AdminApp.showNotification('Paystub generated', 'success');
+                        await this.downloadPaystubPdf(response.data.id, month, year);
+                    } else {
+                        errorDiv.textContent = response.message || 'Failed to generate paystub';
+                        errorDiv.style.display = 'block';
+                    }
+                } catch (error) {
+                    errorDiv.textContent = 'An error occurred';
+                    errorDiv.style.display = 'block';
+                }
+            },
+
+            async downloadPaystubPdf(id, month, year) {
+                const token = localStorage.getItem('adminToken');
+                const response = await fetch(`/api/paystubs/${id}/pdf`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) return;
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `payslip-${year}-${String(month).padStart(2, '0')}.pdf`;
+                a.click();
+                window.URL.revokeObjectURL(url);
             }
         };
 

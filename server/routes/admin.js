@@ -604,7 +604,11 @@ router.get('/staff/:id/salary', authMiddleware, async (req, res) => {
  * Admin sign-off, even Accountants who process payroll cannot self-approve one)
  */
 router.put('/staff/:id/salary', authMiddleware, adminOnly, [
-    body('baseSalary').isFloat({ min: 0 }).withMessage('Valid salary amount is required')
+    body('baseSalary').isFloat({ min: 0 }).withMessage('Valid basic salary amount is required'),
+    body('housingAllowance').optional().isFloat({ min: 0 }),
+    body('transportAllowance').optional().isFloat({ min: 0 }),
+    body('utilityAllowance').optional().isFloat({ min: 0 }),
+    body('mealAllowance').optional().isFloat({ min: 0 })
 ], async (req, res) => {
     try {
         const errors = validationResult(req);
@@ -615,9 +619,12 @@ router.put('/staff/:id/salary', authMiddleware, adminOnly, [
             });
         }
 
-        const { baseSalary, currency } = req.body;
+        const { baseSalary, housingAllowance, transportAllowance, utilityAllowance, mealAllowance, currency } = req.body;
         const oldSalary = await Staff.getSalaryInfo(req.params.id);
-        const salary = await Staff.updateSalary(req.params.id, baseSalary, currency || 'NGN');
+        const salary = await Staff.updateSalary(req.params.id, {
+            baseSalary, housingAllowance, transportAllowance, utilityAllowance, mealAllowance,
+            currency: currency || 'NGN'
+        });
         if (!salary) {
             return res.status(404).json({
                 success: false,
@@ -626,8 +633,12 @@ router.put('/staff/:id/salary', authMiddleware, adminOnly, [
         }
 
         await AuditService.logStaffChange(req.user.id, 'salary_updated', req.params.id, {
-            oldSalary: oldSalary?.base_salary || null,
-            newSalary: baseSalary
+            old: oldSalary ? {
+                basic: oldSalary.base_salary, housing: oldSalary.housing_allowance,
+                transport: oldSalary.transport_allowance, utility: oldSalary.utility_allowance,
+                meal: oldSalary.meal_allowance
+            } : null,
+            new: { basic: baseSalary, housing: housingAllowance, transport: transportAllowance, utility: utilityAllowance, meal: mealAllowance }
         }, req.ip);
 
         res.json({ success: true, data: salary });
@@ -744,8 +755,12 @@ router.delete('/staff/:id', authMiddleware, adminOnly, async (req, res) => {
 router.get('/payroll/staff', authMiddleware, accountantOrAdmin, async (req, res) => {
     try {
         const result = await db.query(
-            `SELECT id, name, email, department, role, base_salary, salary_currency,
-                    hire_date, is_active
+            `SELECT id, name, email, department, role, base_salary, housing_allowance,
+                    transport_allowance, utility_allowance, meal_allowance,
+                    (COALESCE(base_salary, 0) + COALESCE(housing_allowance, 0) +
+                     COALESCE(transport_allowance, 0) + COALESCE(utility_allowance, 0) +
+                     COALESCE(meal_allowance, 0)) AS gross_salary,
+                    salary_currency, hire_date, is_active
              FROM staff
              WHERE is_active = true
              ORDER BY department NULLS LAST, name`
