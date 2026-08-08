@@ -5,7 +5,7 @@ A comprehensive IT solutions website with integrated admin dashboard, live chat,
 ![License](https://img.shields.io/badge/license-Proprietary-blue)
 ![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14%2B-blue)
-![Version](https://img.shields.io/badge/version-1.3.0-orange)
+![Version](https://img.shields.io/badge/version-1.5.0-orange)
 
 ## Company Information
 
@@ -43,25 +43,30 @@ A comprehensive IT solutions website with integrated admin dashboard, live chat,
 ## Features
 
 ### Public Website
-- Responsive, modern design with mobile-first approach
+- Responsive, modern design with mobile-first approach - verified with zero horizontal overflow across desktop/tablet/phone breakpoints
+- "Company" nav dropdown (About, Meet the Team, Tech Stack, Careers) on every page
 - Service pages (IT Consulting, Software Development, Website Development, Data Analytics)
+- Team page (`team.html`) introducing company leadership
 - Technology stack showcase
-- Contact form with real-time validation and admin notifications
+- Careers page with a working "Get in Touch" flow (routes to the contact form, not a bare `mailto:` link)
+- Contact form with real-time validation, admin notifications, and a careers-inquiry option
 - Live chat widget (WebSocket-based, no login required)
-- Consultation booking system with calendar integration
+- Consultation booking system with calendar integration and a 3-step progress indicator
 - Progressive enhancement for all browsers
 - Legal pages (Privacy Policy, Terms of Service, Cookie Policy)
 
 ### Admin Dashboard
 - **Dashboard** - Real-time statistics, quick actions, and onboarding
 - **Messages** - View, respond to, and manage contact form submissions
-- **Chats** - Real-time live chat management with conversation history
+- **Chats** - Real-time live chat management, plus a read-only History tab for browsing closed conversations
 - **Consultations** - Schedule, manage, and track consultation bookings
 - **Analytics** - Visitor tracking, conversion metrics, and trends
 - **Staff Management** - Add/edit staff, roles, permissions, password resets
+- **Payroll** - Accountant/admin dashboard for monthly salaries (NGN); salary changes are admin-only
 - **Settings** - Business hours, notifications, email templates, data export
 - **Audit Logs** - Complete activity tracking and compliance logging
 - **Performance** - Staff performance metrics, scores, and leaderboards
+- **My Profile** - Self-service profile editing and password change for any staff/admin
 - **Search & Filters** - Advanced search, date range filters, pagination
 - **Saved Replies** - Quick response templates with keyboard shortcuts
 - **Drafts** - Auto-save drafts for messages and replies
@@ -424,8 +429,10 @@ Navigate to `http://localhost:5500/admin/login.html`
 
 | Role | Permissions |
 |------|------------|
-| **Admin** | Full access - manage staff, settings, view all data |
+| **Admin** | Full access - manage staff, settings, salaries, view all data |
 | **Manager** | Manage messages, consultations, chats, view analytics |
+| **HR** | Manage staff records, onboarding (create/activate/deactivate/reset-password) |
+| **Accountant** | View and process payroll; cannot change a staff member's salary |
 | **Staff** | Limited access based on individual permissions |
 
 ### Permission Flags
@@ -434,6 +441,8 @@ Navigate to `http://localhost:5500/admin/login.html`
 - `can_manage_consultations` - Manage bookings
 - `can_manage_chats` - Handle live chats
 - `can_view_analytics` - View analytics dashboard
+- `can_manage_employees` - Manage staff records (HR)
+- `can_manage_payroll` - View/process payroll (Accountant)
 
 Bulk CSV/report exports additionally require the **Manager** or **Admin** role tier, regardless of the flags above — matching the principle that regular staff shouldn't be able to bulk-export customer data.
 
@@ -441,17 +450,30 @@ Bulk CSV/report exports additionally require the **Manager** or **Admin** role t
 
 Selecting a department when adding staff (Staff page → Add Staff) suggests sensible default permissions, which can still be overridden before saving:
 
-| Department | Default role | Messages | Consultations | Chats | Analytics |
-|---|---|---|---|---|---|
-| Management | Admin | ✓ | ✓ | ✓ | ✓ |
-| Customer Service | Staff | ✓ | | ✓ | |
-| Sales | Staff | | ✓ | | |
-| Development | Staff | | | | ✓ |
-| IT Support | Staff | ✓ | | ✓ | |
+| Department | Default role | Messages | Consultations | Chats | Analytics | Employees | Payroll |
+|---|---|---|---|---|---|---|---|
+| Management | Admin | ✓ | ✓ | ✓ | ✓ | | |
+| Customer Service | Staff | ✓ | | ✓ | | | |
+| Sales | Staff | | ✓ | | | | |
+| Development | Staff | | | | ✓ | | |
+| IT Support | Staff | ✓ | | ✓ | | | |
+| Human Resources | HR | | | | | ✓ | |
+| Accounting | Accountant | | | | | | ✓ |
 
 Setting the role to **Manager** for any department adds analytics visibility and export rights on top of that department's base access — the "Lead" tier gets reporting + export, "Regular Staff" doesn't. This mirrors standard least-privilege / separation-of-duties practice: staff get only what their day-to-day work requires, leads get the added oversight that comes with running a team.
 
 Development and IT Support are scoped conservatively because this app is a lead-capture/CRM tool, not a project or ticketing system — Development gets read-only analytics rather than write access to customer records (Development has no legitimate reason to edit customer PII), and IT Support shares Customer Service's inbox access since there's currently no separate support-ticket queue. Building either a sales pipeline view, a dev-facing project tracker, or a distinct support-ticket system would be new feature work beyond adjusting these defaults.
+
+### Payroll & Salary Access
+
+Salary data is deliberately isolated from the general staff-management flow:
+
+- `GET /api/admin/payroll/staff` (Accountant or Admin) lists all active staff with their monthly salary (NGN), for the **Payroll** dashboard page.
+- `PUT /api/admin/staff/:id/salary` is **admin-only** - an Accountant can view and process payroll but cannot set or change a salary figure, including their own. A raise always requires Admin sign-off.
+- `GET /api/admin/staff/:id/salary` is available to Admin, Accountant, or the staff member viewing their own salary.
+- Salary changes are audit-logged via `AuditService.logStaffChange` with the old and new amounts.
+
+This is a separation-of-duties control, not just a UI convenience — it's enforced server-side and was verified against production (Accountant gets HTTP 403 attempting to call the salary-edit endpoint directly).
 
 ### New Features
 
@@ -648,6 +670,47 @@ curl -X GET http://localhost:5500/api/messages \
 ---
 
 ## Changelog
+
+### v1.5.0 (August 8, 2026)
+
+#### Critical Fixes
+- Fixed the public booking-limiter and newsletter-limiter being mounted at
+  the router level instead of on their specific public endpoints - this was
+  rate-limiting admin staff out of the consultations list and newsletter
+  subscriber list after a handful of page loads.
+- Fixed the consultations "view" (eye icon) reading the wrong response
+  field, which crashed on every click.
+- Fixed a staff-permission edit bug: editing a staff member's permissions
+  sent the update in a different shape than the API read, so changes
+  silently failed to save.
+- Fixed a critical mobile navigation bug: tapping a dropdown (Services/
+  Company) closed the entire mobile menu instead of expanding the
+  submenu, and the submenu had no CSS backing its JS-toggled state at all
+  (it only appeared to work in prior testing due to simulated mouse hover).
+
+#### HR & Payroll
+- Two new roles: **HR** (staff records/onboarding) and **Accountant**
+  (payroll), each with a dedicated permission flag and department preset.
+- New Payroll dashboard (`admin/payroll.html`) with a separation-of-duties
+  control: Accountants can view/process payroll but only Admin can change
+  a salary figure (see [Payroll & Salary Access](#payroll--salary-access)).
+
+#### Site Navigation & Content
+- Added a "Company" nav dropdown (About, Meet the Team, Tech Stack,
+  Careers) sitewide - Tech Stack and Careers were previously unreachable
+  from the main navigation.
+- New `team.html` page.
+- Fixed the non-functional "Get in Touch" button on the careers page (was
+  a bare `mailto:` link with no fallback).
+- Added a read-only chat History tab to the admin Live Chats page.
+- Redesigned the booking page with a 3-step progress indicator and real
+  icons in place of leftover emoji.
+
+#### Responsive / Cross-Device
+- Full audit across desktop/tablet/phone on all 16 public pages and 10
+  admin pages; fixed a systemic flexbox overflow (missing `min-width: 0`)
+  that affected most of the admin dashboard on narrow screens, plus
+  several page-specific table and grid overflow issues.
 
 ### v1.2.0 (January 5, 2026)
 
