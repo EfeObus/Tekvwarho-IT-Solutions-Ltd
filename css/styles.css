@@ -501,7 +501,8 @@ p {
     transition: transform var(--transition-fast);
 }
 
-.nav-dropdown:hover .nav-dropdown-toggle i {
+.nav-dropdown:hover .nav-dropdown-toggle i,
+.nav-dropdown-toggle.active i {
     transform: rotate(180deg);
 }
 
@@ -1904,9 +1905,38 @@ select.form-control {
         top: var(--header-height);
         left: 0;
         right: 0;
+        max-height: calc(100vh - var(--header-height));
+        overflow-y: auto;
         background-color: var(--color-white);
         padding: var(--spacing-xl);
         box-shadow: var(--shadow-lg);
+    }
+
+    /* On mobile the dropdown submenu is a tap-toggled accordion, not a
+       hover flyout - it needs to sit in normal document flow (not float
+       absolutely over the links below it) and respond to the JS-toggled
+       .active class rather than :hover, which touch devices don't sustain. */
+    .nav-dropdown-menu {
+        position: static;
+        opacity: 1;
+        visibility: hidden;
+        max-height: 0;
+        overflow: hidden;
+        transform: none;
+        box-shadow: none;
+        padding: 0;
+        transition: max-height var(--transition-fast);
+    }
+
+    .nav-dropdown-menu.active {
+        visibility: visible;
+        max-height: 400px;
+        padding: var(--spacing-sm) 0;
+    }
+
+    .nav-dropdown:hover .nav-dropdown-menu:not(.active) {
+        visibility: hidden;
+        max-height: 0;
     }
 
     .nav .btn {
@@ -2947,6 +2977,7 @@ body.menu-open {
 
 .booking-calendar,
 .booking-times {
+    min-width: 0;
     background: var(--color-white);
     padding: var(--spacing-2xl);
     border-radius: var(--radius-xl);
@@ -3500,7 +3531,30 @@ body.menu-open {
     .booking-container {
         grid-template-columns: 1fr;
     }
-    
+
+    .booking-calendar,
+    .booking-times {
+        padding: var(--spacing-lg);
+    }
+
+    .calendar-navigation {
+        padding: var(--spacing-sm);
+    }
+
+    .calendar-nav {
+        width: 38px;
+        height: 38px;
+    }
+
+    .calendar-month-year {
+        font-size: var(--font-size-base);
+    }
+
+    .calendar-header span {
+        padding: 4px 2px;
+        font-size: 11px;
+    }
+
     .time-slots {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -3851,6 +3905,7 @@ body.menu-open {
     position: fixed;
     bottom: 20px;
     right: 20px;
+    max-width: calc(100vw - 40px);
     background: var(--color-dark);
     color: var(--color-white);
     padding: var(--spacing-md) var(--spacing-lg);

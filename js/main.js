@@ -30,8 +30,10 @@ function initMobileMenu() {
         document.body.classList.toggle('menu-open');
     });
     
-    // Close menu when clicking on a link
-    const links = navLinks.querySelectorAll('a');
+    // Close menu when clicking a real navigation link - not a dropdown
+    // toggle, which only expands/collapses its submenu and shouldn't close
+    // the whole mobile menu out from under it.
+    const links = navLinks.querySelectorAll('a:not(.nav-dropdown-toggle)');
     links.forEach(link => {
         link.addEventListener('click', function() {
             mobileMenuToggle.classList.remove('active');
@@ -104,12 +106,20 @@ function initDropdownMenu() {
             });
         }
         
-        // Mobile click behavior
+        // Mobile click behavior (accordion - only one dropdown open at a time)
         toggle.addEventListener('click', function(e) {
             if (window.innerWidth <= 768) {
                 e.preventDefault();
-                menu.classList.toggle('active');
-                toggle.classList.toggle('active');
+                const willOpen = !menu.classList.contains('active');
+
+                dropdowns.forEach(other => {
+                    if (other === dropdown) return;
+                    other.querySelector('.nav-dropdown-menu')?.classList.remove('active');
+                    other.querySelector('.nav-dropdown-toggle')?.classList.remove('active');
+                });
+
+                menu.classList.toggle('active', willOpen);
+                toggle.classList.toggle('active', willOpen);
             }
         });
     });
