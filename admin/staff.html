@@ -45,6 +45,9 @@
                     <a href="staff.html" class="nav-item active">
                         <i class="fas fa-users"></i> Staff
                     </a>
+                    <a href="payroll.html" class="nav-item">
+                        <i class="fas fa-money-check-dollar"></i> Payroll
+                    </a>
                     <a href="analytics.html" class="nav-item">
                         <i class="fas fa-chart-bar"></i> Analytics
                     </a>
@@ -136,6 +139,8 @@
                                 <option value="">All Roles</option>
                                 <option value="admin">Admin</option>
                                 <option value="manager">Manager</option>
+                                <option value="hr">HR</option>
+                                <option value="accountant">Accountant</option>
                                 <option value="staff">Staff</option>
                             </select>
                             <select class="form-control" id="filter-status" style="width: auto;">
@@ -212,6 +217,8 @@
                                 <option value="Development">Development</option>
                                 <option value="Sales">Sales</option>
                                 <option value="Customer Service">Customer Service</option>
+                                <option value="Human Resources">Human Resources</option>
+                                <option value="Accounting">Accounting</option>
                                 <option value="Management">Management</option>
                             </select>
                         </div>
@@ -227,6 +234,8 @@
                             <select id="staff-role" class="form-control" required>
                                 <option value="staff">Staff</option>
                                 <option value="manager">Manager</option>
+                                <option value="hr">HR</option>
+                                <option value="accountant">Accountant</option>
                                 <option value="admin">Admin</option>
                             </select>
                         </div>
@@ -250,6 +259,14 @@
                             <label class="checkbox-label">
                                 <input type="checkbox" id="perm-analytics">
                                 <span>View Analytics</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="perm-employees">
+                                <span>Manage Employees (HR)</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="perm-payroll">
+                                <span>Manage Payroll (Accountant)</span>
                             </label>
                         </div>
                     </div>
@@ -328,11 +345,20 @@
             // these, matching the Lead/Manager tier getting broader visibility in
             // every department (per the department permission matrix).
             DEPARTMENT_PERMISSION_PRESETS: {
-                'Management': { messages: true, consultations: true, chats: true, analytics: true },
-                'Customer Service': { messages: true, consultations: false, chats: true, analytics: false },
-                'Sales': { messages: false, consultations: true, chats: false, analytics: false },
-                'Development': { messages: false, consultations: false, chats: false, analytics: true },
-                'IT Support': { messages: true, consultations: false, chats: true, analytics: false }
+                'Management': { messages: true, consultations: true, chats: true, analytics: true, employees: false, payroll: false },
+                'Customer Service': { messages: true, consultations: false, chats: true, analytics: false, employees: false, payroll: false },
+                'Sales': { messages: false, consultations: true, chats: false, analytics: false, employees: false, payroll: false },
+                'Development': { messages: false, consultations: false, chats: false, analytics: true, employees: false, payroll: false },
+                'IT Support': { messages: true, consultations: false, chats: true, analytics: false, employees: false, payroll: false },
+                'Human Resources': { messages: false, consultations: false, chats: false, analytics: false, employees: true, payroll: false },
+                'Accounting': { messages: false, consultations: false, chats: false, analytics: false, employees: false, payroll: true }
+            },
+
+            // Departments whose default role isn't plain "staff"
+            DEPARTMENT_DEFAULT_ROLE: {
+                'Management': 'admin',
+                'Human Resources': 'hr',
+                'Accounting': 'accountant'
             },
 
             // Escape HTML to prevent XSS
@@ -379,12 +405,16 @@
                 // (admin can still override any checkbox before saving)
                 document.getElementById('staff-department').addEventListener('change', () => this.applyDepartmentPreset());
 
-                // Role change - update permissions for admin/manager tiers
+                // Role change - update permissions for admin/manager/hr/accountant tiers
                 document.getElementById('staff-role').addEventListener('change', (e) => {
                     if (e.target.value === 'admin') {
                         document.querySelectorAll('.permissions-grid input').forEach(cb => cb.checked = true);
                     } else if (e.target.value === 'manager') {
                         document.getElementById('perm-analytics').checked = true;
+                    } else if (e.target.value === 'hr') {
+                        document.getElementById('perm-employees').checked = true;
+                    } else if (e.target.value === 'accountant') {
+                        document.getElementById('perm-payroll').checked = true;
                     }
                 });
             },
@@ -398,11 +428,14 @@
                 document.getElementById('perm-consultations').checked = preset.consultations;
                 document.getElementById('perm-chats').checked = preset.chats;
                 document.getElementById('perm-analytics').checked = preset.analytics;
+                document.getElementById('perm-employees').checked = preset.employees;
+                document.getElementById('perm-payroll').checked = preset.payroll;
 
-                // Management department defaults to the admin role; everyone else to staff
+                // Some departments default to a role other than plain "staff"
+                // (Management -> admin, Human Resources -> hr, Accounting -> accountant)
                 const roleSelect = document.getElementById('staff-role');
                 if (roleSelect.value !== 'manager') {
-                    roleSelect.value = dept === 'Management' ? 'admin' : 'staff';
+                    roleSelect.value = this.DEPARTMENT_DEFAULT_ROLE[dept] || 'staff';
                 }
             },
             
@@ -558,7 +591,9 @@
                         document.getElementById('perm-consultations').checked = member.can_manage_consultations;
                         document.getElementById('perm-chats').checked = member.can_manage_chats;
                         document.getElementById('perm-analytics').checked = member.can_view_analytics;
-                        
+                        document.getElementById('perm-employees').checked = member.can_manage_employees;
+                        document.getElementById('perm-payroll').checked = member.can_manage_payroll;
+
                         passwordInput.required = false;
                         passwordInput.placeholder = 'Leave blank to keep current';
                     }
@@ -592,7 +627,9 @@
                     canManageMessages: document.getElementById('perm-messages').checked,
                     canManageConsultations: document.getElementById('perm-consultations').checked,
                     canManageChats: document.getElementById('perm-chats').checked,
-                    canViewAnalytics: document.getElementById('perm-analytics').checked
+                    canViewAnalytics: document.getElementById('perm-analytics').checked,
+                    canManageEmployees: document.getElementById('perm-employees').checked,
+                    canManagePayroll: document.getElementById('perm-payroll').checked
                 };
                 
                 // Validation

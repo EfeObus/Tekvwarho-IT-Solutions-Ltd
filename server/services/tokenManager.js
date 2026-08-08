@@ -30,7 +30,9 @@ class TokenManager {
                     canManageMessages: user.can_manage_messages,
                     canManageConsultations: user.can_manage_consultations,
                     canManageChats: user.can_manage_chats,
-                    canViewAnalytics: user.can_view_analytics
+                    canViewAnalytics: user.can_view_analytics,
+                    canManageEmployees: user.can_manage_employees,
+                    canManagePayroll: user.can_manage_payroll
                 }
             },
             process.env.JWT_SECRET,

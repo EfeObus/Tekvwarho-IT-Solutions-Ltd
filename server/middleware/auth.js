@@ -85,6 +85,37 @@ const managerOrAbove = (req, res, next) => {
 };
 
 /**
+ * HR-or-admin role check middleware
+ * Gates staff records, onboarding, contracts, and handbook management.
+ */
+const hrOrAdmin = (req, res, next) => {
+    if (req.user.role !== 'admin' && req.user.role !== 'hr') {
+        return res.status(403).json({
+            success: false,
+            message: 'HR or admin access required'
+        });
+    }
+    next();
+};
+
+/**
+ * Accountant-or-admin role check middleware
+ * Gates payroll operations (posting/recording salary payments, paystubs).
+ * Does NOT by itself allow changing a staff member's base_salary figure -
+ * that stays admin-only (see adminOnly) so a raise always requires
+ * Admin sign-off, not just the Accountant who processes payroll.
+ */
+const accountantOrAdmin = (req, res, next) => {
+    if (req.user.role !== 'admin' && req.user.role !== 'accountant') {
+        return res.status(403).json({
+            success: false,
+            message: 'Accountant or admin access required'
+        });
+    }
+    next();
+};
+
+/**
  * Admin role check middleware
  */
 const adminOnly = (req, res, next) => {
@@ -114,12 +145,16 @@ const hasPermission = (permission) => {
             'consultations': permissions.canManageConsultations,
             'chats': permissions.canManageChats,
             'analytics': permissions.canViewAnalytics,
+            'employees': permissions.canManageEmployees || req.user.role === 'hr',
+            'payroll': permissions.canManagePayroll || req.user.role === 'accountant',
             'staff': req.user.role === 'admin' || req.user.role === 'manager',
             // Full names (for backwards compatibility)
             'can_manage_messages': permissions.canManageMessages,
             'can_manage_consultations': permissions.canManageConsultations,
             'can_manage_chats': permissions.canManageChats,
-            'can_view_analytics': permissions.canViewAnalytics
+            'can_view_analytics': permissions.canViewAnalytics,
+            'can_manage_employees': permissions.canManageEmployees || req.user.role === 'hr',
+            'can_manage_payroll': permissions.canManagePayroll || req.user.role === 'accountant'
         };
 
         if (!permissionMap[permission]) {
@@ -136,5 +171,7 @@ module.exports = {
     authMiddleware,
     adminOnly,
     managerOrAbove,
+    hrOrAdmin,
+    accountantOrAdmin,
     hasPermission
 };

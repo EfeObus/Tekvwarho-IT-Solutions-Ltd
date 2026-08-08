@@ -12,7 +12,7 @@ const Message = require('../models/Message');
 const Chat = require('../models/Chat');
 const Consultation = require('../models/Consultation');
 const Visitor = require('../models/Visitor');
-const { authMiddleware, adminOnly, hasPermission } = require('../middleware/auth');
+const { authMiddleware, adminOnly, hasPermission, accountantOrAdmin, hrOrAdmin } = require('../middleware/auth');
 const { loginLimiter, passwordResetLimiter } = require('../middleware/rateLimiter');
 const db = require('../config/database');
 const AuditService = require('../services/auditService');
@@ -119,7 +119,9 @@ router.post('/login', loginLimiter, [
                 can_manage_messages: staff.can_manage_messages,
                 can_manage_consultations: staff.can_manage_consultations,
                 can_manage_chats: staff.can_manage_chats,
-                can_view_analytics: staff.can_view_analytics
+                can_view_analytics: staff.can_view_analytics,
+                can_manage_employees: staff.can_manage_employees,
+                can_manage_payroll: staff.can_manage_payroll
             }
         });
     } catch (error) {
@@ -374,7 +376,7 @@ router.get('/staff-dashboard', authMiddleware, async (req, res) => {
  * GET /api/admin/staff
  * Get all staff members (admin only)
  */
-router.get('/staff', authMiddleware, adminOnly, async (req, res) => {
+router.get('/staff', authMiddleware, hrOrAdmin, async (req, res) => {
     try {
         const { role, isActive } = req.query;
         const filters = {};
@@ -435,11 +437,11 @@ router.get('/staff/active', authMiddleware, async (req, res) => {
  * POST /api/admin/staff
  * Create/Onboard a new staff member (admin only)
  */
-router.post('/staff', authMiddleware, adminOnly, [
+router.post('/staff', authMiddleware, hrOrAdmin, [
     body('email').isEmail().withMessage('Valid email is required'),
     body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
     body('name').trim().notEmpty().withMessage('Name is required'),
-    body('role').isIn(['admin', 'manager', 'staff']).withMessage('Invalid role')
+    body('role').isIn(['admin', 'manager', 'staff', 'hr', 'accountant']).withMessage('Invalid role')
 ], async (req, res) => {
     try {
         const errors = validationResult(req);
@@ -562,10 +564,87 @@ router.patch('/staff/:id', authMiddleware, async (req, res) => {
 });
 
 /**
+ * GET /api/admin/staff/:id/salary
+ * View a staff member's salary (admin/accountant, or the staff member themselves)
+ */
+router.get('/staff/:id/salary', authMiddleware, async (req, res) => {
+    try {
+        const isSelf = req.user.id === req.params.id;
+        const isAccountant = req.user.role === 'accountant';
+        const isAdmin = req.user.role === 'admin';
+
+        if (!isSelf && !isAccountant && !isAdmin) {
+            return res.status(403).json({
+                success: false,
+                message: 'Access denied'
+            });
+        }
+
+        const salary = await Staff.getSalaryInfo(req.params.id);
+        if (!salary) {
+            return res.status(404).json({
+                success: false,
+                message: 'Staff member not found'
+            });
+        }
+
+        res.json({ success: true, data: salary });
+    } catch (error) {
+        console.error('Get salary error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to retrieve salary'
+        });
+    }
+});
+
+/**
+ * PUT /api/admin/staff/:id/salary
+ * Set a staff member's base salary (admin only - a raise always requires
+ * Admin sign-off, even Accountants who process payroll cannot self-approve one)
+ */
+router.put('/staff/:id/salary', authMiddleware, adminOnly, [
+    body('baseSalary').isFloat({ min: 0 }).withMessage('Valid salary amount is required')
+], async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                success: false,
+                errors: errors.array()
+            });
+        }
+
+        const { baseSalary, currency } = req.body;
+        const oldSalary = await Staff.getSalaryInfo(req.params.id);
+        const salary = await Staff.updateSalary(req.params.id, baseSalary, currency || 'NGN');
+        if (!salary) {
+            return res.status(404).json({
+                success: false,
+                message: 'Staff member not found'
+            });
+        }
+
+        await AuditService.logStaffChange(req.user.id, 'salary_updated', req.params.id, {
+            oldSalary: oldSalary?.base_salary || null,
+            newSalary: baseSalary
+        }, req.ip);
+
+        res.json({ success: true, data: salary });
+    } catch (error) {
+        console.error('Update salary error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to update salary'
+        });
+    }
+});
+
+/**
  * POST /api/admin/staff/:id/activate
  * Activate a staff member (admin only)
  */
-router.post('/staff/:id/activate', authMiddleware, adminOnly, async (req, res) => {
+router.post('/staff/:id/activate', authMiddleware, hrOrAdmin, async (req, res) => {
     try {
         await Staff.activate(req.params.id);
         await AuditService.logStaffChange(req.user.id, 'activated', req.params.id, {}, req.ip);
@@ -583,7 +662,7 @@ router.post('/staff/:id/activate', authMiddleware, adminOnly, async (req, res) =
  * POST /api/admin/staff/:id/deactivate
  * Deactivate a staff member (admin only)
  */
-router.post('/staff/:id/deactivate', authMiddleware, adminOnly, async (req, res) => {
+router.post('/staff/:id/deactivate', authMiddleware, hrOrAdmin, async (req, res) => {
     try {
         await Staff.deactivate(req.params.id);
         await AuditService.logStaffChange(req.user.id, 'deactivated', req.params.id, {}, req.ip);
@@ -601,7 +680,7 @@ router.post('/staff/:id/deactivate', authMiddleware, adminOnly, async (req, res)
  * POST /api/admin/staff/:id/reset-password
  * Reset staff password (admin only)
  */
-router.post('/staff/:id/reset-password', authMiddleware, adminOnly, [
+router.post('/staff/:id/reset-password', authMiddleware, hrOrAdmin, [
     body('newPassword').isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
 ], async (req, res) => {
     try {
@@ -654,6 +733,29 @@ router.delete('/staff/:id', authMiddleware, adminOnly, async (req, res) => {
         res.status(500).json({
             success: false,
             message: error.message || 'Failed to delete staff member'
+        });
+    }
+});
+
+/**
+ * GET /api/admin/payroll/staff
+ * List all active staff with salary info, for the Accountant/Payroll dashboard
+ */
+router.get('/payroll/staff', authMiddleware, accountantOrAdmin, async (req, res) => {
+    try {
+        const result = await db.query(
+            `SELECT id, name, email, department, role, base_salary, salary_currency,
+                    hire_date, is_active
+             FROM staff
+             WHERE is_active = true
+             ORDER BY department NULLS LAST, name`
+        );
+        res.json({ success: true, data: result.rows });
+    } catch (error) {
+        console.error('Get payroll staff error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to retrieve payroll data'
         });
     }
 });

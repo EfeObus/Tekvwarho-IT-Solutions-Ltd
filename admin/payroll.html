@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="alternate icon" type="image/png" href="/img/tekvwa-icon-192.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Payroll | Tekvwa Admin</title>
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="css/onboarding.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Tekvwa IT Solutions</h2>
+                <span class="subtitle">Admin Dashboard</span>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <span class="nav-section-title">Main</span>
+                    <a href="index.html" class="nav-item">
+                        <i class="fas fa-home"></i> Dashboard
+                    </a>
+                    <a href="messages.html" class="nav-item">
+                        <i class="fas fa-envelope"></i> Messages
+                        <span class="badge" id="messages-badge">0</span>
+                    </a>
+                    <a href="chats.html" class="nav-item">
+                        <i class="fas fa-comments"></i> Live Chats
+                        <span class="badge" id="chats-badge">0</span>
+                    </a>
+                    <a href="consultations.html" class="nav-item">
+                        <i class="fas fa-calendar-alt"></i> Consultations
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <span class="nav-section-title">Management</span>
+                    <a href="staff.html" class="nav-item">
+                        <i class="fas fa-users"></i> Staff
+                    </a>
+                    <a href="payroll.html" class="nav-item active">
+                        <i class="fas fa-money-check-dollar"></i> Payroll
+                    </a>
+                    <a href="analytics.html" class="nav-item">
+                        <i class="fas fa-chart-bar"></i> Analytics
+                    </a>
+                    <a href="performance.html" class="nav-item">
+                        <i class="fas fa-chart-line"></i> Performance
+                    </a>
+                    <a href="audit.html" class="nav-item">
+                        <i class="fas fa-history"></i> Audit Logs
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <span class="nav-section-title">Settings</span>
+                    <a href="profile.html" class="nav-item">
+                        <i class="fas fa-user-circle"></i> My Profile
+                    </a>
+                    <a href="settings.html" class="nav-item">
+                        <i class="fas fa-cog"></i> Settings
+                    </a>
+                    <a href="../index.html" class="nav-item">
+                        <i class="fas fa-globe"></i> View Website
+                    </a>
+                    <a href="#" class="nav-item" id="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Header -->
+            <header class="admin-header">
+                <div class="header-left">
+                    <button class="sidebar-toggle" id="sidebar-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Payroll</h1>
+                </div>
+                <div class="header-right">
+                    <div class="user-dropdown" id="user-dropdown">
+                        <div class="user-avatar" id="user-avatar">A</div>
+                        <div class="user-info">
+                            <div class="user-name" id="user-name">Admin</div>
+                            <div class="user-role" id="user-role">Administrator</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <div class="admin-content">
+                <!-- Stats -->
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-primary"><i class="fas fa-users"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="stat-headcount">0</span>
+                            <span class="stat-label">Active Employees</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon bg-success"><i class="fas fa-sack-dollar"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="stat-monthly-total">₦0</span>
+                            <span class="stat-label">Monthly Payroll Total</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon bg-warning"><i class="fas fa-user-slash"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="stat-unset">0</span>
+                            <span class="stat-label">No Salary on File</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payroll Table -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Employee Salaries</h3>
+                        <p class="text-muted text-sm" style="margin: 0;">Paid monthly, in Nigerian Naira (NGN)</p>
+                    </div>
+                    <div class="card-body" style="padding: 0;">
+                        <div class="table-responsive">
+                            <table class="data-table" id="payroll-table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Department</th>
+                                        <th>Role</th>
+                                        <th>Hire Date</th>
+                                        <th>Monthly Salary</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="payroll-tbody">
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted" style="padding: 60px;">
+                                            Loading payroll...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Set Salary Modal (admin only) -->
+    <div class="modal-overlay" id="salary-modal">
+        <div class="modal" style="max-width: 420px;">
+            <div class="modal-header">
+                <h3>Set Monthly Salary</h3>
+                <button class="modal-close" id="salary-modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-3">Setting salary for <strong id="salary-staff-name"></strong></p>
+                <input type="hidden" id="salary-staff-id">
+                <div class="form-group">
+                    <label for="salary-amount">Monthly Salary (NGN) *</label>
+                    <input type="number" id="salary-amount" class="form-control" min="0" step="1000" placeholder="e.g. 250000">
+                </div>
+                <div id="salary-error" class="alert alert-danger" style="display: none;"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="salary-cancel-btn">Cancel</button>
+                <button class="btn btn-primary" id="salary-save-btn">
+                    <i class="fas fa-save"></i> Save Salary
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/admin.js"></script>
+    <script>
+        const PayrollPage = {
+            staffList: [],
+            currentUserRole: null,
+
+            formatNaira(amount) {
+                if (amount === null || amount === undefined) return '—';
+                return '₦' + Number(amount).toLocaleString('en-NG', { minimumFractionDigits: 0 });
+            },
+
+            escapeHtml(str) {
+                if (!str) return '';
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            },
+
+            async init() {
+                this.currentUserRole = AdminApp.getCurrentUser()?.role;
+                this.bindEvents();
+                await this.load();
+            },
+
+            bindEvents() {
+                document.getElementById('salary-modal-close').addEventListener('click', () => this.closeModal());
+                document.getElementById('salary-cancel-btn').addEventListener('click', () => this.closeModal());
+                document.getElementById('salary-save-btn').addEventListener('click', () => this.saveSalary());
+            },
+
+            async load() {
+                try {
+                    const response = await AdminApp.apiRequest('/admin/payroll/staff');
+                    if (response.success) {
+                        this.staffList = response.data;
+                        this.renderTable(response.data);
+                        this.updateStats(response.data);
+                    }
+                } catch (error) {
+                    console.error('Failed to load payroll:', error);
+                    document.getElementById('payroll-tbody').innerHTML = `
+                        <tr><td colspan="6" class="text-center text-danger">Failed to load payroll data</td></tr>
+                    `;
+                }
+            },
+
+            updateStats(staff) {
+                document.getElementById('stat-headcount').textContent = staff.length;
+                const total = staff.reduce((sum, s) => sum + (parseFloat(s.base_salary) || 0), 0);
+                document.getElementById('stat-monthly-total').textContent = this.formatNaira(total);
+                document.getElementById('stat-unset').textContent = staff.filter(s => !s.base_salary).length;
+            },
+
+            renderTable(staff) {
+                const tbody = document.getElementById('payroll-tbody');
+                const isAdmin = this.currentUserRole === 'admin';
+
+                if (!staff.length) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted" style="padding: 60px;">No active employees found</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = staff.map(s => `
+                    <tr>
+                        <td><strong>${this.escapeHtml(s.name)}</strong></td>
+                        <td>${this.escapeHtml(s.department || '-')}</td>
+                        <td>${this.escapeHtml((s.role || '').charAt(0).toUpperCase() + (s.role || '').slice(1))}</td>
+                        <td>${s.hire_date ? new Date(s.hire_date).toLocaleDateString() : '-'}</td>
+                        <td>${this.formatNaira(s.base_salary)}</td>
+                        <td>
+                            ${isAdmin ? `
+                                <button class="btn btn-sm btn-outline" onclick="PayrollPage.openSalaryModal('${s.id}', '${this.escapeHtml(s.name).replace(/'/g, "\\'")}', ${s.base_salary || 0})">
+                                    <i class="fas fa-edit"></i> Set Salary
+                                </button>
+                            ` : '<span class="text-muted text-sm">View only</span>'}
+                        </td>
+                    </tr>
+                `).join('');
+            },
+
+            openSalaryModal(id, name, currentSalary) {
+                document.getElementById('salary-staff-id').value = id;
+                document.getElementById('salary-staff-name').textContent = name;
+                document.getElementById('salary-amount').value = currentSalary || '';
+                document.getElementById('salary-error').style.display = 'none';
+                document.getElementById('salary-modal').classList.add('active');
+            },
+
+            closeModal() {
+                document.getElementById('salary-modal').classList.remove('active');
+            },
+
+            async saveSalary() {
+                const id = document.getElementById('salary-staff-id').value;
+                const amount = document.getElementById('salary-amount').value;
+                const errorDiv = document.getElementById('salary-error');
+
+                if (!amount || parseFloat(amount) < 0) {
+                    errorDiv.textContent = 'Enter a valid salary amount';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+
+                try {
+                    const response = await AdminApp.apiRequest(`/admin/staff/${id}/salary`, {
+                        method: 'PUT',
+                        body: JSON.stringify({ baseSalary: parseFloat(amount), currency: 'NGN' })
+                    });
+
+                    if (response.success) {
+                        this.closeModal();
+                        await this.load();
+                        AdminApp.showNotification('Salary updated', 'success');
+                    } else {
+                        errorDiv.textContent = response.message || 'Failed to update salary';
+                        errorDiv.style.display = 'block';
+                    }
+                } catch (error) {
+                    errorDiv.textContent = 'An error occurred';
+                    errorDiv.style.display = 'block';
+                }
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof AdminApp !== 'undefined') {
+                const authOk = AdminApp.init();
+                if (authOk !== false) {
+                    PayrollPage.init();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
