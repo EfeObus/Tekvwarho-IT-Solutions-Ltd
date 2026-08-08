@@ -141,7 +141,7 @@
    ONBOARDING CHECKLIST WIDGET
    ========================================= */
 .onboarding-widget {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #0066CC 0%, #004C99 100%);
     border-radius: 16px;
     padding: 24px;
     margin-bottom: 24px;
@@ -273,7 +273,7 @@
 .step-checkbox svg {
     width: 14px;
     height: 14px;
-    stroke: #667eea;
+    stroke: #0066CC;
 }
 
 .step-content {
@@ -299,7 +299,7 @@
 
 .step-action {
     background: white !important;
-    color: #667eea !important;
+    color: #0066CC !important;
     border: none !important;
     font-weight: 600 !important;
 }

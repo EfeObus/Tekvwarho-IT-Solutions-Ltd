@@ -69,6 +69,22 @@ const authMiddleware = (req, res, next) => {
 };
 
 /**
+ * Manager-or-above role check middleware
+ * Used to gate capabilities (like bulk data export) that regular staff
+ * shouldn't have, matching the "Lead/Manager" tier getting broader access
+ * than "Regular Staff" within their department.
+ */
+const managerOrAbove = (req, res, next) => {
+    if (req.user.role !== 'admin' && req.user.role !== 'manager') {
+        return res.status(403).json({
+            success: false,
+            message: 'Manager or admin access required'
+        });
+    }
+    next();
+};
+
+/**
  * Admin role check middleware
  */
 const adminOnly = (req, res, next) => {
@@ -119,5 +135,6 @@ const hasPermission = (permission) => {
 module.exports = {
     authMiddleware,
     adminOnly,
+    managerOrAbove,
     hasPermission
 };

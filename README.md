@@ -435,6 +435,24 @@ Navigate to `http://localhost:5500/admin/login.html`
 - `can_manage_chats` - Handle live chats
 - `can_view_analytics` - View analytics dashboard
 
+Bulk CSV/report exports additionally require the **Manager** or **Admin** role tier, regardless of the flags above — matching the principle that regular staff shouldn't be able to bulk-export customer data.
+
+### Department Defaults
+
+Selecting a department when adding staff (Staff page → Add Staff) suggests sensible default permissions, which can still be overridden before saving:
+
+| Department | Default role | Messages | Consultations | Chats | Analytics |
+|---|---|---|---|---|---|
+| Management | Admin | ✓ | ✓ | ✓ | ✓ |
+| Customer Service | Staff | ✓ | | ✓ | |
+| Sales | Staff | | ✓ | | |
+| Development | Staff | | | | ✓ |
+| IT Support | Staff | ✓ | | ✓ | |
+
+Setting the role to **Manager** for any department adds analytics visibility and export rights on top of that department's base access — the "Lead" tier gets reporting + export, "Regular Staff" doesn't. This mirrors standard least-privilege / separation-of-duties practice: staff get only what their day-to-day work requires, leads get the added oversight that comes with running a team.
+
+Development and IT Support are scoped conservatively because this app is a lead-capture/CRM tool, not a project or ticketing system — Development gets read-only analytics rather than write access to customer records (Development has no legitimate reason to edit customer PII), and IT Support shares Customer Service's inbox access since there's currently no separate support-ticket queue. Building either a sales pipeline view, a dev-facing project tracker, or a distinct support-ticket system would be new feature work beyond adjusting these defaults.
+
 ### New Features
 
 #### Onboarding System

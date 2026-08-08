@@ -348,9 +348,9 @@ body {
 }
 
 .stat-icon.blue { background: linear-gradient(135deg, #0066CC, #0099ff); }
-.stat-icon.green { background: linear-gradient(135deg, #28a745, #20c997); }
-.stat-icon.orange { background: linear-gradient(135deg, #fd7e14, #ffc107); }
-.stat-icon.purple { background: linear-gradient(135deg, #6f42c1, #e83e8c); }
+.stat-icon.green { background: linear-gradient(135deg, #0EA5E9, #38BDF8); }
+.stat-icon.orange { background: linear-gradient(135deg, #1E3A8A, #3B5FC7); }
+.stat-icon.purple { background: linear-gradient(135deg, #0891B2, #06B6D4); }
 
 .stat-content h3 {
     font-size: 28px;

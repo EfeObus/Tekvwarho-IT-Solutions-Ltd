@@ -56,6 +56,9 @@
                 </div>
                 <div class="nav-section">
                     <span class="nav-section-title">Settings</span>
+                    <a href="profile.html" class="nav-item">
+                        <i class="fas fa-user-circle"></i> My Profile
+                    </a>
                     <a href="settings.html" class="nav-item">
                         <i class="fas fa-cog"></i> Settings
                     </a>
@@ -318,7 +321,19 @@
         // Staff Management Page Logic
         const StaffPage = {
             staffList: [],
-            
+
+            // Default permissions per department, for the "Regular Staff" tier.
+            // Selecting the Manager role adds analytics + export rights on top of
+            // these, matching the Lead/Manager tier getting broader visibility in
+            // every department (per the department permission matrix).
+            DEPARTMENT_PERMISSION_PRESETS: {
+                'Management': { messages: true, consultations: true, chats: true, analytics: true },
+                'Customer Service': { messages: true, consultations: false, chats: true, analytics: false },
+                'Sales': { messages: false, consultations: true, chats: false, analytics: false },
+                'Development': { messages: false, consultations: false, chats: false, analytics: true },
+                'IT Support': { messages: true, consultations: false, chats: true, analytics: false }
+            },
+
             // Escape HTML to prevent XSS
             escapeHtml(str) {
                 if (!str) return '';
@@ -358,13 +373,36 @@
                 // Filters
                 document.getElementById('filter-role').addEventListener('change', () => this.applyFilters());
                 document.getElementById('filter-status').addEventListener('change', () => this.applyFilters());
-                
-                // Role change - update permissions for admin
+
+                // Department change - suggest permissions based on the department preset
+                // (admin can still override any checkbox before saving)
+                document.getElementById('staff-department').addEventListener('change', () => this.applyDepartmentPreset());
+
+                // Role change - update permissions for admin/manager tiers
                 document.getElementById('staff-role').addEventListener('change', (e) => {
                     if (e.target.value === 'admin') {
                         document.querySelectorAll('.permissions-grid input').forEach(cb => cb.checked = true);
+                    } else if (e.target.value === 'manager') {
+                        document.getElementById('perm-analytics').checked = true;
                     }
                 });
+            },
+
+            applyDepartmentPreset() {
+                const dept = document.getElementById('staff-department').value;
+                const preset = this.DEPARTMENT_PERMISSION_PRESETS[dept];
+                if (!preset) return;
+
+                document.getElementById('perm-messages').checked = preset.messages;
+                document.getElementById('perm-consultations').checked = preset.consultations;
+                document.getElementById('perm-chats').checked = preset.chats;
+                document.getElementById('perm-analytics').checked = preset.analytics;
+
+                // Management department defaults to the admin role; everyone else to staff
+                const roleSelect = document.getElementById('staff-role');
+                if (roleSelect.value !== 'manager') {
+                    roleSelect.value = dept === 'Management' ? 'admin' : 'staff';
+                }
             },
             
             async loadStaff() {
@@ -574,14 +612,21 @@
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
                 
                 try {
-                    const payload = { name, phone, department, role, permissions };
+                    // POST /admin/staff (create) expects permissions nested under
+                    // `permissions`; PATCH /admin/staff/:id (edit) reads them at the
+                    // top level (see Staff.create() vs Staff.update() in
+                    // server/models/Staff.js). Sending the wrong shape to either
+                    // silently drops the permission changes - keep these in sync.
+                    const payload = { name, phone, department, role };
                     if (!id) {
                         payload.email = email;
                         payload.password = password;
-                    } else if (password) {
-                        payload.password = password;
+                        payload.permissions = permissions;
+                    } else {
+                        if (password) payload.password = password;
+                        Object.assign(payload, permissions);
                     }
-                    
+
                     const url = id ? `/admin/staff/${id}` : '/admin/staff';
                     const method = id ? 'PATCH' : 'POST';
                     

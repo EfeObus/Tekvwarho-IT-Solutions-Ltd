@@ -21,7 +21,7 @@ const OnboardingManager = {
             title: 'Complete Your Profile',
             description: 'Add your name and contact details for better communication.',
             icon: '<i class="fas fa-user"></i>',
-            action: () => window.location.href = 'settings.html#profile',
+            action: () => window.location.href = 'profile.html',
             checkComplete: () => OnboardingManager.checkProfileComplete()
         },
         {
