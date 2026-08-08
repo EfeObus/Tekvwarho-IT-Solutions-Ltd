@@ -337,6 +337,45 @@
         </div>
     </div>
 
+    <!-- Generate Contract Modal -->
+    <div class="modal-overlay" id="contract-modal">
+        <div class="modal" style="max-width: 480px;">
+            <div class="modal-header">
+                <h3>Generate Employment Contract</h3>
+                <button class="modal-close" onclick="document.getElementById('contract-modal').classList.remove('active')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-3">Generating a contract for <strong id="contract-staff-name"></strong></p>
+                <input type="hidden" id="contract-staff-id">
+                <div class="form-group">
+                    <label for="contract-job-title">Job Title *</label>
+                    <input type="text" id="contract-job-title" class="form-control" placeholder="e.g. Software Developer">
+                </div>
+                <div class="form-group">
+                    <label for="contract-job-description">Job Description &amp; Responsibilities</label>
+                    <textarea id="contract-job-description" class="form-control" rows="4"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="contract-start-date">Start Date</label>
+                    <input type="date" id="contract-start-date" class="form-control">
+                </div>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="contract-send-email" checked>
+                    <span>Email the contract PDF to this employee now</span>
+                </label>
+                <div id="contract-error" class="alert alert-danger" style="display: none; margin-top: 12px;"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="document.getElementById('contract-modal').classList.remove('active')">Cancel</button>
+                <button class="btn btn-primary" id="contract-generate-btn">
+                    <i class="fas fa-file-signature"></i> Generate Contract
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="js/admin.js"></script>
     <script>
         // Staff Management Page Logic
@@ -396,6 +435,9 @@
                 
                 // Reset password
                 document.getElementById('reset-password-btn').addEventListener('click', () => this.resetPassword());
+
+                // Generate contract
+                document.getElementById('contract-generate-btn').addEventListener('click', () => this.generateContract());
                 
                 // Confirm delete
                 document.getElementById('confirm-delete-btn').addEventListener('click', () => this.deleteStaff());
@@ -519,6 +561,9 @@
                                 </button>
                                 <button class="btn-icon" title="Reset Password" onclick="StaffPage.openResetPassword('${member.id}', '${safeNameJs}')">
                                     <i class="fas fa-key"></i>
+                                </button>
+                                <button class="btn-icon" title="Generate Contract" onclick="StaffPage.openContractModal('${member.id}', '${safeNameJs}', '${this.escapeHtml(member.department || '').replace(/'/g, "\\'")}')">
+                                    <i class="fas fa-file-signature"></i>
                                 </button>
                                 ${member.is_active 
                                     ? `<button class="btn-icon text-warning" title="Deactivate" onclick="StaffPage.toggleStatus('${member.id}', false)">
@@ -739,7 +784,92 @@
                     btn.innerHTML = '<i class="fas fa-key"></i> Reset Password';
                 }
             },
-            
+
+            async openContractModal(staffId, staffName, department) {
+                document.getElementById('contract-staff-id').value = staffId;
+                document.getElementById('contract-staff-name').textContent = staffName;
+                document.getElementById('contract-job-title').value = '';
+                document.getElementById('contract-job-description').value = '';
+                document.getElementById('contract-start-date').value = new Date().toISOString().split('T')[0];
+                document.getElementById('contract-send-email').checked = true;
+                document.getElementById('contract-error').style.display = 'none';
+
+                // Prefill from the department's template, if one exists
+                if (department) {
+                    try {
+                        const res = await AdminApp.apiRequest('/contracts/templates');
+                        if (res && res.success) {
+                            const template = res.data.find(t => t.department === department);
+                            if (template) {
+                                document.getElementById('contract-job-title').value = template.job_title || '';
+                                document.getElementById('contract-job-description').value = template.job_description || '';
+                            }
+                        }
+                    } catch (e) { /* prefill is a convenience, not required */ }
+                }
+
+                document.getElementById('contract-modal').classList.add('active');
+            },
+
+            async generateContract() {
+                const staffId = document.getElementById('contract-staff-id').value;
+                const jobTitle = document.getElementById('contract-job-title').value.trim();
+                const jobDescription = document.getElementById('contract-job-description').value.trim();
+                const startDate = document.getElementById('contract-start-date').value;
+                const sendEmailFlag = document.getElementById('contract-send-email').checked;
+                const errorDiv = document.getElementById('contract-error');
+                const btn = document.getElementById('contract-generate-btn');
+
+                if (!jobTitle) {
+                    errorDiv.textContent = 'Job title is required';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+
+                try {
+                    const response = await AdminApp.apiRequest(`/contracts/staff/${staffId}`, {
+                        method: 'POST',
+                        body: JSON.stringify({ jobTitle, jobDescription, startDate, sendEmail: sendEmailFlag })
+                    });
+
+                    if (response.success) {
+                        document.getElementById('contract-modal').classList.remove('active');
+                        AdminApp.showNotification(
+                            response.emailed ? 'Contract generated and emailed' : 'Contract generated (email not sent)',
+                            'success'
+                        );
+                        await this.downloadContractPdf(response.data.id);
+                    } else {
+                        errorDiv.textContent = response.message || 'Failed to generate contract';
+                        errorDiv.style.display = 'block';
+                    }
+                } catch (error) {
+                    errorDiv.textContent = 'An error occurred';
+                    errorDiv.style.display = 'block';
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-file-signature"></i> Generate Contract';
+                }
+            },
+
+            async downloadContractPdf(id) {
+                const token = localStorage.getItem('adminToken');
+                const response = await fetch(`/api/contracts/${id}/pdf`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) return;
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'employment-contract.pdf';
+                a.click();
+                window.URL.revokeObjectURL(url);
+            },
+
             async toggleStatus(staffId, activate) {
                 try {
                     const endpoint = activate ? 'activate' : 'deactivate';

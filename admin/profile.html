@@ -137,6 +137,25 @@
                 </div>
 
                 <div class="settings-card" style="background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 24px; margin-bottom: 24px;">
+                    <h3 style="margin-top: 0; margin-bottom: 20px;">My Employment Contract</h3>
+                    <div class="table-responsive">
+                        <table class="data-table" id="contracts-table">
+                            <thead>
+                                <tr>
+                                    <th>Job Title</th>
+                                    <th>Start Date</th>
+                                    <th>Issued</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="contracts-tbody">
+                                <tr><td colspan="4" class="text-center text-muted" style="padding: 30px;">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="settings-card" style="background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 24px; margin-bottom: 24px;">
                     <h3 style="margin-top: 0; margin-bottom: 20px;">My Paystubs</h3>
                     <div class="table-responsive">
                         <table class="data-table" id="paystubs-table">
@@ -214,7 +233,48 @@
                     }
 
                     this.loadPaystubs(user.id);
+                    this.loadContracts(user.id);
                 }
+            },
+
+            async loadContracts(staffId) {
+                const tbody = document.getElementById('contracts-tbody');
+                const response = await AdminApp.apiRequest(`/contracts/staff/${staffId}`);
+                if (!response || !response.success) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Failed to load</td></tr>';
+                    return;
+                }
+                if (!response.data.length) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted" style="padding: 30px;">No contract on file yet</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = response.data.map(c => `
+                    <tr>
+                        <td>${c.job_title}</td>
+                        <td>${c.start_date ? new Date(c.start_date).toLocaleDateString() : '—'}</td>
+                        <td>${new Date(c.generated_at).toLocaleDateString()}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline" onclick="ProfilePage.downloadContract('${c.id}')">
+                                <i class="fas fa-download"></i> PDF
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            },
+
+            async downloadContract(id) {
+                const token = localStorage.getItem('adminToken');
+                const response = await fetch(`/api/contracts/${id}/pdf`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) return;
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'employment-contract.pdf';
+                a.click();
+                window.URL.revokeObjectURL(url);
             },
 
             formatNaira(amount) {

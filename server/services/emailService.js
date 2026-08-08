@@ -36,7 +36,7 @@ const createTransporter = () => {
 /**
  * Send email
  */
-const sendEmail = async ({ to, subject, html, text }) => {
+const sendEmail = async ({ to, subject, html, text, attachments }) => {
     try {
         const transporter = createTransporter();
 
@@ -45,7 +45,8 @@ const sendEmail = async ({ to, subject, html, text }) => {
             to,
             subject,
             html,
-            text
+            text,
+            attachments
         };
 
         const result = await transporter.sendMail(mailOptions);
@@ -433,6 +434,38 @@ const sendPasswordResetEmail = async (email, name, resetToken) => {
     });
 };
 
+/**
+ * Send an employment contract PDF to a new hire
+ */
+const sendContractEmail = async (staff, jobTitle, pdfBuffer) => {
+    const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #0066CC;">Welcome to Tekvwa IT Solutions Ltd</h2>
+            <p>Hi ${staff.name},</p>
+            <p>Congratulations on joining us as <strong>${jobTitle}</strong>. Your employment contract is attached to this email as a PDF.</p>
+            <p>Please review it, and reach out to HR if you have any questions.</p>
+            <p>You can also find our Employee Handbook and Code of Conduct in your staff dashboard once you log in.</p>
+            <hr style="margin-top: 30px; border: none; border-top: 1px solid #ddd;">
+            <p style="font-size: 12px; color: #666;">
+                Tekvwa IT Solutions Ltd &bull; Ughelli, Delta State, Nigeria &bull; RC 9748441
+            </p>
+        </div>
+    `;
+
+    return sendEmail({
+        to: staff.email,
+        subject: 'Your Employment Contract - Tekvwa IT Solutions',
+        html,
+        attachments: [
+            {
+                filename: 'employment-contract.pdf',
+                content: pdfBuffer,
+                contentType: 'application/pdf'
+            }
+        ]
+    });
+};
+
 module.exports = {
     sendEmail,
     sendContactNotification,
@@ -443,5 +476,6 @@ module.exports = {
     sendBookingStatusCancelled,
     sendBookingNotification,
     sendMissedChatResponse,
-    sendPasswordResetEmail
+    sendPasswordResetEmail,
+    sendContractEmail
 };
