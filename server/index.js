@@ -39,6 +39,7 @@ const contractsRoutes = require('./routes/contracts');
 const ticketsRoutes = require('./routes/tickets');
 const letterheadRoutes = require('./routes/letterhead');
 const complianceRoutes = require('./routes/compliance');
+const onboardingRoutes = require('./routes/onboarding');
 
 // Import middleware
 const { securityHeaders, corsOptions, botProtection } = require('./middleware/securityHeaders');
@@ -147,6 +148,7 @@ app.use('/api/contracts', contractsRoutes);
 app.use('/api/tickets', ticketsRoutes);
 app.use('/api/letterhead', letterheadRoutes);
 app.use('/api/compliance', complianceRoutes);
+app.use('/api/onboarding', onboardingRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

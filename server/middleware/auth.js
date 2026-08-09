@@ -148,6 +148,7 @@ const hasPermission = (permission) => {
             'employees': permissions.canManageEmployees || req.user.role === 'hr',
             'payroll': permissions.canManagePayroll || req.user.role === 'accountant',
             'tickets': permissions.canManageTickets || req.user.role === 'manager',
+            'onboarding': permissions.canManageOnboarding || req.user.role === 'hr',
             'staff': req.user.role === 'admin' || req.user.role === 'manager',
             // Full names (for backwards compatibility)
             'can_manage_messages': permissions.canManageMessages,
@@ -156,7 +157,8 @@ const hasPermission = (permission) => {
             'can_view_analytics': permissions.canViewAnalytics,
             'can_manage_employees': permissions.canManageEmployees || req.user.role === 'hr',
             'can_manage_payroll': permissions.canManagePayroll || req.user.role === 'accountant',
-            'can_manage_tickets': permissions.canManageTickets || req.user.role === 'manager'
+            'can_manage_tickets': permissions.canManageTickets || req.user.role === 'manager',
+            'can_manage_onboarding': permissions.canManageOnboarding || req.user.role === 'hr'
         };
 
         if (!permissionMap[permission]) {

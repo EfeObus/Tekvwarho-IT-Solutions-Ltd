@@ -466,6 +466,47 @@ const sendContractEmail = async (staff, jobTitle, pdfBuffer) => {
     });
 };
 
+/**
+ * Send Workspace account welcome email to a new hire's personal address,
+ * once their @tekvwa.org mailbox has been provisioned.
+ */
+const sendWelcomeEmail = async ({ staff, workspaceEmail, tempPassword }) => {
+    const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #0066CC;">Welcome to Tekvwa IT Solutions Ltd</h2>
+            <p>Hi ${staff.name},</p>
+            <p>We've set up your official company account ahead of your start date. Here are your credentials:</p>
+            <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                <tr>
+                    <td style="padding: 8px; background: #F5F6FA; font-weight: bold; width: 160px;">Company Email</td>
+                    <td style="padding: 8px; background: #F5F6FA;">${workspaceEmail}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; font-weight: bold;">Temporary Password</td>
+                    <td style="padding: 8px;">${tempPassword}</td>
+                </tr>
+            </table>
+            <p><strong>Next steps:</strong></p>
+            <ul>
+                <li>Sign in at <a href="https://mail.google.com">mail.google.com</a> using the credentials above - you'll be prompted to set a new password immediately.</li>
+                <li>Complete 2-Step Verification (MFA) setup when prompted.</li>
+                <li>Your manager will be in touch shortly with your first-week schedule.</li>
+            </ul>
+            <p>If you run into any issues signing in, reply to this email and IT will help you out.</p>
+            <hr style="margin-top: 30px; border: none; border-top: 1px solid #ddd;">
+            <p style="font-size: 12px; color: #666;">
+                Tekvwa IT Solutions Ltd &bull; Ughelli, Delta State, Nigeria &bull; RC 9748441
+            </p>
+        </div>
+    `;
+
+    return sendEmail({
+        to: staff.email,
+        subject: 'Welcome to Tekvwa IT Solutions! Your Account Credentials',
+        html
+    });
+};
+
 module.exports = {
     sendEmail,
     sendContactNotification,
@@ -477,5 +518,6 @@ module.exports = {
     sendBookingNotification,
     sendMissedChatResponse,
     sendPasswordResetEmail,
-    sendContractEmail
+    sendContractEmail,
+    sendWelcomeEmail
 };

@@ -5,7 +5,7 @@ A comprehensive IT solutions website with integrated admin dashboard, live chat,
 ![License](https://img.shields.io/badge/license-Proprietary-blue)
 ![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14%2B-blue)
-![Version](https://img.shields.io/badge/version-1.7.1-orange)
+![Version](https://img.shields.io/badge/version-1.8.0-orange)
 
 ## Company Information
 
@@ -343,6 +343,48 @@ ADMIN_NOTIFICATION_EMAIL=admin@tekvwa.org
 RATE_LIMIT_WINDOW_MS=900000
 RATE_LIMIT_MAX_REQUESTS=100
 ```
+
+### Onboarding: Google Workspace Auto-Provisioning (optional)
+
+Without these, the New Hires checklist's "Company email account created"
+task is a manual checkbox - IT creates the mailbox by hand, then checks it
+off. Setting these enables one-click provisioning instead: the app calls
+the Admin SDK Directory API to create the `@tekvwa.org` mailbox and emails
+the new hire's personal address with their credentials.
+
+This requires a one-time setup only a Workspace Super Admin can do - the
+app cannot request these permissions for itself:
+
+1. **Create a service account** in the `tekvwa-it-solutions` GCP project
+   (IAM & Admin → Service Accounts), then generate a JSON key for it.
+2. **Enable the Admin SDK API** for that project (APIs & Services →
+   Library → "Admin SDK API").
+3. **Grant domain-wide delegation**: in
+   [admin.google.com](https://admin.google.com) → Security → API
+   Controls → Domain-wide Delegation → Add new. Use the service account's
+   **Client ID** (not its email) and this OAuth scope:
+   `https://www.googleapis.com/auth/admin.directory.user`
+4. Pick an existing Workspace admin mailbox (Super Admin or User
+   Management Admin role) for the app to impersonate when calling the
+   API - domain-wide delegation only works when a real admin identity is
+   impersonated, not the service account alone.
+
+Then set:
+
+```env
+GOOGLE_WORKSPACE_SA_KEY={"type":"service_account",...}   # the full JSON key, as a string
+GOOGLE_WORKSPACE_ADMIN_EMAIL=admin@tekvwa.org             # the admin mailbox from step 4
+GOOGLE_WORKSPACE_DOMAIN=tekvwa.org
+
+# Optional
+GOOGLE_WORKSPACE_OU_MAP={"Development":"/Tekvwa/Engineering"}  # department -> Org Unit path; omitted departments default to "/"
+GOOGLE_WORKSPACE_DEFAULT_GROUP=all-staff@tekvwa.org             # new hires are added to this group if set
+```
+
+**Treat `GOOGLE_WORKSPACE_SA_KEY` as a high-privilege secret** - with
+domain-wide delegation granted, it can create, modify, or delete any user
+in the Workspace domain, not just onboarding-related actions. Store it as
+a Cloud Run secret (`--set-secrets`), never in `.env` committed to git.
 
 ---
 
@@ -683,6 +725,40 @@ curl -X GET http://localhost:5500/api/messages \
 ---
 
 ## Changelog
+
+### v1.8.0 (August 9, 2026)
+
+#### New Hire Onboarding
+- New "New Hires" admin page: a per-hire checklist auto-created when a
+  staff member is added, split into HR-owned tasks (signed contract
+  received, first-day orientation) and IT-owned tasks (company email,
+  system access, equipment). Contract-generated and handbook/code-of-
+  conduct-acknowledged status are read live from `employee_contracts` /
+  `document_acknowledgments` rather than duplicated as checklist rows, so
+  each fact has one system of record.
+- New `can_manage_onboarding` permission, so IT Support - a department
+  today, not a role - can be granted scoped access to onboarding without
+  full staff/payroll visibility. Wired through staff creation/edit, JWT
+  issuance, and token refresh.
+- Google Workspace auto-provisioning: when configured (service account
+  with domain-wide delegation - see the Onboarding Setup section below),
+  marking "Company email account created" creates the `@tekvwa.org`
+  mailbox via the Admin SDK Directory API and emails the new hire's
+  personal address with their credentials and first-day info. Falls back
+  to a manual checklist toggle when not configured, rather than erroring.
+- Dashboard widget surfacing hires with incomplete checklists.
+
+#### Fixes
+- Compliance deadlines migration was re-inserting its two starter rows
+  (CAC Annual Return, DBIR PAYE Remittance) every time `npm run db:init`
+  ran, since `database/init.js` replays every migration file's SQL on
+  every run and that INSERT had no guard against re-insertion - 11
+  duplicates of each had accumulated in production. Guarded with
+  `WHERE NOT EXISTS` and cleaned up the duplicates.
+- `TokenManager.rotateRefreshToken()` was only forwarding 4 of 7
+  permission flags onto a renewed access token, silently dropping
+  `can_manage_employees`/`payroll`/`tickets` from any token obtained via
+  refresh rather than a fresh login.
 
 ### v1.7.1 (August 9, 2026)
 

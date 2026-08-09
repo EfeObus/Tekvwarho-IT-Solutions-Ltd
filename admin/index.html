@@ -68,6 +68,9 @@
                         </svg>
                         Staff
                     </a>
+                    <a href="new-hires.html" class="nav-item">
+                        <i class="fas fa-user-check"></i> New Hires
+                    </a>
                     <a href="payroll.html" class="nav-item">
                         <i class="fas fa-money-check-dollar"></i> Payroll
                     </a>
@@ -295,6 +298,15 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Pending New-Hire Onboarding (only shown to admin/HR/whoever has onboarding access) -->
+                    <div class="card" id="pending-onboarding-card" style="display: none;">
+                        <div class="card-header">
+                            <h3>Pending Onboarding</h3>
+                            <a href="new-hires.html" class="btn btn-sm btn-outline">View All</a>
+                        </div>
+                        <div class="card-body" style="padding: 0;" id="pending-onboarding-list"></div>
+                    </div>
                 </div>
             </div>
         </main>
@@ -313,7 +325,41 @@
             if (typeof OnboardingManager !== 'undefined') {
                 OnboardingManager.init();
             }
+            loadPendingOnboarding();
         });
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // Not everyone has onboarding access (admin/HR, or whoever's been
+        // granted it) - the card just stays hidden for anyone else instead
+        // of showing an error.
+        async function loadPendingOnboarding() {
+            const res = await AdminApp.apiRequest('/onboarding');
+            if (!res || !res.success) return;
+
+            const pending = res.data.filter(h => parseInt(h.completed_tasks, 10) < parseInt(h.total_tasks, 10));
+            if (!pending.length) return;
+
+            document.getElementById('pending-onboarding-card').style.display = 'block';
+            document.getElementById('pending-onboarding-list').innerHTML = pending.slice(0, 5).map(h => {
+                const total = parseInt(h.total_tasks, 10);
+                const done = parseInt(h.completed_tasks, 10);
+                return `
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-bottom:1px solid #F0F2F5;">
+                        <div>
+                            <strong>${escapeHtml(h.name)}</strong>
+                            <div class="text-muted" style="font-size:12px;">${escapeHtml(h.department || h.role || '')}</div>
+                        </div>
+                        <span class="badge badge-info">${done}/${total} tasks</span>
+                    </div>
+                `;
+            }).join('');
+        }
     </script>
 </body>
 </html>

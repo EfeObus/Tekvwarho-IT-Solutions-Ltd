@@ -33,13 +33,15 @@ const Staff = {
                 must_change_password, is_active, created_by, hire_date, nin, tin,
                 can_manage_messages, can_manage_consultations,
                 can_manage_chats, can_view_analytics,
-                can_manage_employees, can_manage_payroll, can_manage_tickets
+                can_manage_employees, can_manage_payroll, can_manage_tickets,
+                can_manage_onboarding
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
             RETURNING id, email, name, role, department, phone, is_active,
                       must_change_password, can_manage_messages, can_manage_consultations,
                       can_manage_chats, can_view_analytics, can_manage_employees,
-                      can_manage_payroll, can_manage_tickets, hire_date, nin, tin, created_at`,
+                      can_manage_payroll, can_manage_tickets, can_manage_onboarding,
+                      hire_date, nin, tin, created_at`,
             [
                 id, email, passwordHash, name, role, department, phone,
                 true, // must_change_password - new staff must change password
@@ -54,10 +56,39 @@ const Staff = {
                 permissions.canViewAnalytics || false,
                 permissions.canManageEmployees || false,
                 permissions.canManagePayroll || false,
-                permissions.canManageTickets || false
+                permissions.canManageTickets || false,
+                permissions.canManageOnboarding || false
             ]
         );
-        return result.rows[0];
+
+        const newStaff = result.rows[0];
+        await this.seedOnboardingTasks(newStaff.id);
+        return newStaff;
+    },
+
+    /**
+     * Create the default onboarding checklist for a newly-created staff
+     * member. Only covers facts with no existing system of record -
+     * contract generation and handbook/code-of-conduct acknowledgment are
+     * read live from employee_contracts/document_acknowledgments instead
+     * of being duplicated here.
+     */
+    async seedOnboardingTasks(staffId) {
+        const defaultTasks = [
+            { key: 'contract_signed', label: 'Signed contract copy received', owner: 'hr' },
+            { key: 'orientation', label: 'First-day orientation completed', owner: 'hr' },
+            { key: 'email_provisioned', label: 'Company email account created', owner: 'it' },
+            { key: 'system_access', label: 'System & tool access provisioned', owner: 'it' },
+            { key: 'equipment_issued', label: 'Equipment issued', owner: 'it' }
+        ];
+        for (const task of defaultTasks) {
+            await db.query(
+                `INSERT INTO onboarding_tasks (staff_id, task_key, label, owner)
+                 VALUES ($1, $2, $3, $4)
+                 ON CONFLICT (staff_id, task_key) DO NOTHING`,
+                [staffId, task.key, task.label, task.owner]
+            );
+        }
     },
 
     /**
@@ -79,7 +110,9 @@ const Staff = {
             `SELECT id, email, name, role, department, phone, is_active,
                     must_change_password, can_manage_messages, can_manage_consultations,
                     can_manage_chats, can_view_analytics, can_manage_employees,
-                    can_manage_payroll, can_manage_tickets, hire_date, nin, tin, created_at, last_login
+                    can_manage_payroll, can_manage_tickets, can_manage_onboarding,
+                    workspace_email, workspace_provisioned_at,
+                    hire_date, nin, tin, created_at, last_login
              FROM staff WHERE id = $1`,
             [id]
         );
@@ -95,7 +128,8 @@ const Staff = {
             SELECT id, email, name, role, department, phone, is_active,
                    must_change_password, can_manage_messages, can_manage_consultations,
                    can_manage_chats, can_view_analytics, can_manage_employees,
-                   can_manage_payroll, can_manage_tickets, hire_date, nin, tin, created_at, last_login
+                   can_manage_payroll, can_manage_tickets, can_manage_onboarding,
+                   workspace_email, hire_date, nin, tin, created_at, last_login
             FROM staff
         `;
         const conditions = [];
@@ -191,6 +225,7 @@ const Staff = {
             canManageEmployees: 'can_manage_employees',
             canManagePayroll: 'can_manage_payroll',
             canManageTickets: 'can_manage_tickets',
+            canManageOnboarding: 'can_manage_onboarding',
             nin: 'nin',
             tin: 'tin'
             // Note: base_salary is deliberately NOT editable through this method.
@@ -229,7 +264,8 @@ const Staff = {
              RETURNING id, email, name, role, department, phone, is_active,
                        must_change_password, can_manage_messages, can_manage_consultations,
                        can_manage_chats, can_view_analytics, can_manage_employees,
-                       can_manage_payroll, can_manage_tickets, hire_date, nin, tin, created_at`,
+                       can_manage_payroll, can_manage_tickets, can_manage_onboarding,
+                       workspace_email, hire_date, nin, tin, created_at`,
             values
         );
         return result.rows[0];

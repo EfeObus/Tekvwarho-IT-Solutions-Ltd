@@ -33,7 +33,8 @@ class TokenManager {
                     canViewAnalytics: user.can_view_analytics,
                     canManageEmployees: user.can_manage_employees,
                     canManagePayroll: user.can_manage_payroll,
-                    canManageTickets: user.can_manage_tickets
+                    canManageTickets: user.can_manage_tickets,
+                    canManageOnboarding: user.can_manage_onboarding
                 }
             },
             process.env.JWT_SECRET,
@@ -88,6 +89,7 @@ class TokenManager {
                     s.can_manage_messages, s.can_manage_consultations,
                     s.can_manage_chats, s.can_view_analytics,
                     s.can_manage_employees, s.can_manage_payroll, s.can_manage_tickets,
+                    s.can_manage_onboarding,
                     s.is_active, s.token_version
              FROM refresh_tokens rt
              JOIN staff s ON rt.user_id = s.id
@@ -140,7 +142,8 @@ class TokenManager {
             can_view_analytics: storedToken.can_view_analytics,
             can_manage_employees: storedToken.can_manage_employees,
             can_manage_payroll: storedToken.can_manage_payroll,
-            can_manage_tickets: storedToken.can_manage_tickets
+            can_manage_tickets: storedToken.can_manage_tickets,
+            can_manage_onboarding: storedToken.can_manage_onboarding
         };
 
         const accessToken = this.generateAccessToken(user);

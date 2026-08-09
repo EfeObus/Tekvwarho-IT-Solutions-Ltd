@@ -45,6 +45,9 @@
                     <a href="staff.html" class="nav-item active">
                         <i class="fas fa-users"></i> Staff
                     </a>
+                    <a href="new-hires.html" class="nav-item">
+                        <i class="fas fa-user-check"></i> New Hires
+                    </a>
                     <a href="payroll.html" class="nav-item">
                         <i class="fas fa-money-check-dollar"></i> Payroll
                     </a>
@@ -298,9 +301,13 @@
                                 <input type="checkbox" id="perm-tickets">
                                 <span>Manage Tickets (IT Support/Dev)</span>
                             </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="perm-onboarding">
+                                <span>Onboarding Tasks (IT/HR)</span>
+                            </label>
                         </div>
                     </div>
-                    
+
                     <div id="form-error" class="alert alert-danger" style="display: none;"></div>
                 </form>
             </div>
@@ -414,13 +421,13 @@
             // these, matching the Lead/Manager tier getting broader visibility in
             // every department (per the department permission matrix).
             DEPARTMENT_PERMISSION_PRESETS: {
-                'Management': { messages: true, consultations: true, chats: true, analytics: true, employees: false, payroll: false, tickets: false },
-                'Customer Service': { messages: true, consultations: false, chats: true, analytics: false, employees: false, payroll: false, tickets: false },
-                'Sales': { messages: false, consultations: true, chats: false, analytics: false, employees: false, payroll: false, tickets: false },
-                'Development': { messages: false, consultations: false, chats: false, analytics: true, employees: false, payroll: false, tickets: true },
-                'IT Support': { messages: true, consultations: false, chats: true, analytics: false, employees: false, payroll: false, tickets: true },
-                'Human Resources': { messages: false, consultations: false, chats: false, analytics: false, employees: true, payroll: false, tickets: false },
-                'Accounting': { messages: false, consultations: false, chats: false, analytics: false, employees: false, payroll: true, tickets: false }
+                'Management': { messages: true, consultations: true, chats: true, analytics: true, employees: false, payroll: false, tickets: false, onboarding: false },
+                'Customer Service': { messages: true, consultations: false, chats: true, analytics: false, employees: false, payroll: false, tickets: false, onboarding: false },
+                'Sales': { messages: false, consultations: true, chats: false, analytics: false, employees: false, payroll: false, tickets: false, onboarding: false },
+                'Development': { messages: false, consultations: false, chats: false, analytics: true, employees: false, payroll: false, tickets: true, onboarding: false },
+                'IT Support': { messages: true, consultations: false, chats: true, analytics: false, employees: false, payroll: false, tickets: true, onboarding: true },
+                'Human Resources': { messages: false, consultations: false, chats: false, analytics: false, employees: true, payroll: false, tickets: false, onboarding: true },
+                'Accounting': { messages: false, consultations: false, chats: false, analytics: false, employees: false, payroll: true, tickets: false, onboarding: false }
             },
 
             // Departments whose default role isn't plain "staff"
@@ -503,6 +510,7 @@
                 document.getElementById('perm-employees').checked = preset.employees;
                 document.getElementById('perm-payroll').checked = preset.payroll;
                 document.getElementById('perm-tickets').checked = preset.tickets;
+                document.getElementById('perm-onboarding').checked = preset.onboarding;
 
                 // Some departments default to a role other than plain "staff"
                 // (Management -> admin, Human Resources -> hr, Accounting -> accountant)
@@ -674,6 +682,7 @@
                         document.getElementById('perm-employees').checked = member.can_manage_employees;
                         document.getElementById('perm-payroll').checked = member.can_manage_payroll;
                         document.getElementById('perm-tickets').checked = member.can_manage_tickets;
+                        document.getElementById('perm-onboarding').checked = member.can_manage_onboarding;
 
                         passwordInput.required = false;
                         passwordInput.placeholder = 'Leave blank to keep current';
@@ -713,7 +722,8 @@
                     canViewAnalytics: document.getElementById('perm-analytics').checked,
                     canManageEmployees: document.getElementById('perm-employees').checked,
                     canManagePayroll: document.getElementById('perm-payroll').checked,
-                    canManageTickets: document.getElementById('perm-tickets').checked
+                    canManageTickets: document.getElementById('perm-tickets').checked,
+                    canManageOnboarding: document.getElementById('perm-onboarding').checked
                 };
                 
                 // Validation

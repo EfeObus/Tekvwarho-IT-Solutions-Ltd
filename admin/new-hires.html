@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="alternate icon" type="image/png" href="/img/tekvwa-icon-192.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>New Hires | Tekvwa Admin</title>
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .hire-card {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 18px; border-bottom: 1px solid #F0F2F5; cursor: pointer;
+        }
+        .hire-card:last-child { border-bottom: none; }
+        .hire-card:hover { background: #F8FAFC; }
+        .hire-progress-bar { width: 140px; height: 6px; background: #E2E8F0; border-radius: 4px; overflow: hidden; }
+        .hire-progress-fill { height: 100%; background: #0066CC; border-radius: 4px; }
+        .hire-progress-fill.complete { background: #16A34A; }
+        .hire-meta { font-size: 12px; color: #8A94A6; }
+        .status-pill-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+        .status-pill {
+            display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px;
+            border-radius: 999px; font-size: 12.5px; font-weight: 600;
+            background: #F0F2F5; color: #64748B;
+        }
+        .status-pill.done { background: #DCFCE7; color: #16A34A; }
+        .task-group-title { font-size: 12px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #8A94A6; margin: 18px 0 8px; }
+        .task-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #F0F2F5; }
+        .task-row:last-child { border-bottom: none; }
+        .task-row.done .task-label { text-decoration: line-through; color: #94A3B8; }
+        .task-completed-note { font-size: 11.5px; color: #94A3B8; margin-top: 2px; }
+        .back-link { display: inline-flex; align-items: center; gap: 6px; color: #0066CC; font-weight: 600; margin-bottom: 16px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Tekvwa IT Solutions</h2>
+                <span class="subtitle">Admin Dashboard</span>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <span class="nav-section-title">Main</span>
+                    <a href="index.html" class="nav-item">
+                        <i class="fas fa-home"></i> Dashboard
+                    </a>
+                    <a href="messages.html" class="nav-item">
+                        <i class="fas fa-envelope"></i> Messages
+                    </a>
+                    <a href="chats.html" class="nav-item">
+                        <i class="fas fa-comments"></i> Live Chats
+                    </a>
+                    <a href="consultations.html" class="nav-item">
+                        <i class="fas fa-calendar-alt"></i> Consultations
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <span class="nav-section-title">Management</span>
+                    <a href="staff.html" class="nav-item">
+                        <i class="fas fa-users"></i> Staff
+                    </a>
+                    <a href="new-hires.html" class="nav-item active">
+                        <i class="fas fa-user-check"></i> New Hires
+                    </a>
+                    <a href="payroll.html" class="nav-item">
+                        <i class="fas fa-money-check-dollar"></i> Payroll
+                    </a>
+                    <a href="tickets.html" class="nav-item">
+                        <i class="fas fa-ticket"></i> Tickets
+                    </a>
+                    <a href="analytics.html" class="nav-item">
+                        <i class="fas fa-chart-bar"></i> Analytics
+                    </a>
+                    <a href="performance.html" class="nav-item">
+                        <i class="fas fa-chart-line"></i> Performance
+                    </a>
+                    <a href="audit.html" class="nav-item">
+                        <i class="fas fa-history"></i> Audit Logs
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <span class="nav-section-title">Admin</span>
+                    <a href="letterhead.html" class="nav-item">
+                        <i class="fas fa-file-signature"></i> Letterhead
+                    </a>
+                    <a href="compliance.html" class="nav-item">
+                        <i class="fas fa-shield-halved"></i> Compliance
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <span class="nav-section-title">Settings</span>
+                    <a href="handbook.html" class="nav-item">
+                        <i class="fas fa-book"></i> Handbook
+                    </a>
+                    <a href="profile.html" class="nav-item">
+                        <i class="fas fa-user-circle"></i> My Profile
+                    </a>
+                    <a href="settings.html" class="nav-item">
+                        <i class="fas fa-cog"></i> Settings
+                    </a>
+                    <a href="../index.html" class="nav-item">
+                        <i class="fas fa-globe"></i> View Website
+                    </a>
+                    <a href="#" class="nav-item" id="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Header -->
+            <header class="admin-header">
+                <div class="header-left">
+                    <button class="sidebar-toggle" id="sidebar-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">New Hires</h1>
+                </div>
+                <div class="header-right">
+                    <div class="user-dropdown" id="user-dropdown">
+                        <div class="user-avatar" id="user-avatar">A</div>
+                        <div class="user-info">
+                            <div class="user-name" id="user-name">Admin</div>
+                            <div class="user-role" id="user-role">Administrator</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <div class="admin-content">
+                <!-- List View -->
+                <div id="list-view">
+                    <div class="card">
+                        <div class="card-header"><h3>Onboarding Checklists</h3></div>
+                        <div class="card-body" style="padding: 0;" id="hires-list">Loading...</div>
+                    </div>
+                </div>
+
+                <!-- Detail View -->
+                <div id="detail-view" style="display: none;">
+                    <div class="back-link" id="back-to-list"><i class="fas fa-arrow-left"></i> Back to New Hires</div>
+
+                    <div class="card" style="margin-bottom: 20px;">
+                        <div class="card-body">
+                            <h3 id="detail-name" style="margin: 0 0 4px;"></h3>
+                            <div class="hire-meta" id="detail-meta"></div>
+                            <div class="status-pill-row" id="detail-status-pills" style="margin-top: 16px;"></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header"><h3>Checklist</h3></div>
+                        <div class="card-body" id="detail-tasks">Loading...</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/admin.js"></script>
+    <script>
+        const NewHiresPage = {
+            currentStaffId: null,
+
+            escapeHtml(str) {
+                if (!str) return '';
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            },
+
+            init() {
+                document.getElementById('back-to-list').addEventListener('click', () => this.showList());
+                this.loadList();
+            },
+
+            showList() {
+                this.currentStaffId = null;
+                document.getElementById('detail-view').style.display = 'none';
+                document.getElementById('list-view').style.display = 'block';
+                this.loadList();
+            },
+
+            async loadList() {
+                const el = document.getElementById('hires-list');
+                const res = await AdminApp.apiRequest('/onboarding');
+                if (!res || !res.success) { el.innerHTML = '<p class="text-danger" style="padding:20px;">Failed to load</p>'; return; }
+                if (!res.data.length) { el.innerHTML = '<p class="text-muted" style="padding:20px;">No onboarding checklists yet - they\'re created automatically when a new staff member is added.</p>'; return; }
+
+                el.innerHTML = res.data.map(h => {
+                    const total = parseInt(h.total_tasks, 10);
+                    const done = parseInt(h.completed_tasks, 10);
+                    const pct = total ? Math.round((done / total) * 100) : 0;
+                    return `
+                        <div class="hire-card" onclick="NewHiresPage.showDetail('${h.id}')">
+                            <div>
+                                <strong>${this.escapeHtml(h.name)}</strong>
+                                <div class="hire-meta">${this.escapeHtml(h.department || h.role)} ${h.workspace_email ? `&middot; ${this.escapeHtml(h.workspace_email)}` : ''}</div>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <span class="hire-meta">${done}/${total} tasks</span>
+                                <div class="hire-progress-bar"><div class="hire-progress-fill ${pct === 100 ? 'complete' : ''}" style="width:${pct}%;"></div></div>
+                                <i class="fas fa-chevron-right text-muted"></i>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            },
+
+            async showDetail(staffId) {
+                this.currentStaffId = staffId;
+                document.getElementById('list-view').style.display = 'none';
+                document.getElementById('detail-view').style.display = 'block';
+                await this.loadDetail();
+            },
+
+            async loadDetail() {
+                const res = await AdminApp.apiRequest(`/onboarding/${this.currentStaffId}`);
+                if (!res || !res.success) {
+                    document.getElementById('detail-tasks').innerHTML = '<p class="text-danger">Failed to load</p>';
+                    return;
+                }
+                const { staff, autoStatus, tasks, workspaceConfigured } = res.data;
+
+                document.getElementById('detail-name').textContent = staff.name;
+                document.getElementById('detail-meta').textContent =
+                    `${staff.department || staff.role}${staff.hireDate ? ' · Hired ' + new Date(staff.hireDate).toLocaleDateString() : ''}`;
+
+                const pills = [
+                    ['Contract Generated', autoStatus.contractGenerated],
+                    ['Salary Set', autoStatus.salarySet],
+                    ['Handbook Acknowledged', autoStatus.handbookAcknowledged],
+                    ['Code of Conduct Acknowledged', autoStatus.codeOfConductAcknowledged]
+                ];
+                document.getElementById('detail-status-pills').innerHTML = pills.map(([label, done]) => `
+                    <span class="status-pill ${done ? 'done' : ''}"><i class="fas fa-${done ? 'check' : 'clock'}"></i> ${label}</span>
+                `).join('');
+
+                const renderGroup = (owner, title) => {
+                    const groupTasks = tasks.filter(t => t.owner === owner);
+                    if (!groupTasks.length) return '';
+                    return `
+                        <div class="task-group-title">${title}</div>
+                        ${groupTasks.map(t => this.renderTask(t, workspaceConfigured)).join('')}
+                    `;
+                };
+
+                document.getElementById('detail-tasks').innerHTML =
+                    renderGroup('hr', 'HR Tasks') + renderGroup('it', 'IT Tasks');
+            },
+
+            renderTask(t, workspaceConfigured) {
+                const isDone = t.status === 'done';
+                const isEmailTask = t.task_key === 'email_provisioned';
+                const showProvisionBtn = isEmailTask && !isDone && workspaceConfigured;
+
+                return `
+                    <div class="task-row ${isDone ? 'done' : ''}">
+                        <div>
+                            <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                                <input type="checkbox" ${isDone ? 'checked' : ''} onchange="NewHiresPage.toggleTask('${t.id}', this.checked)">
+                                <span class="task-label">${this.escapeHtml(t.label)}</span>
+                            </label>
+                            ${isDone && t.completed_by_name ? `<div class="task-completed-note">Done by ${this.escapeHtml(t.completed_by_name)} on ${new Date(t.completed_at).toLocaleDateString()}</div>` : ''}
+                        </div>
+                        ${showProvisionBtn ? `<button class="btn btn-sm btn-primary" onclick="NewHiresPage.provisionEmail()"><i class="fas fa-envelope-circle-check"></i> Create Workspace Account</button>` : ''}
+                    </div>
+                `;
+            },
+
+            async toggleTask(taskId, checked) {
+                const res = await AdminApp.apiRequest(`/onboarding/tasks/${taskId}`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ status: checked ? 'done' : 'pending' })
+                });
+                if (res && res.success) {
+                    this.loadDetail();
+                } else {
+                    AdminApp.showNotification(res?.message || 'Failed to update task', 'error');
+                }
+            },
+
+            async provisionEmail() {
+                const res = await AdminApp.apiRequest(`/onboarding/${this.currentStaffId}/provision-email`, { method: 'POST' });
+                if (res && res.success) {
+                    AdminApp.showNotification(`Workspace account created: ${res.data.workspaceEmail}`, 'success');
+                    this.loadDetail();
+                } else {
+                    AdminApp.showNotification(res?.message || 'Provisioning failed', 'error');
+                }
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof AdminApp !== 'undefined') {
+                const authOk = AdminApp.init();
+                if (authOk !== false) {
+                    NewHiresPage.init();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
