@@ -182,9 +182,11 @@ WHERE NOT EXISTS (SELECT 1 FROM saved_replies WHERE shortcut = '/pricing');
 
 -- ==================== TIMESTAMP TRIGGERS ====================
 
+DROP TRIGGER IF EXISTS update_saved_replies_updated_at ON saved_replies;
 CREATE TRIGGER update_saved_replies_updated_at BEFORE UPDATE ON saved_replies
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_drafts_updated_at ON drafts;
 CREATE TRIGGER update_drafts_updated_at BEFORE UPDATE ON drafts
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
