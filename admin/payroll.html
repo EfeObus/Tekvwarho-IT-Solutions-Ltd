@@ -182,12 +182,14 @@
                                         <th>Utility</th>
                                         <th>Meal</th>
                                         <th>Gross</th>
+                                        <th>Est. PAYE</th>
+                                        <th>Est. Net</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="payroll-tbody">
                                     <tr>
-                                        <td colspan="9" class="text-center text-muted" style="padding: 60px;">
+                                        <td colspan="11" class="text-center text-muted" style="padding: 60px;">
                                             Loading payroll...
                                         </td>
                                     </tr>
@@ -297,7 +299,7 @@
 
             formatNaira(amount) {
                 if (amount === null || amount === undefined) return '—';
-                return '₦' + Number(amount).toLocaleString('en-NG', { minimumFractionDigits: 0 });
+                return '₦' + Number(amount).toLocaleString('en-NG', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
             },
 
             escapeHtml(str) {
@@ -368,7 +370,7 @@
                 } catch (error) {
                     console.error('Failed to load payroll:', error);
                     document.getElementById('payroll-tbody').innerHTML = `
-                        <tr><td colspan="9" class="text-center text-danger">Failed to load payroll data</td></tr>
+                        <tr><td colspan="11" class="text-center text-danger">Failed to load payroll data</td></tr>
                     `;
                 }
             },
@@ -386,7 +388,7 @@
                 const canGeneratePaystub = isAdmin || this.currentUserRole === 'accountant';
 
                 if (!staff.length) {
-                    tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted" style="padding: 60px;">No active employees found</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="11" class="text-center text-muted" style="padding: 60px;">No active employees found</td></tr>`;
                     return;
                 }
 
@@ -400,6 +402,8 @@
                         <td>${this.formatNaira(s.utility_allowance)}</td>
                         <td>${this.formatNaira(s.meal_allowance)}</td>
                         <td><strong>${this.formatNaira(s.gross_salary)}</strong></td>
+                        <td>${s.base_salary ? this.formatNaira(s.estimated_paye) : '—'}</td>
+                        <td>${s.base_salary ? `<strong>${this.formatNaira(s.estimated_net)}</strong>` : '—'}</td>
                         <td>
                             <div class="action-buttons">
                                 ${isAdmin ? `

@@ -44,13 +44,20 @@ function calculateMonthlyPAYE(grossMonthly) {
     const taxableAnnual = Math.max(0, grossAnnual - cra);
 
     let remaining = taxableAnnual;
-    let annualTax = 0;
+    let bandTax = 0;
     for (const band of ANNUAL_TAX_BANDS) {
         if (remaining <= 0) break;
         const amountInBand = Math.min(remaining, band.amount);
-        annualTax += amountInBand * band.rate;
+        bandTax += amountInBand * band.rate;
         remaining -= amountInBand;
     }
+
+    // Minimum tax rule: if the graduated-band calculation comes out below
+    // 1% of gross income (common for very low earners after CRA), 1% of
+    // gross applies instead.
+    const minimumTax = 0.01 * grossAnnual;
+    const annualTax = Math.max(bandTax, minimumTax);
+    const minimumTaxApplied = minimumTax > bandTax;
 
     return {
         grossAnnual,
@@ -58,7 +65,8 @@ function calculateMonthlyPAYE(grossMonthly) {
         taxableAnnual,
         annualTax,
         monthlyTax: annualTax / 12,
-        monthlyCRA: cra / 12
+        monthlyCRA: cra / 12,
+        minimumTaxApplied
     };
 }
 

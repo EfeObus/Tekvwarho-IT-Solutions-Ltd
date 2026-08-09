@@ -17,6 +17,7 @@ const { loginLimiter, passwordResetLimiter } = require('../middleware/rateLimite
 const db = require('../config/database');
 const AuditService = require('../services/auditService');
 const TokenManager = require('../services/tokenManager');
+const { calculateMonthlyPAYE, monthlyDevelopmentLevy } = require('../services/payeService');
 
 /**
  * POST /api/admin/login
@@ -769,7 +770,24 @@ router.get('/payroll/staff', authMiddleware, accountantOrAdmin, async (req, res)
              WHERE is_active = true
              ORDER BY department NULLS LAST, name`
         );
-        res.json({ success: true, data: result.rows });
+
+        // Estimated PAYE/net at this month's salary structure - not a
+        // stored figure, just a live preview so the list isn't gross-only.
+        // The authoritative number is whatever a generated paystub records.
+        const withEstimates = result.rows.map(s => {
+            const gross = parseFloat(s.gross_salary) || 0;
+            if (!gross) return { ...s, estimated_paye: 0, estimated_levy: 0, estimated_net: 0 };
+            const paye = calculateMonthlyPAYE(gross);
+            const levy = monthlyDevelopmentLevy();
+            return {
+                ...s,
+                estimated_paye: paye.monthlyTax,
+                estimated_levy: levy,
+                estimated_net: gross - paye.monthlyTax - levy
+            };
+        });
+
+        res.json({ success: true, data: withEstimates });
     } catch (error) {
         console.error('Get payroll staff error:', error);
         res.status(500).json({

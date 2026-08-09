@@ -174,13 +174,17 @@
                             <thead>
                                 <tr>
                                     <th>Pay Period</th>
+                                    <th>Gross</th>
+                                    <th>PAYE Tax</th>
+                                    <th>Dev. Levy</th>
+                                    <th>Other Deductions</th>
                                     <th>Net Pay</th>
                                     <th>Generated</th>
                                     <th></th>
                                 </tr>
                             </thead>
                             <tbody id="paystubs-tbody">
-                                <tr><td colspan="4" class="text-center text-muted" style="padding: 30px;">Loading...</td></tr>
+                                <tr><td colspan="8" class="text-center text-muted" style="padding: 30px;">Loading...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -291,25 +295,29 @@
 
             formatNaira(amount) {
                 if (amount === null || amount === undefined) return '—';
-                return '₦' + Number(amount).toLocaleString('en-NG', { minimumFractionDigits: 0 });
+                return '₦' + Number(amount).toLocaleString('en-NG', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
             },
 
             async loadPaystubs(staffId) {
                 const tbody = document.getElementById('paystubs-tbody');
                 const response = await AdminApp.apiRequest(`/paystubs/staff/${staffId}`);
                 if (!response || !response.success) {
-                    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Failed to load paystubs</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger">Failed to load paystubs</td></tr>';
                     return;
                 }
                 if (!response.data.length) {
-                    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted" style="padding: 30px;">No paystubs yet</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted" style="padding: 30px;">No paystubs yet</td></tr>';
                     return;
                 }
                 const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
                 tbody.innerHTML = response.data.map(p => `
                     <tr>
                         <td>${monthNames[p.pay_period_month - 1]} ${p.pay_period_year}</td>
-                        <td>${this.formatNaira(p.net_pay)}</td>
+                        <td>${this.formatNaira(p.gross_pay)}</td>
+                        <td>${this.formatNaira(p.paye_tax)}</td>
+                        <td>${this.formatNaira(p.development_levy)}</td>
+                        <td>${parseFloat(p.deductions) > 0 ? this.formatNaira(p.deductions) : '—'}</td>
+                        <td><strong>${this.formatNaira(p.net_pay)}</strong></td>
                         <td>${new Date(p.generated_at).toLocaleDateString()}</td>
                         <td>
                             <button class="btn btn-sm btn-outline" onclick="ProfilePage.downloadPaystub('${p.id}', ${p.pay_period_month}, ${p.pay_period_year})">

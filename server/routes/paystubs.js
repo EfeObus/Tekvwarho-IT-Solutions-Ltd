@@ -32,7 +32,8 @@ router.get('/staff/:staffId', authMiddleware, async (req, res) => {
 
         const result = await db.query(
             `SELECT id, staff_id, pay_period_month, pay_period_year, gross_pay,
-                    deductions, net_pay, currency, generated_at
+                    paye_tax, cra_amount, development_levy, deductions, deductions_note,
+                    net_pay, currency, generated_at
              FROM paystubs WHERE staff_id = $1
              ORDER BY pay_period_year DESC, pay_period_month DESC`,
             [req.params.staffId]
