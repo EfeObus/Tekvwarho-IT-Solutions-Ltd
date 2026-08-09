@@ -44,6 +44,14 @@ CREATE INDEX IF NOT EXISTS idx_notices_created ON company_notices(created_at DES
 -- A couple of real, immediately-relevant starter deadlines so this isn't
 -- an empty feature on day one - based on the company's actual RC 9748441
 -- (CAC, Ughelli, Delta State) and DBIR PAYE remittance obligations.
-INSERT INTO compliance_deadlines (title, description, due_date, recurring) VALUES
-    ('CAC Annual Return', 'File the annual return for RC 9748441 with the Corporate Affairs Commission.', (CURRENT_DATE + INTERVAL '11 months')::date, 'yearly'),
-    ('DBIR PAYE Remittance', 'Remit the previous month PAYE deductions to the Delta State Board of Internal Revenue.', (date_trunc('month', CURRENT_DATE) + INTERVAL '1 month' + INTERVAL '9 days')::date, 'monthly');
+-- Guarded by a NOT EXISTS check: database/init.js re-runs every migration
+-- file's raw SQL on every `npm run db:init`, and this table has no unique
+-- constraint to make a plain INSERT fail safely - without this guard, each
+-- init run silently added another duplicate pair of rows.
+INSERT INTO compliance_deadlines (title, description, due_date, recurring)
+SELECT 'CAC Annual Return', 'File the annual return for RC 9748441 with the Corporate Affairs Commission.', (CURRENT_DATE + INTERVAL '11 months')::date, 'yearly'
+WHERE NOT EXISTS (SELECT 1 FROM compliance_deadlines WHERE title = 'CAC Annual Return');
+
+INSERT INTO compliance_deadlines (title, description, due_date, recurring)
+SELECT 'DBIR PAYE Remittance', 'Remit the previous month PAYE deductions to the Delta State Board of Internal Revenue.', (date_trunc('month', CURRENT_DATE) + INTERVAL '1 month' + INTERVAL '9 days')::date, 'monthly'
+WHERE NOT EXISTS (SELECT 1 FROM compliance_deadlines WHERE title = 'DBIR PAYE Remittance');

@@ -86,8 +86,9 @@ class TokenManager {
         const result = await db.query(
             `SELECT rt.*, s.id as staff_id, s.email, s.role, s.name,
                     s.can_manage_messages, s.can_manage_consultations,
-                    s.can_manage_chats, s.can_view_analytics, s.is_active,
-                    s.token_version
+                    s.can_manage_chats, s.can_view_analytics,
+                    s.can_manage_employees, s.can_manage_payroll, s.can_manage_tickets,
+                    s.is_active, s.token_version
              FROM refresh_tokens rt
              JOIN staff s ON rt.user_id = s.id
              WHERE rt.token_hash = $1`,
@@ -136,7 +137,10 @@ class TokenManager {
             can_manage_messages: storedToken.can_manage_messages,
             can_manage_consultations: storedToken.can_manage_consultations,
             can_manage_chats: storedToken.can_manage_chats,
-            can_view_analytics: storedToken.can_view_analytics
+            can_view_analytics: storedToken.can_view_analytics,
+            can_manage_employees: storedToken.can_manage_employees,
+            can_manage_payroll: storedToken.can_manage_payroll,
+            can_manage_tickets: storedToken.can_manage_tickets
         };
 
         const accessToken = this.generateAccessToken(user);
