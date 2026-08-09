@@ -5,7 +5,7 @@ A comprehensive IT solutions website with integrated admin dashboard, live chat,
 ![License](https://img.shields.io/badge/license-Proprietary-blue)
 ![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14%2B-blue)
-![Version](https://img.shields.io/badge/version-1.7.0-orange)
+![Version](https://img.shields.io/badge/version-1.7.1-orange)
 
 ## Company Information
 
@@ -683,6 +683,33 @@ curl -X GET http://localhost:5500/api/messages \
 ---
 
 ## Changelog
+
+### v1.7.1 (August 9, 2026)
+
+#### Document Branding Overhaul
+- Redesigned the shared PDF letterhead (paystubs, contracts, and the
+  standalone letterhead generator): brand block with RC badge, right-aligned
+  contact block, double accent rule, Date/Document Ref metadata row, and a
+  3-column footer grid, replacing the earlier gradient-band header.
+- Fixed a logo bug where the full text lockup (`tekvwa-logo.png`, which has
+  "TEKVWA IT SOLUTIONS LTD" baked into the image) was drawn next to
+  separately-drawn brand text, causing overlapping text - switched to the
+  icon-only asset (`tekvwa-icon.png`).
+- Rebuilt the Word (.docx) letterhead from a plain blue-band header to match
+  the PDF design as closely as Word's table/border model allows (nested
+  tables can't do rounded pill badges or vector paths, so those are
+  approximated with bordered/shaded cells).
+- Removed the placeholder decorative "signature" flourish from the PDF
+  contract and letterhead generators - a pre-drawn squiggle made every
+  generated document look already-signed, which is misleading on a legal
+  document. Signature blocks are now blank space above a line, as normal
+  for a document awaiting an actual signature.
+- Letterhead subject line changed from a shaded/bordered callout box to
+  plain "Re: [subject]" text, in both PDF and DOCX.
+- Fixed the letterhead salutation ("Dear ..."): it was deriving the
+  greeting name by splitting the recipient field on newlines, but the
+  recipient input is single-line, so the entire "Name, Title, Company"
+  string was being used as the name. Now splits on the first comma too.
 
 ### v1.7.0 (August 9, 2026)
 
