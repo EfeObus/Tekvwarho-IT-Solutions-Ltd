@@ -5,7 +5,7 @@ A comprehensive IT solutions website with integrated admin dashboard, live chat,
 ![License](https://img.shields.io/badge/license-Proprietary-blue)
 ![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14%2B-blue)
-![Version](https://img.shields.io/badge/version-1.6.0-orange)
+![Version](https://img.shields.io/badge/version-1.7.0-orange)
 
 ## Company Information
 
@@ -65,6 +65,8 @@ A comprehensive IT solutions website with integrated admin dashboard, live chat,
 - **Payroll** - Accountant/admin dashboard for monthly salaries (NGN); salary changes are admin-only
 - **Tickets** - Internal helpdesk for IT Support requests and Development tasks/bugs
 - **Handbook** - Employee Handbook and Code of Conduct with per-staff acknowledgment tracking
+- **Letterhead** (Admin only) - Generate official correspondence as branded PDF or Word documents
+- **Compliance** - Filing-deadline tracker, document vault (Cloud Storage-backed), and company notices
 - **Settings** - Business hours, notifications, email templates, data export
 - **Audit Logs** - Complete activity tracking and compliance logging
 - **Performance** - Staff performance metrics, scores, and leaderboards
@@ -477,6 +479,15 @@ Salary data is deliberately isolated from the general staff-management flow:
 
 This is a separation-of-duties control, not just a UI convenience — it's enforced server-side and was verified against production (Accountant gets HTTP 403 attempting to call the salary-edit endpoint directly).
 
+### Payroll Tax Compliance (Nigeria / Delta State)
+
+- **NIN** (National Identification Number) is mandatory for every new hire; **TIN** (Tax ID) is optional at hire and flagged as "pending" on the staff list until HR registers the employee with DBIR and records it — the app tracks this, it doesn't submit to DBIR itself (no public API exists for that).
+- Paystubs auto-calculate **PAYE tax** using the standard federal graduated table (`server/services/payeService.js`): Consolidated Relief Allowance (higher of ₦200,000 or 1% of gross, plus 20% of gross), then bands of 7/11/15/19/21/24%. This is Personal Income Tax Act law, not Delta-specific — DBIR is the remittance recipient for residents.
+- The **DBIR Development Levy** (₦100/year, prorated monthly) is also auto-applied.
+- **Pension (PRA 2014) and NHF are deliberately not implemented** — the company isn't enrolling in those yet.
+- `GET /api/paystubs/dbir-schedule?month=&year=` exports a CSV (Employee Name, NIN, TIN, Gross, CRA, PAYE) ready for the DBIR portal.
+- The PAYE bands are current as of when this was built, but Nigeria's tax rules have seen active reform — have an accountant verify against FIRS's own calculator before relying on this for real payroll.
+
 ### New Features
 
 #### Onboarding System
@@ -672,6 +683,32 @@ curl -X GET http://localhost:5500/api/messages \
 ---
 
 ## Changelog
+
+### v1.7.0 (August 9, 2026)
+
+#### Payroll Tax Compliance
+- NIN (mandatory) and TIN (optional, flagged if missing) fields on staff.
+- Real PAYE tax calculation (federal graduated table) and DBIR
+  Development Levy, auto-applied on every generated paystub.
+- DBIR PAYE Schedule CSV export for the Delta State tax portal.
+- Pension and NHF intentionally excluded (not yet enrolled).
+
+#### Document Branding & Generation
+- Real logo and blue-gradient letterhead on every generated PDF (fixed a
+  pdfkit layout bug in the process - see the code comments in
+  `pdfService.js` for what `doc.y` actually does).
+- New company Letterhead generator (Admin only): branded PDF or Word
+  (.docx) official correspondence with logo, recipient, subject, body,
+  and signature block.
+
+#### Compliance & Governance (lightweight scope)
+- Filing-deadline tracker (CAC, DBIR) with overdue highlighting.
+- Document Vault backed by Google Cloud Storage (not container-local
+  storage, which is ephemeral) for licenses, permits, and certificates.
+- Company Notices: admin-authored announcements visible to all staff.
+- Deliberately excludes board resolutions, cap table, and a dedicated
+  Secretary role - premature for a single-founder company with no board
+  or shareholders yet; can be added when there's someone to build it for.
 
 ### v1.6.0 (August 8, 2026)
 
