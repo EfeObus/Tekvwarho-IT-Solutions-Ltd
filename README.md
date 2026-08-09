@@ -5,7 +5,7 @@ A comprehensive IT solutions website with integrated admin dashboard, live chat,
 ![License](https://img.shields.io/badge/license-Proprietary-blue)
 ![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14%2B-blue)
-![Version](https://img.shields.io/badge/version-1.8.0-orange)
+![Version](https://img.shields.io/badge/version-1.9.0-orange)
 
 ## Company Information
 
@@ -725,6 +725,57 @@ curl -X GET http://localhost:5500/api/messages \
 ---
 
 ## Changelog
+
+### v1.9.0 (August 9, 2026)
+
+#### Security Audit and Fixes
+
+A full RBAC/security audit across every route, the WebSocket chat
+handler, query building, audit logging, email, and the document vault
+surfaced real, live vulnerabilities. All fixed and verified live this
+round:
+
+- **Privilege escalation (critical)**: HR-role accounts could create new
+  admin accounts, reset any existing admin's password, and deactivate
+  every admin with no last-admin lockout guard - all three via the
+  hrOrAdmin-gated staff lifecycle routes, which never scoped HR's
+  authority away from admin-tier targets.
+- **Unauthenticated WebSocket chat handler (critical)**: `/ws/chat?type=admin`
+  accepted actions - joining sessions, reading full message history,
+  posting fake staff replies, closing chats - with no token at all.
+  Visitor-supplied name/email/message also bypassed all HTML
+  sanitization (the HTTP sanitizer middleware was never wired into the
+  WS message handler), including a phishing angle via the missed-chat
+  email. Closed with a blanket auth+permission gate and reused
+  sanitizer.
+- **Authorization gaps**: analytics endpoints never checked the
+  `canViewAnalytics` permission; a settings-by-key endpoint had no auth
+  at all; internal notes/tags had zero permission gating and no
+  ownership check on delete; six routes logged the audit-trail actor
+  from a client-supplied field instead of the authenticated user
+  (spoofable attribution).
+- **Hardening**: added column-name validation to the query builder's
+  `where()`/`whereIn()`/`whereBetween()` (not exploited today, but
+  unguarded unlike `orderBy()`); fixed two silently-ignored options in
+  the pagination middleware and a no-op `where()` call that meant a
+  message filter never actually applied.
+
+#### Rate Limiting, Self-Service Passwords, Instant Revocation
+
+- `authenticatedApiLimiter` now applies globally to `/api/*` (nearly
+  every authenticated route previously had no rate limit at all);
+  `chatMessageLimiter` applies to the public chat-start endpoint.
+- New hires can now be sent an emailed link to set their own dashboard
+  password (72-hour expiry) instead of HR choosing one for them, reusing
+  the existing forgot-password token mechanism with different framing
+  and expiry.
+- `token_version` was written on password reset but never actually
+  checked - deactivation and role/permission changes took up to 15
+  minutes to take effect. `authMiddleware` now validates it (and
+  `is_active`) on every request; role/permission edits invalidate just
+  the current access token (transparent - the next refresh silently
+  picks up the change), while deactivation and admin-triggered password
+  resets force a full re-login.
 
 ### v1.8.0 (August 9, 2026)
 
