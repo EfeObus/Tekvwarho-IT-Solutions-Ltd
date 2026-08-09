@@ -237,9 +237,17 @@
                                 <option value="Customer Service">Customer Service</option>
                                 <option value="Human Resources">Human Resources</option>
                                 <option value="Accounting">Accounting</option>
+                                <option value="Legal">Legal</option>
                                 <option value="Management">Management</option>
                             </select>
                         </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="staff-team-lead">
+                            <span>Team Lead (elevates to Manager role - broader access plus visibility into their team's analytics)</span>
+                        </label>
                     </div>
 
                     <div class="form-row">
@@ -485,14 +493,25 @@
             // Selecting the Manager role adds analytics + export rights on top of
             // these, matching the Lead/Manager tier getting broader visibility in
             // every department (per the department permission matrix).
+            // Job titles (Manager, Sales Rep, CSR, IT/Developer, HR Specialist,
+            // Accountant, Legal Advisor, Staff General) map onto this system's
+            // existing three pieces - department, role tier, and permission
+            // checkboxes - rather than being their own role enum. That keeps
+            // the security-critical role tier (admin/manager/staff/hr/
+            // accountant) small and already-audited; a "job title" is really
+            // department + role + this preset. Team Lead (see the checkbox
+            // above) layers Manager-tier access on top of any department's
+            // base preset, which is what actually makes someone "IT Team
+            // Lead" vs. plain "IT/Developer".
             DEPARTMENT_PERMISSION_PRESETS: {
-                'Management': { messages: true, consultations: true, chats: true, analytics: true, employees: false, payroll: false, tickets: false, onboarding: false },
-                'Customer Service': { messages: true, consultations: false, chats: true, analytics: false, employees: false, payroll: false, tickets: false, onboarding: false },
-                'Sales': { messages: false, consultations: true, chats: false, analytics: false, employees: false, payroll: false, tickets: false, onboarding: false },
-                'Development': { messages: false, consultations: false, chats: false, analytics: true, employees: false, payroll: false, tickets: true, onboarding: false },
+                'Management': { messages: true, consultations: true, chats: true, analytics: true, employees: true, payroll: false, tickets: false, onboarding: false },
+                'Customer Service': { messages: true, consultations: true, chats: true, analytics: false, employees: false, payroll: false, tickets: false, onboarding: false },
+                'Sales': { messages: true, consultations: true, chats: true, analytics: false, employees: false, payroll: false, tickets: false, onboarding: false },
+                'Development': { messages: false, consultations: false, chats: false, analytics: true, employees: false, payroll: false, tickets: true, onboarding: true },
                 'IT Support': { messages: true, consultations: false, chats: true, analytics: false, employees: false, payroll: false, tickets: true, onboarding: true },
                 'Human Resources': { messages: false, consultations: false, chats: false, analytics: false, employees: true, payroll: false, tickets: false, onboarding: true },
-                'Accounting': { messages: false, consultations: false, chats: false, analytics: false, employees: false, payroll: true, tickets: false, onboarding: false }
+                'Accounting': { messages: false, consultations: false, chats: false, analytics: true, employees: false, payroll: true, tickets: false, onboarding: false },
+                'Legal': { messages: false, consultations: false, chats: false, analytics: true, employees: false, payroll: false, tickets: false, onboarding: false }
             },
 
             // Departments whose default role isn't plain "staff"
@@ -514,6 +533,25 @@
             escapeJs(str) {
                 if (!str) return '';
                 return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+            },
+
+            // Department + role tier -> a job title label, for display only
+            // (there's no separate "job title" field - it's computed from
+            // the same department/role/permissions this system already has).
+            JOB_TITLES: {
+                'Sales': 'Sales Rep',
+                'Customer Service': 'CSR',
+                'IT Support': 'IT/Developer',
+                'Development': 'IT/Developer',
+                'Human Resources': 'HR Specialist',
+                'Accounting': 'Accountant',
+                'Legal': 'Legal Advisor',
+                'Management': 'Manager'
+            },
+            computeJobTitle(member) {
+                if (member.role === 'admin') return 'Admin';
+                const base = this.JOB_TITLES[member.department] || 'Staff (General)';
+                return member.role === 'manager' && member.department !== 'Management' ? `${base} Team Lead` : base;
             },
             
             async init() {
@@ -566,6 +604,26 @@
                     } else if (e.target.value === 'accountant') {
                         document.getElementById('perm-payroll').checked = true;
                     }
+                    // Manually switching away from Manager un-checks Team Lead,
+                    // so the checkbox never lies about the actual role selected.
+                    if (e.target.value !== 'manager') {
+                        document.getElementById('staff-team-lead').checked = false;
+                    }
+                });
+
+                // Team Lead = Manager-tier access (broader oversight + export
+                // rights, see managerOrAbove in server middleware) layered on
+                // top of whatever department preset is already applied, plus
+                // visibility into their team's analytics.
+                document.getElementById('staff-team-lead').addEventListener('change', (e) => {
+                    const roleSelect = document.getElementById('staff-role');
+                    if (e.target.checked) {
+                        roleSelect.value = 'manager';
+                        document.getElementById('perm-analytics').checked = true;
+                    } else {
+                        const dept = document.getElementById('staff-department').value;
+                        roleSelect.value = this.DEPARTMENT_DEFAULT_ROLE[dept] || 'staff';
+                    }
                 });
             },
 
@@ -582,6 +640,13 @@
                 document.getElementById('perm-payroll').checked = preset.payroll;
                 document.getElementById('perm-tickets').checked = preset.tickets;
                 document.getElementById('perm-onboarding').checked = preset.onboarding;
+
+                // A Team Lead's analytics visibility comes from their lead
+                // status, not their department preset - don't let switching
+                // departments silently turn it back off.
+                if (document.getElementById('staff-team-lead').checked) {
+                    document.getElementById('perm-analytics').checked = true;
+                }
 
                 // Some departments default to a role other than plain "staff"
                 // (Management -> admin, Human Resources -> hr, Accounting -> accountant)
@@ -648,7 +713,10 @@
                                 ${safeRole.charAt(0).toUpperCase() + safeRole.slice(1)}
                             </span>
                         </td>
-                        <td>${safeDept}</td>
+                        <td>
+                            ${safeDept}
+                            <div class="text-muted text-sm">${this.escapeHtml(this.computeJobTitle(member))}</div>
+                        </td>
                         <td>
                             <div class="permission-badges">
                                 ${member.can_manage_messages ? '<span class="perm-badge" title="Messages"><i class="fas fa-envelope"></i></span>' : ''}
@@ -746,6 +814,7 @@
                         document.getElementById('staff-nin').value = member.nin || '';
                         document.getElementById('staff-tin').value = member.tin || '';
                         document.getElementById('staff-role').value = member.role;
+                        document.getElementById('staff-team-lead').checked = member.role === 'manager';
                         document.getElementById('perm-messages').checked = member.can_manage_messages;
                         document.getElementById('perm-consultations').checked = member.can_manage_consultations;
                         document.getElementById('perm-chats').checked = member.can_manage_chats;
