@@ -5,7 +5,7 @@ A comprehensive IT solutions website with integrated admin dashboard, live chat,
 ![License](https://img.shields.io/badge/license-Proprietary-blue)
 ![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14%2B-blue)
-![Version](https://img.shields.io/badge/version-1.9.0-orange)
+![Version](https://img.shields.io/badge/version-1.9.1-orange)
 
 ## Company Information
 
@@ -725,6 +725,45 @@ curl -X GET http://localhost:5500/api/messages \
 ---
 
 ## Changelog
+
+### v1.9.1 (August 9, 2026)
+
+#### Job-Title Permission Taxonomy & Team Lead
+
+Refined the department permission presets to match a target job-title
+table (Sales Rep, CSR, IT/Developer, HR Specialist, Accountant, Legal
+Advisor, Staff General) rather than expanding `role` into a 9-value enum
+- a job title is department + role tier + permission checkboxes, three
+things this system already had, just not tuned to this table. Keeping
+the role tier at its existing 5 values avoided re-touching every RBAC
+gate from the security audit. Added a Team Lead checkbox that promotes
+to the existing `manager` role tier plus guaranteed analytics visibility,
+unifying "every team needs a lead" with a separate "Manager" job title -
+a team lead *is* the manager of their team. The staff table now shows a
+computed job-title label derived from department + role.
+
+#### Compliance Read Access for Legal Advisor
+
+The Legal Advisor preset originally granted `can_view_analytics`, which
+gates website traffic analytics - unrelated to compliance or contracts,
+so it didn't actually grant visibility into anything a Legal Advisor
+would need. Added a real `can_view_compliance` permission: read-only
+access to filing deadlines, the document vault, and contract templates
+(not individual employee contracts, which carry salary data). Writes
+stay admin-only. Also fixed the login response's `user` object, which
+was silently missing 3 of 9 permission fields (including this new one) -
+any page checking those fields client-side always saw them as false
+regardless of the actual grant.
+
+#### Workspace Email Visibility
+
+The Edit Staff card only ever showed one email field (the personal
+email used for login and all onboarding emails), even though a
+`workspace_email` column has existed since the onboarding feature - the
+provisioned `@tekvwa.org` address was stored but never surfaced in the
+UI. Added a read-only "Company Email (Workspace)" field to the Edit
+Staff card and a subtitle in the staff table, both shown once IT
+provisions the account on the New Hires page.
 
 ### v1.9.0 (August 9, 2026)
 

@@ -141,7 +141,7 @@
 
                 <!-- Deadlines Panel -->
                 <div id="panel-deadlines" style="display: none;">
-                    <div class="card" style="margin-bottom: 20px;">
+                    <div class="card" style="margin-bottom: 20px;" id="dl-add-card">
                         <div class="card-header">
                             <h3>Add a Deadline</h3>
                         </div>
@@ -181,7 +181,7 @@
 
                 <!-- Vault Panel -->
                 <div id="panel-vault" style="display: none;">
-                    <div class="card" style="margin-bottom: 20px;">
+                    <div class="card" style="margin-bottom: 20px;" id="vault-upload-card">
                         <div class="card-header"><h3>Upload a Document</h3></div>
                         <div class="card-body">
                             <div class="form-row">
@@ -246,6 +246,7 @@
     <script>
         const CompliancePage = {
             isAdmin: false,
+            canView: false, // admin, or a compliance-view grant (e.g. Legal Advisor) - read-only for the latter
 
             escapeHtml(str) {
                 if (!str) return '';
@@ -257,18 +258,23 @@
             init() {
                 const user = AdminApp.getCurrentUser();
                 this.isAdmin = user?.role === 'admin';
+                this.canView = this.isAdmin || !!user?.can_view_compliance;
 
-                if (this.isAdmin) {
+                if (this.canView) {
                     document.getElementById('tab-deadlines').style.display = 'inline-flex';
                     document.getElementById('tab-vault').style.display = 'inline-flex';
                     document.getElementById('tab-deadlines').addEventListener('click', () => this.switchTab('deadlines'));
                     document.getElementById('tab-vault').addEventListener('click', () => this.switchTab('vault'));
+                    this.switchTab('deadlines');
+                }
+                if (this.isAdmin) {
                     document.getElementById('dl-add-btn').addEventListener('click', () => this.addDeadline());
                     document.getElementById('vault-upload-btn').addEventListener('click', () => this.uploadDocument());
                     document.getElementById('notice-post-btn').addEventListener('click', () => this.postNotice());
-                    this.switchTab('deadlines');
                 } else {
                     document.getElementById('notice-form-card').style.display = 'none';
+                    document.getElementById('dl-add-card').style.display = 'none';
+                    document.getElementById('vault-upload-card').style.display = 'none';
                 }
 
                 document.getElementById('tab-notices').addEventListener('click', () => this.switchTab('notices'));
@@ -305,12 +311,14 @@
                                 ${d.description ? `<div class="text-muted text-sm">${this.escapeHtml(d.description)}</div>` : ''}
                                 <div class="deadline-due ${isOverdue ? 'overdue' : ''}">Due ${due.toLocaleDateString()} ${d.recurring !== 'none' ? `· ${d.recurring}` : ''}</div>
                             </div>
+                            ${this.isAdmin ? `
                             <div class="action-buttons">
                                 <button class="btn btn-sm btn-outline" onclick="CompliancePage.toggleDeadline('${d.id}', '${d.status === 'completed' ? 'pending' : 'completed'}')">
                                     ${d.status === 'completed' ? 'Reopen' : 'Mark Done'}
                                 </button>
                                 <button class="btn-icon text-danger" onclick="CompliancePage.deleteDeadline('${d.id}')"><i class="fas fa-trash"></i></button>
                             </div>
+                            ` : ''}
                         </div>
                     `;
                 }).join('');
@@ -362,7 +370,7 @@
                         </div>
                         <div class="action-buttons">
                             <button class="btn btn-sm btn-outline" onclick="CompliancePage.downloadDocument('${d.id}', '${this.escapeHtml(d.file_name).replace(/'/g, "\\'")}')"><i class="fas fa-download"></i></button>
-                            <button class="btn-icon text-danger" onclick="CompliancePage.deleteDocument('${d.id}')"><i class="fas fa-trash"></i></button>
+                            ${this.isAdmin ? `<button class="btn-icon text-danger" onclick="CompliancePage.deleteDocument('${d.id}')"><i class="fas fa-trash"></i></button>` : ''}
                         </div>
                     </div>
                 `).join('');

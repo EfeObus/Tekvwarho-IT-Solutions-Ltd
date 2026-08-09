@@ -217,11 +217,20 @@
                             <input type="text" id="staff-name" class="form-control" required>
                         </div>
                         <div class="form-group">
-                            <label for="staff-email">Email Address *</label>
+                            <label for="staff-email">Personal Email *</label>
                             <input type="email" id="staff-email" class="form-control" required>
+                            <small style="color: #6b7280;">Dashboard login + all onboarding emails go here.</small>
                         </div>
                     </div>
-                    
+
+                    <div class="form-row" id="workspace-email-row" style="display: none;">
+                        <div class="form-group">
+                            <label>Company Email (Workspace)</label>
+                            <input type="email" id="staff-workspace-email" class="form-control" disabled>
+                            <small style="color: #6b7280;">Set once IT provisions the account on the New Hires page - not editable here.</small>
+                        </div>
+                    </div>
+
                     <div class="form-row">
                         <div class="form-group">
                             <label for="staff-phone">Phone Number</label>
@@ -319,6 +328,10 @@
                             <label class="checkbox-label">
                                 <input type="checkbox" id="perm-onboarding">
                                 <span>Onboarding Tasks (IT/HR)</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="perm-compliance">
+                                <span>View Compliance &amp; Contract Templates (Legal)</span>
                             </label>
                         </div>
                     </div>
@@ -504,14 +517,14 @@
             // base preset, which is what actually makes someone "IT Team
             // Lead" vs. plain "IT/Developer".
             DEPARTMENT_PERMISSION_PRESETS: {
-                'Management': { messages: true, consultations: true, chats: true, analytics: true, employees: true, payroll: false, tickets: false, onboarding: false },
-                'Customer Service': { messages: true, consultations: true, chats: true, analytics: false, employees: false, payroll: false, tickets: false, onboarding: false },
-                'Sales': { messages: true, consultations: true, chats: true, analytics: false, employees: false, payroll: false, tickets: false, onboarding: false },
-                'Development': { messages: false, consultations: false, chats: false, analytics: true, employees: false, payroll: false, tickets: true, onboarding: true },
-                'IT Support': { messages: true, consultations: false, chats: true, analytics: false, employees: false, payroll: false, tickets: true, onboarding: true },
-                'Human Resources': { messages: false, consultations: false, chats: false, analytics: false, employees: true, payroll: false, tickets: false, onboarding: true },
-                'Accounting': { messages: false, consultations: false, chats: false, analytics: true, employees: false, payroll: true, tickets: false, onboarding: false },
-                'Legal': { messages: false, consultations: false, chats: false, analytics: true, employees: false, payroll: false, tickets: false, onboarding: false }
+                'Management': { messages: true, consultations: true, chats: true, analytics: true, employees: true, payroll: false, tickets: false, onboarding: false, compliance: false },
+                'Customer Service': { messages: true, consultations: true, chats: true, analytics: false, employees: false, payroll: false, tickets: false, onboarding: false, compliance: false },
+                'Sales': { messages: true, consultations: true, chats: true, analytics: false, employees: false, payroll: false, tickets: false, onboarding: false, compliance: false },
+                'Development': { messages: false, consultations: false, chats: false, analytics: true, employees: false, payroll: false, tickets: true, onboarding: true, compliance: false },
+                'IT Support': { messages: true, consultations: false, chats: true, analytics: false, employees: false, payroll: false, tickets: true, onboarding: true, compliance: false },
+                'Human Resources': { messages: false, consultations: false, chats: false, analytics: false, employees: true, payroll: false, tickets: false, onboarding: true, compliance: false },
+                'Accounting': { messages: false, consultations: false, chats: false, analytics: true, employees: false, payroll: true, tickets: false, onboarding: false, compliance: false },
+                'Legal': { messages: false, consultations: false, chats: false, analytics: false, employees: false, payroll: false, tickets: false, onboarding: false, compliance: true }
             },
 
             // Departments whose default role isn't plain "staff"
@@ -640,6 +653,7 @@
                 document.getElementById('perm-payroll').checked = preset.payroll;
                 document.getElementById('perm-tickets').checked = preset.tickets;
                 document.getElementById('perm-onboarding').checked = preset.onboarding;
+                document.getElementById('perm-compliance').checked = preset.compliance;
 
                 // A Team Lead's analytics visibility comes from their lead
                 // status, not their department preset - don't let switching
@@ -707,7 +721,12 @@
                                 </div>
                             </div>
                         </td>
-                        <td>${safeEmail}</td>
+                        <td>
+                            ${safeEmail}
+                            ${member.workspace_email
+                                ? `<div class="text-muted text-sm"><i class="fas fa-building" title="Company email"></i> ${this.escapeHtml(member.workspace_email)}</div>`
+                                : ''}
+                        </td>
                         <td>
                             <span class="badge badge-${member.role === 'admin' ? 'danger' : member.role === 'manager' ? 'warning' : 'info'}">
                                 ${safeRole.charAt(0).toUpperCase() + safeRole.slice(1)}
@@ -823,6 +842,14 @@
                         document.getElementById('perm-payroll').checked = member.can_manage_payroll;
                         document.getElementById('perm-tickets').checked = member.can_manage_tickets;
                         document.getElementById('perm-onboarding').checked = member.can_manage_onboarding;
+                        document.getElementById('perm-compliance').checked = member.can_view_compliance;
+
+                        if (member.workspace_email) {
+                            document.getElementById('workspace-email-row').style.display = 'flex';
+                            document.getElementById('staff-workspace-email').value = member.workspace_email;
+                        } else {
+                            document.getElementById('workspace-email-row').style.display = 'none';
+                        }
 
                         passwordInput.required = false;
                         passwordInput.placeholder = 'Leave blank to keep current';
@@ -834,6 +861,7 @@
                     title.textContent = 'Add Staff Member';
                     document.getElementById('staff-id').value = '';
                     document.getElementById('staff-email').disabled = false;
+                    document.getElementById('workspace-email-row').style.display = 'none';
                     document.getElementById('setup-link-row').style.display = 'block';
                     document.getElementById('staff-send-setup-link').checked = true;
                     this.toggleSetupLinkMode(true);
@@ -899,7 +927,8 @@
                     canManageEmployees: document.getElementById('perm-employees').checked,
                     canManagePayroll: document.getElementById('perm-payroll').checked,
                     canManageTickets: document.getElementById('perm-tickets').checked,
-                    canManageOnboarding: document.getElementById('perm-onboarding').checked
+                    canManageOnboarding: document.getElementById('perm-onboarding').checked,
+                    canViewCompliance: document.getElementById('perm-compliance').checked
                 };
                 
                 const sendSetupLink = !id && document.getElementById('staff-send-setup-link').checked;

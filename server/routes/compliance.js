@@ -1,8 +1,11 @@
 /**
  * Compliance Routes
- * Filing-deadline tracker, document vault, and company notices. Admin-only
- * for now (no Secretary role exists yet - nobody to assign it to); notices
- * are readable by any authenticated staff member.
+ * Filing-deadline tracker, document vault, and company notices. Writes are
+ * admin-only; reads also allow can_view_compliance (Legal Advisor) - a
+ * deliberate read-only grant, not implied by any role tier, since this
+ * data (filings, incorporation docs, licenses) is exactly what a Legal
+ * Advisor needs visibility into without broader admin access. Notices are
+ * readable by any authenticated staff member.
  */
 
 const express = require('express');
@@ -18,9 +21,20 @@ const upload = multer({
     limits: { fileSize: 20 * 1024 * 1024 } // 20MB
 });
 
+// Read access: admin, or anyone explicitly granted can_view_compliance.
+// Kept separate from adminOnly (writes) rather than folded into
+// hasPermission(), since "admin OR this one flag" isn't expressible with
+// that factory without also opening it to every other implicit role grant.
+const adminOrComplianceViewer = (req, res, next) => {
+    if (req.user.role === 'admin' || req.user.permissions?.canViewCompliance) {
+        return next();
+    }
+    return res.status(403).json({ success: false, message: 'Admin or compliance-view access required' });
+};
+
 // ── Compliance Deadlines ────────────────────────────────────────────────
 
-router.get('/deadlines', authMiddleware, adminOnly, async (req, res) => {
+router.get('/deadlines', authMiddleware, adminOrComplianceViewer, async (req, res) => {
     try {
         const result = await db.query(
             `SELECT * FROM compliance_deadlines ORDER BY (status = 'completed'), due_date ASC`
@@ -88,7 +102,7 @@ router.delete('/deadlines/:id', authMiddleware, adminOnly, async (req, res) => {
 
 // ── Document Vault ──────────────────────────────────────────────────────
 
-router.get('/vault', authMiddleware, adminOnly, async (req, res) => {
+router.get('/vault', authMiddleware, adminOrComplianceViewer, async (req, res) => {
     try {
         const result = await db.query(`SELECT * FROM vault_documents ORDER BY uploaded_at DESC`);
         res.json({ success: true, data: result.rows });
@@ -126,7 +140,7 @@ router.post('/vault', authMiddleware, adminOnly, upload.single('file'), [
     }
 });
 
-router.get('/vault/:id/download', authMiddleware, adminOnly, async (req, res) => {
+router.get('/vault/:id/download', authMiddleware, adminOrComplianceViewer, async (req, res) => {
     try {
         const result = await db.query('SELECT * FROM vault_documents WHERE id = $1', [req.params.id]);
         const doc = result.rows[0];

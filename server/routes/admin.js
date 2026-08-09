@@ -124,7 +124,10 @@ router.post('/login', loginLimiter, [
                 can_manage_chats: staff.can_manage_chats,
                 can_view_analytics: staff.can_view_analytics,
                 can_manage_employees: staff.can_manage_employees,
-                can_manage_payroll: staff.can_manage_payroll
+                can_manage_payroll: staff.can_manage_payroll,
+                can_manage_tickets: staff.can_manage_tickets,
+                can_manage_onboarding: staff.can_manage_onboarding,
+                can_view_compliance: staff.can_view_compliance
             }
         });
     } catch (error) {
@@ -596,7 +599,7 @@ router.patch('/staff/:id', authMiddleware, async (req, res) => {
         // refresh silently picks up the new role/permissions.
         const accessFields = ['role', 'isActive', 'canManageMessages', 'canManageConsultations',
             'canManageChats', 'canViewAnalytics', 'canManageEmployees', 'canManagePayroll',
-            'canManageTickets', 'canManageOnboarding'];
+            'canManageTickets', 'canManageOnboarding', 'canViewCompliance'];
         if (accessFields.some(f => updates[f] !== undefined)) {
             await TokenManager.bumpTokenVersion(targetId);
         }

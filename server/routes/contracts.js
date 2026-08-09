@@ -18,11 +18,22 @@ const canAccessStaffContracts = (req, staffId) => {
     return req.user.id === staffId || req.user.role === 'admin' || req.user.role === 'hr';
 };
 
+// Templates are generic per-department boilerplate (job title/description),
+// not individual employee contracts - no salary data - so a compliance
+// viewer (Legal Advisor) can read them without the broader hrOrAdmin tier.
+const canViewTemplates = (req, res, next) => {
+    if (req.user.role === 'admin' || req.user.role === 'hr' || req.user.permissions?.canViewCompliance) {
+        return next();
+    }
+    return res.status(403).json({ success: false, message: 'HR, admin, or compliance-view access required' });
+};
+
 /**
  * GET /api/contracts/templates
- * List all department contract templates (HR/Admin)
+ * List all department contract templates (HR/Admin, or read-only for
+ * compliance viewers)
  */
-router.get('/templates', authMiddleware, hrOrAdmin, async (req, res) => {
+router.get('/templates', authMiddleware, canViewTemplates, async (req, res) => {
     try {
         const result = await db.query('SELECT * FROM contract_templates ORDER BY department');
         res.json({ success: true, data: result.rows });

@@ -34,14 +34,14 @@ const Staff = {
                 can_manage_messages, can_manage_consultations,
                 can_manage_chats, can_view_analytics,
                 can_manage_employees, can_manage_payroll, can_manage_tickets,
-                can_manage_onboarding
+                can_manage_onboarding, can_view_compliance
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)
             RETURNING id, email, name, role, department, phone, is_active,
                       must_change_password, can_manage_messages, can_manage_consultations,
                       can_manage_chats, can_view_analytics, can_manage_employees,
                       can_manage_payroll, can_manage_tickets, can_manage_onboarding,
-                      hire_date, nin, tin, created_at`,
+                      can_view_compliance, hire_date, nin, tin, created_at`,
             [
                 id, email, passwordHash, name, role, department, phone,
                 true, // must_change_password - new staff must change password
@@ -57,7 +57,8 @@ const Staff = {
                 permissions.canManageEmployees || false,
                 permissions.canManagePayroll || false,
                 permissions.canManageTickets || false,
-                permissions.canManageOnboarding || false
+                permissions.canManageOnboarding || false,
+                permissions.canViewCompliance || false
             ]
         );
 
@@ -111,7 +112,7 @@ const Staff = {
                     must_change_password, can_manage_messages, can_manage_consultations,
                     can_manage_chats, can_view_analytics, can_manage_employees,
                     can_manage_payroll, can_manage_tickets, can_manage_onboarding,
-                    workspace_email, workspace_provisioned_at,
+                    can_view_compliance, workspace_email, workspace_provisioned_at,
                     hire_date, nin, tin, created_at, last_login
              FROM staff WHERE id = $1`,
             [id]
@@ -129,7 +130,7 @@ const Staff = {
                    must_change_password, can_manage_messages, can_manage_consultations,
                    can_manage_chats, can_view_analytics, can_manage_employees,
                    can_manage_payroll, can_manage_tickets, can_manage_onboarding,
-                   workspace_email, hire_date, nin, tin, created_at, last_login
+                   can_view_compliance, workspace_email, hire_date, nin, tin, created_at, last_login
             FROM staff
         `;
         const conditions = [];
@@ -226,6 +227,7 @@ const Staff = {
             canManagePayroll: 'can_manage_payroll',
             canManageTickets: 'can_manage_tickets',
             canManageOnboarding: 'can_manage_onboarding',
+            canViewCompliance: 'can_view_compliance',
             nin: 'nin',
             tin: 'tin'
             // Note: base_salary is deliberately NOT editable through this method.
@@ -265,7 +267,7 @@ const Staff = {
                        must_change_password, can_manage_messages, can_manage_consultations,
                        can_manage_chats, can_view_analytics, can_manage_employees,
                        can_manage_payroll, can_manage_tickets, can_manage_onboarding,
-                       workspace_email, hire_date, nin, tin, created_at`,
+                       can_view_compliance, workspace_email, hire_date, nin, tin, created_at`,
             values
         );
         return result.rows[0];
