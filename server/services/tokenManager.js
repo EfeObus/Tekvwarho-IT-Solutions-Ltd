@@ -228,19 +228,55 @@ class TokenManager {
     }
 
     /**
-     * Invalidate all tokens when password/role changes
+     * Force a full logout: invalidate the current access token immediately
+     * (via bumpTokenVersion) and revoke refresh tokens too, so a retry
+     * can't silently mint a new access token either. Use for deactivation
+     * and password resets - anything where the person genuinely shouldn't
+     * be able to get back in without re-authenticating from scratch.
      */
     static async invalidateUserTokens(userId, reason = 'security_update') {
-        // Increment token version to invalidate all existing access tokens
+        await this.bumpTokenVersion(userId);
+        await this.revokeAllUserTokens(userId);
+        return { invalidated: true, reason };
+    }
+
+    /**
+     * Create a password_reset_tokens row and return the raw (unhashed)
+     * token to email - shared by both the self-service "forgot password"
+     * flow (server/routes/auth.js) and the new-hire "set up your account"
+     * invite, which is the same mechanism with different email copy and a
+     * longer expiry, not a different system.
+     */
+    static async createPasswordResetToken(userId, ipAddress, userAgent, expiryHours = 1) {
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const tokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
+        const expiresAt = new Date(Date.now() + expiryHours * 60 * 60 * 1000);
+
+        await db.query(
+            `UPDATE password_reset_tokens SET used_at = NOW() WHERE user_id = $1 AND used_at IS NULL`,
+            [userId]
+        );
+        await db.query(
+            `INSERT INTO password_reset_tokens (user_id, token_hash, expires_at, ip_address, user_agent)
+             VALUES ($1, $2, $3, $4, $5)`,
+            [userId, tokenHash, expiresAt, ipAddress, userAgent]
+        );
+
+        return resetToken;
+    }
+
+    /**
+     * Invalidate just the current access token (checked in authMiddleware)
+     * without revoking refresh tokens. A refresh still succeeds and mints
+     * a token with the now-current role/permissions - so a role or
+     * permission edit takes effect within one request cycle, transparently,
+     * rather than forcing the person all the way back to the login screen.
+     */
+    static async bumpTokenVersion(userId) {
         await db.query(
             'UPDATE staff SET token_version = COALESCE(token_version, 0) + 1 WHERE id = $1',
             [userId]
         );
-
-        // Revoke all refresh tokens
-        await this.revokeAllUserTokens(userId);
-
-        return { invalidated: true, reason };
     }
 
     /**

@@ -6,6 +6,7 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const { body, validationResult } = require('express-validator');
 const Staff = require('../models/Staff');
 const Message = require('../models/Message');
@@ -18,6 +19,7 @@ const db = require('../config/database');
 const AuditService = require('../services/auditService');
 const TokenManager = require('../services/tokenManager');
 const { calculateMonthlyPAYE, monthlyDevelopmentLevy } = require('../services/payeService');
+const { sendAccountSetupEmail } = require('../services/emailService');
 
 /**
  * POST /api/admin/login
@@ -441,7 +443,9 @@ router.get('/staff/active', authMiddleware, async (req, res) => {
  */
 router.post('/staff', authMiddleware, hrOrAdmin, [
     body('email').isEmail().withMessage('Valid email is required'),
-    body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
+    // Either a manual password OR sendSetupLink is required - checked below,
+    // since express-validator can't easily express "one of these two".
+    body('password').if((value, { req }) => !req.body.sendSetupLink).isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
     body('name').trim().notEmpty().withMessage('Name is required'),
     body('role').isIn(['admin', 'manager', 'staff', 'hr', 'accountant']).withMessage('Invalid role'),
     body('nin').trim().isLength({ min: 11, max: 11 }).isNumeric().withMessage('NIN is required and must be 11 digits'),
@@ -456,7 +460,12 @@ router.post('/staff', authMiddleware, hrOrAdmin, [
             });
         }
 
-        const { email, password, name, role, department, phone, nin, tin, permissions } = req.body;
+        const { email, name, role, department, phone, nin, tin, permissions, sendSetupLink } = req.body;
+        // A setup-link hire never has HR/admin choose (or even see) a real
+        // password - a random one is generated here and immediately
+        // superseded by the emailed link, matching the "employee sets their
+        // own password" flow rather than "HR tells them a password".
+        const password = sendSetupLink ? crypto.randomBytes(24).toString('hex') : req.body.password;
 
         // hrOrAdmin lets HR create/onboard staff, but HR must not be able to
         // mint a fellow admin (or itself) into the admin tier - only an actual
@@ -490,10 +499,21 @@ router.post('/staff', authMiddleware, hrOrAdmin, [
             permissions: permissions || {}
         });
 
+        let setupEmailSent = false;
+        if (sendSetupLink) {
+            try {
+                const setupToken = await TokenManager.createPasswordResetToken(staff.id, req.ip, req.get('User-Agent'), 72);
+                await sendAccountSetupEmail(staff.email, staff.name, setupToken);
+                setupEmailSent = true;
+            } catch (emailError) {
+                console.error('Account setup email error (staff still created):', emailError);
+            }
+        }
+
         // Log the creation
         await AuditService.logStaffChange(req.user.id, 'created', staff.id, { email, role }, req.ip);
 
-        res.status(201).json({ success: true, data: staff });
+        res.status(201).json({ success: true, data: staff, setupEmailSent });
     } catch (error) {
         console.error('Create staff error:', error);
         res.status(500).json({
@@ -567,6 +587,18 @@ router.patch('/staff/:id', authMiddleware, async (req, res) => {
                 success: false,
                 message: 'Staff member not found'
             });
+        }
+
+        // A role/permission/active-status change is embedded in the target's
+        // access token, so it wouldn't take effect until that token expires
+        // (up to 15 min) without this - bumping token_version makes
+        // authMiddleware reject their current token immediately; their next
+        // refresh silently picks up the new role/permissions.
+        const accessFields = ['role', 'isActive', 'canManageMessages', 'canManageConsultations',
+            'canManageChats', 'canViewAnalytics', 'canManageEmployees', 'canManagePayroll',
+            'canManageTickets', 'canManageOnboarding'];
+        if (accessFields.some(f => updates[f] !== undefined)) {
+            await TokenManager.bumpTokenVersion(targetId);
         }
 
         res.json({ success: true, data: staff });
@@ -699,6 +731,7 @@ router.post('/staff/:id/deactivate', authMiddleware, hrOrAdmin, async (req, res)
             }
         }
         await Staff.deactivate(req.params.id);
+        await TokenManager.invalidateUserTokens(req.params.id, 'deactivated');
         await AuditService.logStaffChange(req.user.id, 'deactivated', req.params.id, {}, req.ip);
         res.json({ success: true, message: 'Staff member deactivated' });
     } catch (error) {
@@ -736,6 +769,7 @@ router.post('/staff/:id/reset-password', authMiddleware, hrOrAdmin, [
         }
 
         await Staff.changePassword(req.params.id, req.body.newPassword, false);
+        await TokenManager.invalidateUserTokens(req.params.id, 'password_reset');
         await AuditService.logStaffChange(req.user.id, 'password_reset', req.params.id, {}, req.ip);
         res.json({
             success: true,

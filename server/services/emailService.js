@@ -435,6 +435,46 @@ const sendPasswordResetEmail = async (email, name, resetToken) => {
 };
 
 /**
+ * Send new-hire account setup email - same reset-password-token mechanism
+ * as sendPasswordResetEmail, framed as a welcome step instead of a security
+ * alert, with a longer link expiry (this is an expected onboarding action,
+ * not "someone is trying to get into your account").
+ */
+const sendAccountSetupEmail = async (email, name, setupToken) => {
+    const setupUrl = `${process.env.SITE_URL || 'http://localhost:5500'}/admin/reset-password.html?token=${setupToken}`;
+
+    const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #0066CC;">Welcome to Tekvwa IT Solutions</h2>
+            <p>Hi ${name},</p>
+            <p>Your Tekvwa company portal account has been created. Set your own password to get started - this is separate from your @tekvwa.org email login.</p>
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="${setupUrl}"
+                   style="background-color: #0066CC; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-size: 16px;">
+                    Set Your Password
+                </a>
+            </div>
+            <p style="color: #666; font-size: 14px;">This link will expire in <strong>72 hours</strong>. If it expires, ask an admin or HR to resend it.</p>
+            <hr style="margin-top: 30px; border: none; border-top: 1px solid #ddd;">
+            <p style="font-size: 12px; color: #666;">
+                If the button doesn't work, copy and paste this link into your browser:<br>
+                <a href="${setupUrl}" style="color: #0066CC;">${setupUrl}</a>
+            </p>
+            <p style="font-size: 12px; color: #666; margin-top: 20px;">
+                Tekvwa IT Solutions Ltd &bull; Ughelli, Delta State, Nigeria &bull; RC 9748441<br>
+                This is an automated email, please do not reply.
+            </p>
+        </div>
+    `;
+
+    return sendEmail({
+        to: email,
+        subject: 'Welcome to Tekvwa - Set Up Your Account',
+        html
+    });
+};
+
+/**
  * Send an employment contract PDF to a new hire
  */
 const sendContractEmail = async (staff, jobTitle, pdfBuffer) => {
@@ -519,5 +559,6 @@ module.exports = {
     sendMissedChatResponse,
     sendPasswordResetEmail,
     sendContractEmail,
-    sendWelcomeEmail
+    sendWelcomeEmail,
+    sendAccountSetupEmail
 };

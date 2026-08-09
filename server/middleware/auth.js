@@ -4,11 +4,20 @@
  */
 
 const jwt = require('jsonwebtoken');
+const db = require('../config/database');
 
 /**
  * Verify JWT token middleware
+ *
+ * Also checks token_version and is_active against the database on every
+ * request. This costs one indexed lookup per authenticated request, but
+ * it's what makes deactivation and permission/role changes take effect
+ * immediately instead of waiting out the access token's 15-minute
+ * lifetime - TokenManager.invalidateUserTokens() bumps token_version
+ * specifically so this check can catch it (see server/routes/admin.js's
+ * deactivate/role-change routes, which call it after this was wired up).
  */
-const authMiddleware = (req, res, next) => {
+const authMiddleware = async (req, res, next) => {
     try {
         // Get token from header
         const authHeader = req.headers.authorization;
@@ -41,6 +50,28 @@ const authMiddleware = (req, res, next) => {
 
         // Verify token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        const result = await db.query(
+            'SELECT token_version, is_active FROM staff WHERE id = $1',
+            [decoded.id]
+        );
+        const staff = result.rows[0];
+
+        if (!staff || !staff.is_active) {
+            return res.status(401).json({
+                success: false,
+                message: 'Account is disabled',
+                error: { code: 'INVALID_TOKEN', message: 'Account is disabled' }
+            });
+        }
+
+        if ((staff.token_version || 0) !== (decoded.tokenVersion || 0)) {
+            return res.status(401).json({
+                success: false,
+                message: 'Session has been invalidated, please log in again',
+                error: { code: 'TOKEN_EXPIRED', message: 'Session has been invalidated' }
+            });
+        }
 
         // Attach user to request
         req.user = decoded;

@@ -18,6 +18,7 @@ const http = require('http');
 const fs = require('fs');
 const WebSocket = require('ws');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 // Import routes
 const contactRoutes = require('./routes/contact');
@@ -48,7 +49,8 @@ const { sanitizeRequest } = require('./middleware/sanitizer');
 const {
     contactFormLimiter,
     newsletterLimiter,
-    bookingLimiter
+    bookingLimiter,
+    authenticatedApiLimiter
 } = require('./middleware/rateLimiter');
 
 // Import WebSocket handler
@@ -94,6 +96,34 @@ app.use('/users', express.static(path.join(__dirname, '../users')));
 // ======================
 // API ROUTES WITH RATE LIMITING
 // ======================
+
+// authenticatedApiLimiter keys by req.user.id when available, but that's
+// normally only set by each route's own authMiddleware, which runs later,
+// per-route. Decode the token here too - opportunistically, never
+// rejecting - purely so the limiter can bucket by staff member instead of
+// by IP (which would otherwise lump every staffer behind the same office
+// connection into one shared bucket). Real auth enforcement is unchanged;
+// this never blocks a request, it only sometimes populates req.user early.
+const softAuth = (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    if (authHeader?.startsWith('Bearer ') && process.env.JWT_SECRET) {
+        try {
+            req.user = jwt.verify(authHeader.slice(7), process.env.JWT_SECRET);
+        } catch {
+            // Invalid/expired token - fall through to IP-based limiting;
+            // the route's real authMiddleware will reject it properly.
+        }
+    }
+    next();
+};
+
+// Blanket rate-limit backstop for every /api/* route. Keys by req.user.id
+// when authenticated, falling back to IP when not - so this also covers
+// public routes that don't have their own dedicated limiter below, just
+// at a more generous ceiling than a purpose-built one would use. Specific
+// routes below layer their own stricter limiter on top; both apply
+// independently, so this never loosens an existing tighter limit.
+app.use('/api', softAuth, authenticatedApiLimiter);
 
 // Public routes with rate limiting
 // Note: contactFormLimiter only applies to POST /api/contact (root) - not replies or other actions

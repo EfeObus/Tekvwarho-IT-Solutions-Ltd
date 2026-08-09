@@ -10,12 +10,13 @@ const Chat = require('../models/Chat');
 const Visitor = require('../models/Visitor');
 const AuditService = require('../services/auditService');
 const { authMiddleware, hasPermission } = require('../middleware/auth');
+const { chatMessageLimiter } = require('../middleware/rateLimiter');
 
 /**
  * POST /api/chat/start
  * Start a new chat session
  */
-router.post('/start', [
+router.post('/start', chatMessageLimiter, [
     body('name').trim().notEmpty().withMessage('Name is required'),
     body('email').isEmail().withMessage('Valid email is required')
 ], async (req, res) => {

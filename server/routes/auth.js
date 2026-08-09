@@ -294,25 +294,10 @@ router.post('/forgot-password', passwordResetLimiter, [
             return res.json(successResponse);
         }
 
-        // Generate secure reset token
-        const resetToken = crypto.randomBytes(32).toString('hex');
-        const tokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
-        const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
-
-        // Invalidate any existing reset tokens for this user
-        await db.query(
-            `UPDATE password_reset_tokens
-             SET used_at = NOW()
-             WHERE user_id = $1 AND used_at IS NULL`,
-            [user.id]
-        );
-
-        // Store new reset token
-        await db.query(
-            `INSERT INTO password_reset_tokens (user_id, token_hash, expires_at, ip_address, user_agent)
-             VALUES ($1, $2, $3, $4, $5)`,
-            [user.id, tokenHash, expiresAt, req.ip, req.get('User-Agent')]
-        );
+        // Generate secure reset token (1 hour expiry - stricter than the
+        // new-hire setup-link variant, since this is "someone claims to be
+        // you and wants in", not an expected onboarding step)
+        const resetToken = await TokenManager.createPasswordResetToken(user.id, req.ip, req.get('User-Agent'), 1);
 
         // Send reset email
         await sendPasswordResetEmail(user.email, user.name, resetToken);

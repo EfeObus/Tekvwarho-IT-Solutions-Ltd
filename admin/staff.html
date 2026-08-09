@@ -253,8 +253,15 @@
                         </div>
                     </div>
 
+                    <div class="form-group" id="setup-link-row">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="staff-send-setup-link" checked>
+                            <span>Email the new hire a link to set their own password (recommended)</span>
+                        </label>
+                    </div>
+
                     <div class="form-row" id="password-row">
-                        <div class="form-group">
+                        <div class="form-group" id="password-field-group">
                             <label for="staff-password">Password *</label>
                             <input type="password" id="staff-password" class="form-control" minlength="8" placeholder="Minimum 8 characters">
                         </div>
@@ -524,6 +531,9 @@
                 
                 // Save staff
                 document.getElementById('save-staff-btn').addEventListener('click', () => this.saveStaff());
+
+                // Toggle manual password field vs. emailed setup link
+                document.getElementById('staff-send-setup-link').addEventListener('change', (e) => this.toggleSetupLinkMode(e.target.checked));
                 
                 // Reset password
                 document.getElementById('reset-password-btn').addEventListener('click', () => this.resetPassword());
@@ -748,20 +758,34 @@
                         passwordInput.required = false;
                         passwordInput.placeholder = 'Leave blank to keep current';
                         document.getElementById('hire-extras').style.display = 'none';
+                        document.getElementById('setup-link-row').style.display = 'none';
                     }
                 } else {
                     // Add mode
                     title.textContent = 'Add Staff Member';
                     document.getElementById('staff-id').value = '';
                     document.getElementById('staff-email').disabled = false;
-                    passwordInput.required = true;
-                    passwordInput.placeholder = 'Minimum 8 characters';
+                    document.getElementById('setup-link-row').style.display = 'block';
+                    document.getElementById('staff-send-setup-link').checked = true;
+                    this.toggleSetupLinkMode(true);
                     document.getElementById('hire-extras').style.display = 'block';
                     document.getElementById('hire-start-date').value = new Date().toISOString().split('T')[0];
                     document.getElementById('hire-send-contract').checked = true;
                 }
 
                 modal.classList.add('active');
+            },
+
+            // When sending a setup link, HR/admin never sets (or sees) a
+            // real password - the field is hidden and not required.
+            toggleSetupLinkMode(sendingSetupLink) {
+                const passwordGroup = document.getElementById('password-field-group');
+                const passwordInput = document.getElementById('staff-password');
+                passwordGroup.style.display = sendingSetupLink ? 'none' : 'block';
+                passwordInput.required = !sendingSetupLink;
+                if (sendingSetupLink) {
+                    passwordInput.value = '';
+                }
             },
 
             // Prefill job title/description from the department's contract
@@ -809,14 +833,16 @@
                     canManageOnboarding: document.getElementById('perm-onboarding').checked
                 };
                 
+                const sendSetupLink = !id && document.getElementById('staff-send-setup-link').checked;
+
                 // Validation
                 if (!name || !email || !role) {
                     errorDiv.textContent = 'Please fill in all required fields';
                     errorDiv.style.display = 'block';
                     return;
                 }
-                
-                if (!id && (!password || password.length < 8)) {
+
+                if (!id && !sendSetupLink && (!password || password.length < 8)) {
                     errorDiv.textContent = 'Password must be at least 8 characters';
                     errorDiv.style.display = 'block';
                     return;
@@ -827,11 +853,11 @@
                     errorDiv.style.display = 'block';
                     return;
                 }
-                
+
                 const btn = document.getElementById('save-staff-btn');
                 btn.disabled = true;
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-                
+
                 try {
                     // POST /admin/staff (create) expects permissions nested under
                     // `permissions`; PATCH /admin/staff/:id (edit) reads them at the
@@ -841,9 +867,13 @@
                     const payload = { name, phone, department, role, tin: tin || null };
                     if (!id) {
                         payload.email = email;
-                        payload.password = password;
                         payload.nin = nin;
                         payload.permissions = permissions;
+                        if (sendSetupLink) {
+                            payload.sendSetupLink = true;
+                        } else {
+                            payload.password = password;
+                        }
                     } else {
                         if (password) payload.password = password;
                         if (nin) payload.nin = nin;
@@ -860,7 +890,13 @@
 
                     if (response.success) {
                         this.closeModal();
-                        AdminApp.showNotification(id ? 'Staff member updated' : 'Staff member added', 'success');
+                        let addedMessage = 'Staff member added';
+                        if (!id && sendSetupLink) {
+                            addedMessage += response.setupEmailSent
+                                ? ' - setup link emailed'
+                                : ' - setup email failed to send, use "Reset Password" to generate credentials manually';
+                        }
+                        AdminApp.showNotification(id ? 'Staff member updated' : addedMessage, 'success');
                         if (!id) {
                             await this.finishHiring(response.data.id);
                         }
