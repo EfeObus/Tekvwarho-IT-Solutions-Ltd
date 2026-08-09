@@ -406,7 +406,10 @@ router.post('/drafts', authMiddleware, [
  */
 router.delete('/drafts/:id', authMiddleware, async (req, res) => {
     try {
-        await Draft.delete(req.params.id);
+        const deleted = await Draft.delete(req.params.id, req.user.id);
+        if (!deleted) {
+            return res.status(404).json({ success: false, message: 'Draft not found' });
+        }
         res.json({ success: true, message: 'Draft deleted' });
     } catch (error) {
         console.error('Delete draft error:', error);

@@ -3,6 +3,16 @@
  * Dynamic SQL query building with search, filters, and pagination
  */
 
+// Column/identifier names can't be parameterized like values, so every
+// column that reaches raw SQL - not just ORDER BY - must pass this same
+// allowlist-by-syntax check. Callers today only ever pass hardcoded
+// literals, but nothing enforced that invariant before.
+function assertValidColumn(column) {
+    if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(column)) {
+        throw new Error(`Invalid column name: ${column}`);
+    }
+}
+
 class QueryBuilder {
     constructor(tableName) {
         this.tableName = tableName;
@@ -32,6 +42,7 @@ class QueryBuilder {
         if (value === undefined || value === null || value === '') {
             return this;
         }
+        assertValidColumn(column);
 
         this.whereConditions.push({
             column,
@@ -67,6 +78,7 @@ class QueryBuilder {
         if (!values || !Array.isArray(values) || values.length === 0) {
             return this;
         }
+        assertValidColumn(column);
 
         const placeholders = values.map((_, i) => `$${this.paramIndex + i}`).join(', ');
         this.whereConditions.push({
@@ -80,6 +92,15 @@ class QueryBuilder {
     }
 
     /**
+     * Add WHERE column IS NULL
+     */
+    whereNull(column) {
+        assertValidColumn(column);
+        this.whereConditions.push({ type: 'null', column });
+        return this;
+    }
+
+    /**
      * Add WHERE column BETWEEN start AND end
      */
     whereBetween(column, start, end) {
@@ -88,6 +109,7 @@ class QueryBuilder {
         }
 
         if (start && end) {
+            assertValidColumn(column);
             this.whereConditions.push({
                 type: 'between',
                 column,
@@ -149,10 +171,7 @@ class QueryBuilder {
         // Validate direction
         direction = direction.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
 
-        // Prevent SQL injection - only allow alphanumeric and underscore
-        if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(column)) {
-            throw new Error('Invalid column name for ORDER BY');
-        }
+        assertValidColumn(column);
 
         this.orderByColumns.push({ column, direction });
         return this;
@@ -198,6 +217,8 @@ class QueryBuilder {
         for (const cond of this.whereConditions) {
             if (cond.type === 'in') {
                 conditions.push(`${cond.column} IN (${cond.placeholders})`);
+            } else if (cond.type === 'null') {
+                conditions.push(`${cond.column} IS NULL`);
             } else if (cond.type === 'between') {
                 conditions.push(`${cond.column} BETWEEN $${cond.startParam} AND $${cond.endParam}`);
             } else {

@@ -436,7 +436,8 @@ router.get('/staff/active', authMiddleware, async (req, res) => {
 
 /**
  * POST /api/admin/staff
- * Create/Onboard a new staff member (admin only)
+ * Create/Onboard a new staff member (admin or HR - HR cannot grant the
+ * admin role itself, see the role==='admin' check below)
  */
 router.post('/staff', authMiddleware, hrOrAdmin, [
     body('email').isEmail().withMessage('Valid email is required'),
@@ -456,6 +457,16 @@ router.post('/staff', authMiddleware, hrOrAdmin, [
         }
 
         const { email, password, name, role, department, phone, nin, tin, permissions } = req.body;
+
+        // hrOrAdmin lets HR create/onboard staff, but HR must not be able to
+        // mint a fellow admin (or itself) into the admin tier - only an actual
+        // admin can grant admin-level access.
+        if (role === 'admin' && req.user.role !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Only an admin can create another admin account'
+            });
+        }
 
         // Check if email exists
         const existing = await Staff.findByEmail(email);
@@ -676,10 +687,17 @@ router.post('/staff/:id/activate', authMiddleware, hrOrAdmin, async (req, res) =
 
 /**
  * POST /api/admin/staff/:id/deactivate
- * Deactivate a staff member (admin only)
+ * Deactivate a staff member (admin, or HR for non-admin targets - HR
+ * cannot deactivate an admin account)
  */
 router.post('/staff/:id/deactivate', authMiddleware, hrOrAdmin, async (req, res) => {
     try {
+        if (req.user.role !== 'admin') {
+            const target = await Staff.findById(req.params.id);
+            if (target && target.role === 'admin') {
+                return res.status(403).json({ success: false, message: 'Only an admin can deactivate an admin account' });
+            }
+        }
         await Staff.deactivate(req.params.id);
         await AuditService.logStaffChange(req.user.id, 'deactivated', req.params.id, {}, req.ip);
         res.json({ success: true, message: 'Staff member deactivated' });
@@ -687,14 +705,16 @@ router.post('/staff/:id/deactivate', authMiddleware, hrOrAdmin, async (req, res)
         console.error('Deactivate staff error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to deactivate staff member'
+            message: error.message === 'Cannot deactivate the last admin user' ? error.message : 'Failed to deactivate staff member'
         });
     }
 });
 
 /**
  * POST /api/admin/staff/:id/reset-password
- * Reset staff password (admin only)
+ * Reset staff password (admin, or HR for non-admin targets - HR cannot
+ * reset an admin's password, which would otherwise let HR hijack any
+ * admin account)
  */
 router.post('/staff/:id/reset-password', authMiddleware, hrOrAdmin, [
     body('newPassword').isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
@@ -706,6 +726,13 @@ router.post('/staff/:id/reset-password', authMiddleware, hrOrAdmin, [
                 success: false,
                 errors: errors.array()
             });
+        }
+
+        if (req.user.role !== 'admin') {
+            const target = await Staff.findById(req.params.id);
+            if (target && target.role === 'admin') {
+                return res.status(403).json({ success: false, message: 'Only an admin can reset an admin account\'s password' });
+            }
         }
 
         await Staff.changePassword(req.params.id, req.body.newPassword, false);

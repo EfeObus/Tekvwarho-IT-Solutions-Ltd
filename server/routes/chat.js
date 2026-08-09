@@ -156,17 +156,21 @@ router.post('/sessions/:id/messages', authMiddleware, hasPermission('can_manage_
             });
         }
 
-        const { content, senderType, senderId } = req.body;
+        const { content, senderType } = req.body;
+        // A staff-sent message's actor is always the authenticated caller,
+        // never a client-supplied ID - otherwise any staffer with chat
+        // access could post as, and pin the audit trail on, someone else.
+        const senderId = senderType === 'staff' ? req.user.id : null;
 
         const message = await Chat.addMessage({
             sessionId: req.params.id,
             senderType,
-            senderId: senderType === 'staff' ? senderId : null,
+            senderId,
             content
         });
 
         // Log staff responses
-        if (senderType === 'staff' && senderId) {
+        if (senderType === 'staff') {
             await AuditService.logChatResponse(senderId, req.params.id, req.ip);
         }
 
@@ -186,7 +190,6 @@ router.post('/sessions/:id/messages', authMiddleware, hasPermission('can_manage_
  */
 router.patch('/sessions/:id/close', authMiddleware, hasPermission('can_manage_chats'), async (req, res) => {
     try {
-        const { staffId } = req.body;
         const session = await Chat.closeSession(req.params.id);
         if (!session) {
             return res.status(404).json({
@@ -196,9 +199,7 @@ router.patch('/sessions/:id/close', authMiddleware, hasPermission('can_manage_ch
         }
 
         // Log session closure
-        if (staffId) {
-            await AuditService.logStatusChange(staffId, 'chat', req.params.id, 'active', 'closed', req.ip);
-        }
+        await AuditService.logStatusChange(req.user.id, 'chat', req.params.id, 'active', 'closed', req.ip);
 
         res.json({ success: true, data: session });
     } catch (error) {

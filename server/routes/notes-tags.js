@@ -7,8 +7,27 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/database');
 const { v4: uuidv4 } = require('uuid');
-const { authMiddleware } = require('../middleware/auth');
+const { authMiddleware, hasPermission, managerOrAbove } = require('../middleware/auth');
 const AuditService = require('../services/auditService');
+
+// Notes/tags attach to messages, consultations, or chats - gate access to
+// an entity's notes/tags by the same permission that gates the entity
+// itself, so someone without can_manage_messages can't read internal notes
+// about a message via this side door.
+const ENTITY_PERMISSION = {
+    message: 'can_manage_messages',
+    consultation: 'can_manage_consultations',
+    chat: 'can_manage_chats'
+};
+
+function entityPermission(req, res, next) {
+    const entityType = req.params.entityType || req.body.entityType;
+    const permission = ENTITY_PERMISSION[entityType];
+    if (!permission) {
+        return res.status(400).json({ success: false, message: 'Unknown entity type' });
+    }
+    return hasPermission(permission)(req, res, next);
+}
 
 // ==========================================
 // INTERNAL NOTES
@@ -18,7 +37,7 @@ const AuditService = require('../services/auditService');
  * GET /api/notes/:entityType/:entityId
  * Get all notes for an entity
  */
-router.get('/notes/:entityType/:entityId', authMiddleware, async (req, res) => {
+router.get('/notes/:entityType/:entityId', authMiddleware, entityPermission, async (req, res) => {
     try {
         const { entityType, entityId } = req.params;
 
@@ -42,7 +61,7 @@ router.get('/notes/:entityType/:entityId', authMiddleware, async (req, res) => {
  * POST /api/notes
  * Add a note to an entity
  */
-router.post('/notes', authMiddleware, async (req, res) => {
+router.post('/notes', authMiddleware, entityPermission, async (req, res) => {
     try {
         const { entityType, entityId, content } = req.body;
 
@@ -89,14 +108,27 @@ router.post('/notes', authMiddleware, async (req, res) => {
  */
 router.delete('/notes/:id', authMiddleware, async (req, res) => {
     try {
-        const result = await db.query(
-            'DELETE FROM internal_notes WHERE id = $1 RETURNING *',
-            [req.params.id]
-        );
-
-        if (!result.rows.length) {
+        const existing = await db.query('SELECT * FROM internal_notes WHERE id = $1', [req.params.id]);
+        const note = existing.rows[0];
+        if (!note) {
             return res.status(404).json({ success: false, message: 'Note not found' });
         }
+
+        const isAuthor = note.staff_id === req.user.id;
+        if (!isAuthor && req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: 'Only the note\'s author or an admin can delete it' });
+        }
+
+        await db.query('DELETE FROM internal_notes WHERE id = $1', [req.params.id]);
+
+        await AuditService.log({
+            staffId: req.user.id,
+            action: 'delete_note',
+            entityType: note.entity_type,
+            entityId: note.entity_id,
+            details: { noteId: note.id },
+            ipAddress: req.ip
+        });
 
         res.json({ success: true, message: 'Note deleted' });
     } catch (error) {
@@ -153,9 +185,10 @@ router.post('/tags', authMiddleware, async (req, res) => {
 
 /**
  * DELETE /api/tags/:id
- * Delete a tag
+ * Delete a tag (manager+ - removes it from the shared pool, affecting
+ * every entity currently tagged with it, not just one)
  */
-router.delete('/tags/:id', authMiddleware, async (req, res) => {
+router.delete('/tags/:id', authMiddleware, managerOrAbove, async (req, res) => {
     try {
         await db.query('DELETE FROM tags WHERE id = $1', [req.params.id]);
         res.json({ success: true, message: 'Tag deleted' });
@@ -169,7 +202,7 @@ router.delete('/tags/:id', authMiddleware, async (req, res) => {
  * GET /api/tags/:entityType/:entityId
  * Get tags for an entity
  */
-router.get('/tags/:entityType/:entityId', authMiddleware, async (req, res) => {
+router.get('/tags/:entityType/:entityId', authMiddleware, entityPermission, async (req, res) => {
     try {
         const { entityType, entityId } = req.params;
 
@@ -191,7 +224,7 @@ router.get('/tags/:entityType/:entityId', authMiddleware, async (req, res) => {
  * POST /api/tags/:entityType/:entityId/:tagId
  * Add a tag to an entity
  */
-router.post('/tags/:entityType/:entityId/:tagId', authMiddleware, async (req, res) => {
+router.post('/tags/:entityType/:entityId/:tagId', authMiddleware, entityPermission, async (req, res) => {
     try {
         const { entityType, entityId, tagId } = req.params;
 
@@ -224,7 +257,7 @@ router.post('/tags/:entityType/:entityId/:tagId', authMiddleware, async (req, re
  * DELETE /api/tags/:entityType/:entityId/:tagId
  * Remove a tag from an entity
  */
-router.delete('/tags/:entityType/:entityId/:tagId', authMiddleware, async (req, res) => {
+router.delete('/tags/:entityType/:entityId/:tagId', authMiddleware, entityPermission, async (req, res) => {
     try {
         const { entityType, entityId, tagId } = req.params;
 

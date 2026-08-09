@@ -58,6 +58,12 @@ const paginationMiddleware = (options = {}) => {
             sortField = config.sortField;
         }
 
+        // A caller-supplied allowedSortFields was silently ignored before -
+        // this made it a documentation comment, not an actual restriction.
+        if (options.allowedSortFields && !options.allowedSortFields.includes(sortField)) {
+            sortField = config.sortField;
+        }
+
         // Parse search
         const search = (req.query.search || req.query.q || '').trim();
 

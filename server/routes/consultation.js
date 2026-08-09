@@ -329,17 +329,14 @@ router.patch('/:id', authMiddleware, hasPermission('can_manage_consultations'), 
             });
         }
 
-        // Log update if staffId is provided
-        if (req.body.staffId) {
-            await AuditService.log({
-                staffId: req.body.staffId,
-                action: 'consultation_updated',
-                entityType: 'consultation',
-                entityId: req.params.id,
-                details: { updates: Object.keys(req.body) },
-                ipAddress: req.ip
-            });
-        }
+        await AuditService.log({
+            staffId: req.user.id,
+            action: 'consultation_updated',
+            entityType: 'consultation',
+            entityId: req.params.id,
+            details: { updates: Object.keys(req.body) },
+            ipAddress: req.ip
+        });
 
         res.json({ success: true, data: consultation });
     } catch (error) {
@@ -357,7 +354,8 @@ router.patch('/:id', authMiddleware, hasPermission('can_manage_consultations'), 
  */
 router.patch('/:id/status', authMiddleware, hasPermission('can_manage_consultations'), async (req, res) => {
     try {
-        const { status, assignedTo, staffId } = req.body;
+        const { status, assignedTo } = req.body;
+        const staffId = req.user.id;
         const validStatuses = ['pending', 'confirmed', 'completed', 'cancelled'];
 
         if (!validStatuses.includes(status)) {

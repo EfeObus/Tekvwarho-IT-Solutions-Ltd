@@ -10,6 +10,7 @@ const Visitor = require('../models/Visitor');
 const Staff = require('../models/Staff');
 const db = require('../config/database');
 const { sendMissedChatResponse } = require('../services/emailService');
+const { sanitizeString, sanitizeEmail } = require('../middleware/sanitizer');
 
 // Store active connections
 const connections = new Map(); // sessionId -> { visitor: ws, admin: ws, staffId: number }
@@ -139,9 +140,6 @@ const handleAdminConnection = (ws) => {
             ws.send(JSON.stringify({ type: 'error', message: 'Invalid message format' }));
         }
     });
-
-    // Send pending sessions (will work for all admins)
-    sendPendingSessions(ws);
 };
 
 /**
@@ -221,6 +219,16 @@ const restoreVisitorSession = async (ws, sessionId) => {
  * Handle admin messages
  */
 const handleAdminMessage = async (ws, message) => {
+    // 'authenticate' is the only action reachable before authentication.
+    // Every other admin-side action requires a completed authenticateStaff()
+    // call with can_manage_chats (or role:admin) - closes the gap where an
+    // unauthenticated WS client could join sessions, read history, post
+    // fake staff replies, or close chats just by connecting to /ws/chat.
+    if (message.type !== 'authenticate' && !isAuthorized(ws)) {
+        ws.send(JSON.stringify({ type: 'error', message: 'Authentication required' }));
+        return;
+    }
+
     switch (message.type) {
         case 'authenticate':
             // Set staff identity for this connection
@@ -283,18 +291,26 @@ const handleVisitorMessage = async (ws, message) => {
  */
 const startChat = async (ws, data) => {
     try {
+        // WS payloads bypass the HTTP sanitizeRequest middleware entirely
+        // (server/index.js only wires it into Express, not ws.on('message')),
+        // so visitor-supplied name/email get no XSS/format protection unless
+        // sanitized here - previously reached the DB, other staff's screens,
+        // and outbound emails completely raw.
+        const name = sanitizeString(data.name, { maxLength: 200 }) || 'Visitor';
+        const email = sanitizeEmail(data.email);
+
         // Create or update visitor using upsert
         const visitor = await Visitor.upsert({
-            name: data.name,
-            email: data.email,
+            name,
+            email,
             source: 'chat'
         });
 
         // Create chat session
         const session = await Chat.createSession({
             visitorId: visitor.id,
-            visitorName: data.name,
-            visitorEmail: data.email
+            visitorName: name,
+            visitorEmail: email
         });
 
         ws.sessionId = session.id;
@@ -352,7 +368,7 @@ const startChat = async (ws, data) => {
                         type: 'chat_assigned',
                         session: {
                             id: session.id,
-                            visitor: { name: data.name, email: data.email },
+                            visitor: { name, email },
                             created_at: session.created_at,
                             assigned_to: assignedStaff.id,
                             assigned_to_name: assignedStaff.name
@@ -389,7 +405,7 @@ const startChat = async (ws, data) => {
             type: 'new_session',
             session: {
                 id: session.id,
-                visitor: { name: data.name, email: data.email },
+                visitor: { name, email },
                 created_at: session.created_at,
                 assigned_to: assignedStaff?.id || null,
                 assigned_to_name: assignedStaff?.name || null
@@ -404,14 +420,14 @@ const startChat = async (ws, data) => {
                     type: 'admin_chat_notification',
                     session: {
                         id: session.id,
-                        visitor: { name: data.name, email: data.email },
+                        visitor: { name, email },
                         created_at: session.created_at,
                         assigned_to: assignedStaff?.id || null,
                         assigned_to_name: assignedStaff?.name || 'Unassigned'
                     },
                     message: assignedStaff
-                        ? `New chat from ${data.name} assigned to ${assignedStaff.name}`
-                        : `New chat from ${data.name} - NO STAFF AVAILABLE`
+                        ? `New chat from ${name} assigned to ${assignedStaff.name}`
+                        : `New chat from ${name} - NO STAFF AVAILABLE`
                 }));
             }
         }
@@ -432,11 +448,17 @@ const sendVisitorMessage = async (ws, data) => {
             return;
         }
 
+        const content = sanitizeString(data.content, { maxLength: 5000 });
+        if (!content) {
+            ws.send(JSON.stringify({ type: 'error', message: 'Message content is required' }));
+            return;
+        }
+
         const chatMessage = await Chat.addMessage({
             sessionId: ws.sessionId,
             senderType: 'visitor',
             senderId: null,
-            content: data.content
+            content
         });
 
         // Send confirmation to visitor
@@ -459,7 +481,7 @@ const sendVisitorMessage = async (ws, data) => {
         broadcastToAdmins({
             type: 'session_message',
             sessionId: ws.sessionId,
-            preview: data.content.substring(0, 50)
+            preview: content.substring(0, 50)
         });
 
     } catch (error) {
@@ -498,14 +520,38 @@ const authenticateStaff = async (ws, data) => {
     const staffId = decoded.id;
     const staffName = decoded.name || decoded.email;
     const role = decoded.role;
+    const permissions = decoded.permissions || {};
 
-    adminConnections.set(ws, { staffId, staffName, role });
+    if (role !== 'admin' && !permissions.canManageChats) {
+        ws.send(JSON.stringify({ type: 'error', message: 'Your account does not have chat access' }));
+        return;
+    }
+
+    adminConnections.set(ws, { staffId, staffName, role, permissions });
     console.log(`Staff authenticated: ${staffName} (ID: ${staffId})`);
 
     ws.send(JSON.stringify({
         type: 'authenticated',
         message: 'Successfully authenticated'
     }));
+
+    // Session list is only ever sent to an authenticated, chat-permitted
+    // connection - never on raw connect (see handleAdminConnection).
+    await sendPendingSessions(ws);
+};
+
+/**
+ * True only for a WS connection that has completed authenticateStaff()
+ * and holds can_manage_chats (or is role:admin, which implicitly has it -
+ * matches the REST hasPermission() convention). Every admin-side chat
+ * action must pass this before touching session data.
+ */
+const isAuthorized = (ws) => {
+    const staffInfo = adminConnections.get(ws);
+    if (!staffInfo?.staffId) {
+        return false;
+    }
+    return staffInfo.role === 'admin' || !!staffInfo.permissions?.canManageChats;
 };
 
 /**

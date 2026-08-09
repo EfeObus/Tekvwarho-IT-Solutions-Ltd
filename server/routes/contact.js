@@ -149,7 +149,8 @@ router.get('/:id', authMiddleware, hasPermission('can_manage_messages'), async (
  */
 router.patch('/:id/status', authMiddleware, hasPermission('can_manage_messages'), async (req, res) => {
     try {
-        const { status, assignedTo, staffId } = req.body;
+        const { status, assignedTo } = req.body;
+        const staffId = req.user.id;
         const validStatuses = ['new', 'in_progress', 'converted', 'archived'];
 
         if (!validStatuses.includes(status)) {
@@ -195,8 +196,7 @@ router.patch('/:id/status', authMiddleware, hasPermission('can_manage_messages')
  * Reply to a message
  */
 router.post('/:id/reply', authMiddleware, hasPermission('can_manage_messages'), [
-    body('content').trim().notEmpty().withMessage('Reply content is required'),
-    body('staffId').notEmpty().withMessage('Staff ID is required')
+    body('content').trim().notEmpty().withMessage('Reply content is required')
 ], async (req, res) => {
     try {
         const errors = validationResult(req);
@@ -207,7 +207,8 @@ router.post('/:id/reply', authMiddleware, hasPermission('can_manage_messages'), 
             });
         }
 
-        const { content, staffId, sendEmail = true } = req.body;
+        const { content, sendEmail = true } = req.body;
+        const staffId = req.user.id;
 
         // Get original message
         const message = await Message.findById(req.params.id);

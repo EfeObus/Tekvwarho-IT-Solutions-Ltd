@@ -21,10 +21,11 @@ router.get('/',
     authMiddleware,
     hasPermission('can_manage_messages'),
     paginationMiddleware({
-        defaultLimit: 20,
+        limit: 20,
         maxLimit: 100,
         allowedSortFields: ['created_at', 'name', 'email', 'status', 'updated_at'],
-        defaultSort: '-created_at'
+        sortField: 'created_at',
+        sortOrder: 'DESC'
     }),
     async (req, res) => {
         try {
@@ -50,7 +51,7 @@ router.get('/',
 
             // Apply unassigned filter
             if (filters.unassigned === 'true') {
-                qb.where('assigned_to IS NULL');
+                qb.whereNull('assigned_to');
             }
 
             // Apply date range

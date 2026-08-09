@@ -312,6 +312,17 @@ const Staff = {
      * Deactivate staff member (soft delete)
      */
     async deactivate(id) {
+        // Same last-admin protection as delete() - deactivating is just as
+        // capable of locking the whole org out of admin-level functionality.
+        const admins = await db.query(
+            "SELECT COUNT(*) as count FROM staff WHERE role = 'admin' AND is_active = true"
+        );
+        const staff = await this.findById(id);
+
+        if (staff && staff.role === 'admin' && parseInt(admins.rows[0].count) <= 1) {
+            throw new Error('Cannot deactivate the last admin user');
+        }
+
         await db.query(
             'UPDATE staff SET is_active = false, updated_at = CURRENT_TIMESTAMP WHERE id = $1',
             [id]

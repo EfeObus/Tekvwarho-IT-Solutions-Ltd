@@ -96,9 +96,11 @@ router.get('/', authMiddleware, adminOnly, async (req, res) => {
 
 /**
  * GET /api/settings/:key
- * Get a specific setting (for internal use, some are public)
+ * Get a specific setting (admin only - genuinely public settings, like
+ * business hours for the chat widget, go through GET /chat/public instead,
+ * which is intentionally unauthenticated and scoped to a fixed allowlist)
  */
-router.get('/:key', async (req, res) => {
+router.get('/:key', authMiddleware, adminOnly, async (req, res) => {
     try {
         const result = await db.query(
             'SELECT * FROM system_settings WHERE setting_key = $1',

@@ -7,7 +7,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/database');
 const Visitor = require('../models/Visitor');
-const { authMiddleware } = require('../middleware/auth');
+const { authMiddleware, hasPermission } = require('../middleware/auth');
 const { v4: uuidv4 } = require('uuid');
 
 /**
@@ -102,7 +102,7 @@ router.get('/visitor', async (req, res) => {
  * GET /api/analytics
  * Get comprehensive analytics data (admin)
  */
-router.get('/', authMiddleware, async (req, res) => {
+router.get('/', authMiddleware, hasPermission('analytics'), async (req, res) => {
     try {
         const { startDate, endDate, period } = req.query;
 
@@ -310,7 +310,7 @@ router.get('/', authMiddleware, async (req, res) => {
  * GET /api/analytics/summary
  * Get quick summary stats for dashboard
  */
-router.get('/summary', authMiddleware, async (req, res) => {
+router.get('/summary', authMiddleware, hasPermission('analytics'), async (req, res) => {
     try {
         const today = new Date().toISOString().split('T')[0];
         const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
@@ -414,7 +414,7 @@ router.get('/summary', authMiddleware, async (req, res) => {
  * GET /api/analytics/realtime
  * Get real-time visitor data
  */
-router.get('/realtime', authMiddleware, async (req, res) => {
+router.get('/realtime', authMiddleware, hasPermission('analytics'), async (req, res) => {
     try {
         // Get visitors in the last 5 minutes
         const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();

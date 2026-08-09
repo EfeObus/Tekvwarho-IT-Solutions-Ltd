@@ -91,8 +91,9 @@ class Draft {
     /**
      * Delete a draft
      */
-    static async delete(id) {
-        await db.query('DELETE FROM drafts WHERE id = $1', [id]);
+    static async delete(id, staffId) {
+        const result = await db.query('DELETE FROM drafts WHERE id = $1 AND staff_id = $2 RETURNING id', [id, staffId]);
+        return result.rows.length > 0;
     }
 
     /**
