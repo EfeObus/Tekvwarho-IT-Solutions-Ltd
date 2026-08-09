@@ -5,7 +5,7 @@ A comprehensive IT solutions website with integrated admin dashboard, live chat,
 ![License](https://img.shields.io/badge/license-Proprietary-blue)
 ![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14%2B-blue)
-![Version](https://img.shields.io/badge/version-1.9.2-orange)
+![Version](https://img.shields.io/badge/version-1.10.0-orange)
 
 ## Company Information
 
@@ -725,6 +725,39 @@ curl -X GET http://localhost:5500/api/messages \
 ---
 
 ## Changelog
+
+### v1.10.0 (August 9, 2026)
+
+#### Employment Offer Letters with Electronic Acceptance
+
+`employee_contracts` was really a compensation summary, not an offer
+letter, and had no acceptance workflow at all - the PDF's two blank
+signature lines implied print-and-return, but nothing in the system
+ever recorded whether that actually happened. Rebuilt both halves:
+
+The generated PDF is now a full offer letter in six numbered sections
+(Position & Scope, Compensation & Benefits, Leave & Vacation,
+Termination & Resignation, Confidentiality & IP, Acceptance), covering
+fields the old version never had - reporting line, employment status,
+PTO days, probation period, resignation/termination notice, and an
+offer-expiration date. Department, salary, and the four allowances are
+now editable in the generation modal (prefilled from Payroll when
+already set, but not required to be) instead of being locked to
+whatever Payroll already had saved - an offer's terms are proposed at
+hire time, often before the candidate is fully in Payroll.
+
+Acceptance is now a real, auditable event instead of an admin's guess.
+The offer email includes a secure one-time link (`admin/accept-offer.html`,
+token hashed at rest, same pattern as password-reset tokens - the raw
+token only ever exists in the email); the candidate reviews the full
+offer and types their legal name to accept. That records a timestamp,
+IP, and typed signature on the contract, auto-marks the staff record's
+offer as accepted (closing the loop with the offer-acceptance gate
+added in v1.9.2 - Workspace provisioning no longer needs an admin to
+manually flip that toggle), and the next PDF download replaces the
+"awaiting acceptance" notice with an acceptance certificate. New
+`contractAcceptLimiter` rate limit guards the public accept routes as
+defense-in-depth alongside the token's own entropy.
 
 ### v1.9.2 (August 9, 2026)
 

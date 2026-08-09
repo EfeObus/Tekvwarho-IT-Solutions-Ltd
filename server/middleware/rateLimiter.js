@@ -197,6 +197,25 @@ const passwordResetLimiter = rateLimit({
 });
 
 /**
+ * Contract offer-acceptance rate limiter - public, unauthenticated route
+ * guarded only by a high-entropy token, so this is defense-in-depth against
+ * brute force rather than the primary control.
+ */
+const contractAcceptLimiter = rateLimit({
+    ...commonOptions,
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10, // 10 attempts per window
+    message: {
+        success: false,
+        error: {
+            code: 'RATE_LIMITED',
+            message: 'Too many attempts. Please try again in 15 minutes.'
+        }
+    },
+    keyGenerator: (req) => `contract-accept:${normalizeIp(req.ip)}`
+});
+
+/**
  * Token refresh rate limiter
  */
 const refreshTokenLimiter = rateLimit({
@@ -239,6 +258,7 @@ module.exports = {
     authenticatedApiLimiter,
     publicApiLimiter,
     passwordResetLimiter,
+    contractAcceptLimiter,
     refreshTokenLimiter,
     exportLimiter
 };

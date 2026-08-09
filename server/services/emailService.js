@@ -477,16 +477,32 @@ const sendAccountSetupEmail = async (email, name, setupToken) => {
 /**
  * Send an employment contract PDF to a new hire
  */
-const sendContractEmail = async (staff, jobTitle, pdfBuffer) => {
+const sendContractEmail = async (staff, jobTitle, pdfBuffer, acceptUrl, contract) => {
+    const expiryLine = contract?.offer_expiration_date
+        ? `<p style="color: #666; font-size: 14px;">This offer is open until <strong>${new Date(contract.offer_expiration_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}</strong>.</p>`
+        : '';
+
     const html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #0066CC;">Welcome to Tekvwa IT Solutions Ltd</h2>
+            <h2 style="color: #0066CC;">Your Offer from Tekvwa IT Solutions Ltd</h2>
             <p>Hi ${staff.name},</p>
-            <p>Congratulations on joining us as <strong>${jobTitle}</strong>. Your employment contract is attached to this email as a PDF.</p>
-            <p>Please review it, and reach out to HR if you have any questions.</p>
+            <p>We're pleased to offer you the position of <strong>${jobTitle}</strong>. The full offer letter, including compensation, benefits, and terms, is attached to this email as a PDF.</p>
+            <p>Please review it carefully, then accept using the secure button below - no printing or scanning needed.</p>
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="${acceptUrl}"
+                   style="background-color: #0066CC; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-size: 16px;">
+                    Review &amp; Accept Offer
+                </a>
+            </div>
+            ${expiryLine}
+            <p style="color: #666; font-size: 14px;">Questions before you accept? Reach out to HR - we're happy to help.</p>
             <p>You can also find our Employee Handbook and Code of Conduct in your staff dashboard once you log in.</p>
             <hr style="margin-top: 30px; border: none; border-top: 1px solid #ddd;">
             <p style="font-size: 12px; color: #666;">
+                If the button doesn't work, copy and paste this link into your browser:<br>
+                <a href="${acceptUrl}" style="color: #0066CC;">${acceptUrl}</a>
+            </p>
+            <p style="font-size: 12px; color: #666; margin-top: 20px;">
                 Tekvwa IT Solutions Ltd &bull; Ughelli, Delta State, Nigeria &bull; RC 9748441
             </p>
         </div>
@@ -494,11 +510,11 @@ const sendContractEmail = async (staff, jobTitle, pdfBuffer) => {
 
     return sendEmail({
         to: staff.email,
-        subject: 'Your Employment Contract - Tekvwa IT Solutions',
+        subject: `Your Offer of Employment - ${jobTitle}`,
         html,
         attachments: [
             {
-                filename: 'employment-contract.pdf',
+                filename: 'employment-offer-letter.pdf',
                 content: pdfBuffer,
                 contentType: 'application/pdf'
             }

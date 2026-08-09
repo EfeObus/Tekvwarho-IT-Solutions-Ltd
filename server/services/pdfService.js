@@ -230,31 +230,82 @@ function generateContractPDF(contract, staff) {
             doc.on('end', () => resolve(Buffer.concat(chunks)));
             doc.on('error', reject);
 
-            let y = drawHeader(doc, 'Employment Contract', contract.generated_at);
+            const contentWidth = doc.page.width - 100;
+            const colWidth = contentWidth / 2;
 
-            const colWidth = (doc.page.width - 100) / 2;
-            labelValueRow(doc, 50, y, 'Employee', staff.name, colWidth);
+            // A full offer letter runs longer than a page - unlike the other
+            // generators in this file, this one needs real pagination.
+            // ensureSpace() breaks to a fresh page (no re-drawn header/footer
+            // - those are page-1/last-page only, standard for a continued
+            // formal letter) whenever the next block would run into the
+            // footer zone.
+            const ensureSpace = (yPos, needed) => {
+                if (yPos + needed > doc.page.height - 90) {
+                    doc.addPage();
+                    return 50;
+                }
+                return yPos;
+            };
+
+            const heading = (yPos, text) => {
+                yPos = ensureSpace(yPos, 40);
+                doc.fontSize(12).font('Helvetica-Bold').fillColor(BRAND_BLUE).text(text, 50, yPos);
+                doc.moveTo(50, yPos + 20).lineTo(50 + contentWidth, yPos + 20).lineWidth(0.75).strokeColor(BORDER).stroke();
+                return yPos + 32;
+            };
+
+            const paragraph = (yPos, text, opts = {}) => {
+                const h = doc.heightOfString(text, { width: contentWidth, ...opts });
+                yPos = ensureSpace(yPos, h + 10);
+                doc.fontSize(10).font('Helvetica').fillColor(DARK).text(text, 50, yPos, { width: contentWidth, ...opts });
+                return yPos + h + 14;
+            };
+
+            let y = drawHeader(doc, 'Employment Offer Letter', contract.generated_at);
+
+            // Recipient + subject
+            y = ensureSpace(y, 90);
+            doc.fillColor(MUTED).font('Helvetica-Bold').fontSize(7.5).text('TO', 50, y);
+            y += 13;
+            doc.fillColor(DARK).font('Helvetica-Bold').fontSize(11).text(staff.name, 50, y);
+            y += 15;
+            doc.fillColor(GRAY).font('Helvetica').fontSize(9.5).text(staff.email, 50, y);
+            y += 26;
+
+            const subject = `Re: Offer of Employment - ${contract.job_title}`;
+            doc.fillColor(DARK).font('Helvetica-Bold').fontSize(11).text(subject, 50, y, { width: contentWidth });
+            y += doc.heightOfString(subject, { width: contentWidth, fontSize: 11 }) + 20;
+
+            const firstName = (staff.name || '').trim().split(/\s+/)[0] || 'there';
+            y = paragraph(y, `Dear ${firstName},`);
+            y = paragraph(y, `On behalf of Tekvwa IT Solutions Ltd (the "Company"), I am pleased to offer you the ` +
+                `position of ${contract.job_title}. We were impressed with your background and believe your ` +
+                `skills will be a valuable addition to our team. The terms and conditions of your employment ` +
+                `are outlined below.`);
+
+            // 1. Position & Scope of Work
+            y = heading(y, '1. Position & Scope of Work');
+            y = ensureSpace(y, 120);
+            labelValueRow(doc, 50, y, 'Job Title', contract.job_title, colWidth);
             labelValueRow(doc, 50 + colWidth, y, 'Department', contract.department || '—', colWidth);
             y += 40;
-            labelValueRow(doc, 50, y, 'Job Title', contract.job_title, colWidth);
-            labelValueRow(doc, 50 + colWidth, y, 'Start Date', contract.start_date ? new Date(contract.start_date).toLocaleDateString('en-GB') : '—', colWidth);
+            labelValueRow(doc, 50, y, 'Reporting To', contract.reporting_to || 'To be advised', colWidth);
+            labelValueRow(doc, 50 + colWidth, y, 'Employment Status', contract.employment_status || 'Full-Time', colWidth);
             y += 40;
-            labelValueRow(doc, 50, y, 'Monthly Basic Salary', formatNaira(contract.basic_salary), colWidth);
-            labelValueRow(doc, 50 + colWidth, y, 'Monthly Gross Salary', formatNaira(contract.gross_salary), colWidth);
-            y += 45;
+            labelValueRow(doc, 50, y, 'Start Date', contract.start_date ? new Date(contract.start_date).toLocaleDateString('en-GB') : 'To be confirmed', colWidth);
+            labelValueRow(doc, 50 + colWidth, y, 'Offer Expires', contract.offer_expiration_date ? new Date(contract.offer_expiration_date).toLocaleDateString('en-GB') : '—', colWidth);
+            y += 46;
 
-            doc.moveTo(50, y).lineTo(doc.page.width - 50, y).strokeColor(BORDER).stroke();
-            y += 20;
+            y = paragraph(y, 'Key Responsibilities:', { continued: false });
+            y = paragraph(y, contract.job_description || 'To be discussed with your manager.');
 
-            doc.fontSize(12).font('Helvetica-Bold').fillColor(DARK).text('Job Description & Responsibilities', 50, y);
-            y += 20;
-            const jobDescription = contract.job_description || 'To be discussed with your manager.';
-            doc.fontSize(10).font('Helvetica').fillColor(DARK)
-                .text(jobDescription, 50, y, { width: doc.page.width - 100, align: 'left' });
-            y += doc.heightOfString(jobDescription, { width: doc.page.width - 100 }) + 25;
+            // 2. Compensation & Benefits
+            y = heading(y, '2. Compensation & Benefits');
+            y = ensureSpace(y, 30);
+            doc.fontSize(10).font('Helvetica-Bold').fillColor(DARK).text('Monthly Basic Salary', 50, y, { width: 300 });
+            doc.text(formatNaira(contract.basic_salary), 350, y, { width: contentWidth - 300, align: 'right' });
+            y += 22;
 
-            doc.fontSize(12).font('Helvetica-Bold').text('Allowances', 50, y);
-            y += 20;
             const allowances = [
                 ['Housing Allowance', contract.housing_allowance],
                 ['Transport Allowance', contract.transport_allowance],
@@ -262,26 +313,72 @@ function generateContractPDF(contract, staff) {
                 ['Meal / Entertainment Allowance', contract.meal_allowance]
             ];
             allowances.forEach(([label, value]) => {
+                y = ensureSpace(y, 18);
                 doc.fontSize(10).font('Helvetica').fillColor(DARK).text(label, 50, y, { width: 300 });
-                doc.text(formatNaira(value), 350, y, { width: doc.page.width - 400, align: 'right' });
+                doc.text(formatNaira(value), 350, y, { width: contentWidth - 300, align: 'right' });
                 y += 18;
             });
-            y += 15;
+            y = ensureSpace(y, 34);
+            doc.moveTo(50, y).lineTo(50 + contentWidth, y).strokeColor(BORDER).stroke();
+            y += 10;
+            doc.fontSize(11).font('Helvetica-Bold').fillColor(BRAND_BLUE).text('Monthly Gross Salary', 50, y, { width: 300 });
+            doc.text(formatNaira(contract.gross_salary), 350, y, { width: contentWidth - 300, align: 'right' });
+            y += 28;
 
-            doc.fontSize(12).font('Helvetica-Bold').text('Terms', 50, y);
-            y += 20;
-            const termsText = 'This role is subject to Tekvwa IT Solutions Ltd\'s Employee Handbook and Code of Conduct, ' +
-                'available in the staff dashboard. Employment terms (working hours, leave, termination) follow ' +
-                'the Nigerian Labour Act. This letter confirms the role, compensation, and start date agreed ' +
-                'between Tekvwa IT Solutions Ltd and the employee named above.';
-            doc.fontSize(10).font('Helvetica').fillColor(DARK).text(termsText, 50, y, { width: doc.page.width - 100 });
-            y += doc.heightOfString(termsText, { width: doc.page.width - 100 }) + 55;
+            y = paragraph(y, 'Salary is payable in accordance with the Company\'s regular payroll schedule. ' +
+                'You will be assigned a corporate email account and granted role-specific system permissions ' +
+                'upon onboarding.');
 
+            // 3. Leave & Vacation Policy
+            y = heading(y, '3. Leave & Vacation Policy');
+            y = paragraph(y, `Paid Time Off (PTO): You will be entitled to ${contract.pto_days || 15} days of ` +
+                `paid vacation per calendar year, accrued on a pro-rata basis.`);
+            y = paragraph(y, 'Statutory & Sick Leave: You are entitled to paid sick leave and official public ' +
+                'holidays in accordance with standard company policy and the Nigerian Labour Act.');
+
+            // 4. Termination & Resignation Terms
+            y = heading(y, '4. Termination & Resignation Terms');
+            y = paragraph(y, `Probationary Period: Your employment is subject to an initial probationary period ` +
+                `of ${contract.probation_period || '3 months'} from your start date.`);
+            y = paragraph(y, `Resignation Notice: Should you wish to resign, you are required to provide the ` +
+                `Company with a minimum of ${contract.resignation_notice || '2 weeks'} written notice.`);
+            y = paragraph(y, `Termination Notice: The Company reserves the right to terminate employment at any ` +
+                `time with or without cause by providing ${contract.termination_notice || '2 weeks'} notice or ` +
+                `pay in lieu of notice, or immediately in cases of gross misconduct.`);
+
+            // 5. Confidentiality & Intellectual Property
+            y = heading(y, '5. Confidentiality & Intellectual Property');
+            y = paragraph(y, 'During and after your employment, you agree to maintain strict confidentiality ' +
+                'regarding all proprietary information, software code, customer data, and trade secrets of ' +
+                'Tekvwa IT Solutions Ltd. All work products created during your employment remain the exclusive ' +
+                'property of the Company.');
+
+            // 6. Acceptance
+            y = heading(y, '6. Acceptance');
+            if (contract.accepted_at) {
+                y = ensureSpace(y, 70);
+                doc.roundedRect(50, y, contentWidth, 56, 4).fillColor(BADGE_BG).fill();
+                doc.fillColor(BRAND_BLUE_DARK).font('Helvetica-Bold').fontSize(10).text('ELECTRONICALLY ACCEPTED', 64, y + 10);
+                doc.fillColor(DARK).font('Helvetica').fontSize(9)
+                    .text(`Accepted by ${contract.accepted_signature_name} on ${new Date(contract.accepted_at).toLocaleString('en-GB')}`, 64, y + 26, { width: contentWidth - 28 });
+                doc.fillColor(GRAY).fontSize(8).text(`IP address: ${contract.accepted_ip || '—'}`, 64, y + 40);
+                y += 70;
+            } else {
+                y = paragraph(y, `This offer is contingent upon successful completion of onboarding ` +
+                    `verification. To accept, please use the secure link emailed to you at ${staff.email}` +
+                    `${contract.offer_expiration_date ? ` before ${new Date(contract.offer_expiration_date).toLocaleDateString('en-GB')}` : ''}.`);
+            }
+
+            y = ensureSpace(y, 75) + 20;
             doc.fontSize(10).fillColor(DARK).text('_______________________', 50, y);
-            doc.text('_______________________', 50 + colWidth, y);
             y += 15;
-            doc.fontSize(9).fillColor(GRAY).text('For Tekvwa IT Solutions Ltd', 50, y);
-            doc.text('Employee Signature', 50 + colWidth, y);
+            doc.fillColor(DARK).font('Helvetica-Bold').fontSize(10.5).text(contract.sender_name || 'Authorized Signatory', 50, y);
+            y += 13;
+            if (contract.sender_title) {
+                doc.fillColor(BRAND_BLUE).font('Helvetica-Bold').fontSize(9).text(contract.sender_title, 50, y);
+                y += 12;
+            }
+            doc.fillColor(GRAY).font('Helvetica').fontSize(9).text('For Tekvwa IT Solutions Ltd', 50, y);
 
             drawFooter(doc, `This document is confidential and intended solely for ${staff.name}.`);
 

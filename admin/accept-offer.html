@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="alternate icon" type="image/png" href="/img/tekvwa-icon-192.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Your Offer | Tekvwa IT Solutions</title>
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .offer-card { max-width: 720px; }
+        .offer-section { margin-top: 28px; }
+        .offer-section h3 {
+            font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;
+            color: var(--admin-primary); margin-bottom: 12px;
+            border-bottom: 1px solid #eee; padding-bottom: 8px;
+        }
+        .offer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 24px; }
+        .offer-field label { display: block; font-size: 11px; color: var(--admin-secondary); margin-bottom: 3px; }
+        .offer-field div { font-size: 14px; font-weight: 600; color: var(--admin-dark); }
+        .offer-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; }
+        .offer-row.total { border-top: 1px solid #eee; margin-top: 4px; padding-top: 12px; font-weight: 700; color: var(--admin-primary); }
+        .offer-desc { font-size: 14px; line-height: 1.6; color: var(--admin-dark); white-space: pre-line; }
+        .offer-legal { font-size: 13px; line-height: 1.6; color: var(--admin-secondary); margin-bottom: 10px; }
+        .accept-box { background: #f8f9fa; border-radius: 10px; padding: 24px; margin-top: 28px; }
+        .accept-box .checkbox-label { font-size: 13px; }
+        .expiry-note { font-size: 12px; color: var(--admin-secondary); margin-top: 10px; text-align: center; }
+    </style>
+</head>
+<body class="login-page">
+    <div class="login-card offer-card">
+
+        <div id="loading-state" style="text-align: center; padding: 40px;">
+            <div style="font-size: 24px; margin-bottom: 10px;"><i class="fas fa-spinner fa-spin"></i></div>
+            <p>Loading your offer...</p>
+        </div>
+
+        <div id="invalid-state" style="display: none; text-align: center; padding: 20px;">
+            <div style="font-size: 48px; margin-bottom: 15px; color: #dc2626;"><i class="fas fa-circle-xmark"></i></div>
+            <h3 style="margin-bottom: 10px; color: #dc2626;" id="invalid-title">Invalid or Expired Link</h3>
+            <p style="color: #666;" id="invalid-message">This offer link is invalid. Please contact HR for assistance.</p>
+        </div>
+
+        <div id="already-accepted-state" style="display: none; text-align: center; padding: 20px;">
+            <div style="font-size: 48px; margin-bottom: 15px; color: #059669;"><i class="fas fa-circle-check"></i></div>
+            <h3 style="margin-bottom: 10px; color: #059669;">Already Accepted</h3>
+            <p style="color: #666;" id="already-accepted-message">This offer has already been accepted.</p>
+        </div>
+
+        <div id="success-state" style="display: none; text-align: center; padding: 20px;">
+            <div style="font-size: 48px; margin-bottom: 15px; color: #059669;"><i class="fas fa-circle-check"></i></div>
+            <h3 style="margin-bottom: 10px; color: #059669;">Offer Accepted!</h3>
+            <p style="color: #666;">Welcome to Tekvwa IT Solutions Ltd. HR will be in touch shortly with your next onboarding steps, including your company email account.</p>
+        </div>
+
+        <div id="offer-content" style="display: none;">
+            <div class="login-header" style="text-align: left; margin-bottom: 8px;">
+                <h1 id="offer-heading" style="font-size: 22px;">Your Offer of Employment</h1>
+                <p id="offer-subtitle"></p>
+            </div>
+
+            <div class="offer-section">
+                <h3>Position &amp; Scope</h3>
+                <div class="offer-grid">
+                    <div class="offer-field"><label>Job Title</label><div id="f-job-title"></div></div>
+                    <div class="offer-field"><label>Department</label><div id="f-department"></div></div>
+                    <div class="offer-field"><label>Reporting To</label><div id="f-reporting-to"></div></div>
+                    <div class="offer-field"><label>Employment Status</label><div id="f-employment-status"></div></div>
+                    <div class="offer-field"><label>Start Date</label><div id="f-start-date"></div></div>
+                    <div class="offer-field"><label>Offer Expires</label><div id="f-expires"></div></div>
+                </div>
+                <div style="margin-top: 16px;">
+                    <label style="display:block; font-size: 11px; color: var(--admin-secondary); margin-bottom: 6px;">Key Responsibilities</label>
+                    <div class="offer-desc" id="f-description"></div>
+                </div>
+            </div>
+
+            <div class="offer-section">
+                <h3>Compensation &amp; Benefits</h3>
+                <div class="offer-row"><span>Monthly Basic Salary</span><span id="f-basic"></span></div>
+                <div class="offer-row"><span>Housing Allowance</span><span id="f-housing"></span></div>
+                <div class="offer-row"><span>Transport Allowance</span><span id="f-transport"></span></div>
+                <div class="offer-row"><span>Utility Allowance</span><span id="f-utility"></span></div>
+                <div class="offer-row"><span>Meal / Entertainment Allowance</span><span id="f-meal"></span></div>
+                <div class="offer-row total"><span>Monthly Gross Salary</span><span id="f-gross"></span></div>
+            </div>
+
+            <div class="offer-section">
+                <h3>Leave, Probation &amp; Notice</h3>
+                <p class="offer-legal">Paid Time Off: <strong id="f-pto"></strong> days per calendar year, accrued pro-rata, plus statutory sick leave and public holidays.</p>
+                <p class="offer-legal">Probationary period: <strong id="f-probation"></strong> from your start date.</p>
+                <p class="offer-legal">Resignation notice: <strong id="f-resignation"></strong>. Termination notice: <strong id="f-termination"></strong>.</p>
+            </div>
+
+            <div class="offer-section">
+                <h3>Confidentiality &amp; Intellectual Property</h3>
+                <p class="offer-legal">During and after your employment, you agree to maintain strict confidentiality regarding all proprietary information, software code, customer data, and trade secrets of Tekvwa IT Solutions Ltd. All work products created during your employment remain the exclusive property of the Company.</p>
+            </div>
+
+            <div class="accept-box">
+                <div class="form-group">
+                    <label for="signature-name">Type your full legal name to sign</label>
+                    <input type="text" id="signature-name" class="form-control" placeholder="e.g. Jane Doe" autocomplete="name">
+                </div>
+                <label class="checkbox-label" style="display: flex; align-items: flex-start; gap: 8px; margin-top: 12px;">
+                    <input type="checkbox" id="agree-checkbox" style="margin-top: 3px;">
+                    <span>I have read this offer letter in full and agree to the terms above. I understand this is a legally binding electronic acceptance.</span>
+                </label>
+                <div id="form-error" class="text-danger mb-3" style="display: none; margin-top: 12px;"></div>
+                <button type="button" class="btn btn-primary" id="accept-btn" style="width: 100%; padding: 14px; font-size: 16px; margin-top: 16px;">
+                    Accept Offer
+                </button>
+                <p class="expiry-note" id="expiry-note"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        let currentOffer = null;
+
+        function formatNaira(amount) {
+            const n = Number(amount) || 0;
+            return 'NGN ' + n.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+        function formatDate(d) {
+            if (!d) return '—';
+            return new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+        }
+        function show(id) {
+            ['loading-state', 'invalid-state', 'already-accepted-state', 'success-state', 'offer-content']
+                .forEach(s => document.getElementById(s).style.display = s === id ? 'block' : 'none');
+        }
+
+        async function loadOffer() {
+            if (!token) {
+                document.getElementById('invalid-message').textContent = 'No offer link token was provided.';
+                show('invalid-state');
+                return;
+            }
+            try {
+                const res = await fetch(`/api/contracts/accept/${encodeURIComponent(token)}`);
+                const data = await res.json();
+
+                if (res.status === 404) {
+                    document.getElementById('invalid-message').textContent = data.message || 'This offer link is invalid.';
+                    show('invalid-state');
+                    return;
+                }
+                if (res.status === 410) {
+                    document.getElementById('invalid-title').textContent = 'Offer Expired';
+                    document.getElementById('invalid-message').textContent = data.message || 'This offer link has expired.';
+                    show('invalid-state');
+                    return;
+                }
+                if (data.alreadyAccepted) {
+                    document.getElementById('already-accepted-message').textContent =
+                        `This offer was accepted on ${formatDate(data.data.acceptedAt)}.`;
+                    show('already-accepted-state');
+                    return;
+                }
+                if (!data.success) {
+                    document.getElementById('invalid-message').textContent = data.message || 'Unable to load this offer.';
+                    show('invalid-state');
+                    return;
+                }
+
+                currentOffer = data.data;
+                renderOffer(currentOffer);
+                show('offer-content');
+            } catch (error) {
+                document.getElementById('invalid-message').textContent = 'Unable to connect to server. Please try again.';
+                show('invalid-state');
+            }
+        }
+
+        function renderOffer(o) {
+            document.getElementById('offer-subtitle').textContent = `${o.staff_name} · ${o.job_title}`;
+            document.getElementById('f-job-title').textContent = o.job_title || '—';
+            document.getElementById('f-department').textContent = o.department || '—';
+            document.getElementById('f-reporting-to').textContent = o.reporting_to || 'To be advised';
+            document.getElementById('f-employment-status').textContent = o.employment_status || 'Full-Time';
+            document.getElementById('f-start-date').textContent = o.start_date ? formatDate(o.start_date) : 'To be confirmed';
+            document.getElementById('f-expires').textContent = o.offer_expiration_date ? formatDate(o.offer_expiration_date) : '—';
+            document.getElementById('f-description').textContent = o.job_description || 'To be discussed with your manager.';
+
+            document.getElementById('f-basic').textContent = formatNaira(o.basic_salary);
+            document.getElementById('f-housing').textContent = formatNaira(o.housing_allowance);
+            document.getElementById('f-transport').textContent = formatNaira(o.transport_allowance);
+            document.getElementById('f-utility').textContent = formatNaira(o.utility_allowance);
+            document.getElementById('f-meal').textContent = formatNaira(o.meal_allowance);
+            document.getElementById('f-gross').textContent = formatNaira(o.gross_salary);
+
+            document.getElementById('f-pto').textContent = o.pto_days || 15;
+            document.getElementById('f-probation').textContent = o.probation_period || '3 months';
+            document.getElementById('f-resignation').textContent = o.resignation_notice || '2 weeks';
+            document.getElementById('f-termination').textContent = o.termination_notice || '2 weeks';
+
+            document.getElementById('expiry-note').textContent = o.offer_expiration_date
+                ? `This offer is open until ${formatDate(o.offer_expiration_date)}.`
+                : '';
+        }
+
+        document.getElementById('accept-btn').addEventListener('click', async () => {
+            const btn = document.getElementById('accept-btn');
+            const errorDiv = document.getElementById('form-error');
+            const signatureName = document.getElementById('signature-name').value.trim();
+            const agreed = document.getElementById('agree-checkbox').checked;
+
+            errorDiv.style.display = 'none';
+            if (!signatureName) {
+                errorDiv.textContent = 'Please type your full legal name.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            if (!agreed) {
+                errorDiv.textContent = 'Please confirm you have read and agree to the offer terms.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Accepting...';
+
+            try {
+                const res = await fetch(`/api/contracts/accept/${encodeURIComponent(token)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ signatureName })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    show('success-state');
+                } else {
+                    errorDiv.textContent = data.message || (data.errors && data.errors[0] && data.errors[0].msg) || 'Failed to accept offer. Please try again.';
+                    errorDiv.style.display = 'block';
+                    btn.disabled = false;
+                    btn.textContent = 'Accept Offer';
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Unable to connect to server. Please try again.';
+                errorDiv.style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = 'Accept Offer';
+            }
+        });
+
+        loadOffer();
+    </script>
+</body>
+</html>

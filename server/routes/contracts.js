@@ -6,13 +6,17 @@
 
 const express = require('express');
 const router = express.Router();
+const crypto = require('crypto');
 const { body, validationResult } = require('express-validator');
 const { authMiddleware, hrOrAdmin } = require('../middleware/auth');
+const { contractAcceptLimiter } = require('../middleware/rateLimiter');
 const db = require('../config/database');
 const Staff = require('../models/Staff');
 const AuditService = require('../services/auditService');
 const { generateContractPDF } = require('../services/pdfService');
 const { sendContractEmail } = require('../services/emailService');
+
+const EMPLOYMENT_STATUSES = ['Full-Time', 'Part-Time', 'Contract'];
 
 const canAccessStaffContracts = (req, staffId) => {
     return req.user.id === staffId || req.user.role === 'admin' || req.user.role === 'hr';
@@ -76,12 +80,23 @@ router.put('/templates/:department', authMiddleware, hrOrAdmin, [
 
 /**
  * POST /api/contracts/staff/:id
- * Generate an employment contract for a staff member, using their current
- * salary structure as a snapshot, and email it to them as a PDF.
+ * Generate a full employment offer letter for a staff member and email it
+ * with a secure accept link. Department, salary, and allowances default to
+ * the staff record / Payroll but are all overridable here, since an offer's
+ * terms are proposed at hire time and may not match what's saved yet - a
+ * candidate isn't fully in Payroll until they've accepted.
  */
 router.post('/staff/:id', authMiddleware, hrOrAdmin, [
     body('jobTitle').trim().notEmpty().withMessage('Job title is required'),
-    body('startDate').optional().isISO8601()
+    body('startDate').optional({ checkFalsy: true }).isISO8601(),
+    body('offerExpirationDate').optional({ checkFalsy: true }).isISO8601(),
+    body('employmentStatus').optional({ checkFalsy: true }).isIn(EMPLOYMENT_STATUSES),
+    body('basicSalary').optional({ checkFalsy: true }).isFloat({ min: 0 }),
+    body('housingAllowance').optional({ checkFalsy: true }).isFloat({ min: 0 }),
+    body('transportAllowance').optional({ checkFalsy: true }).isFloat({ min: 0 }),
+    body('utilityAllowance').optional({ checkFalsy: true }).isFloat({ min: 0 }),
+    body('mealAllowance').optional({ checkFalsy: true }).isFloat({ min: 0 }),
+    body('ptoDays').optional({ checkFalsy: true }).isInt({ min: 0 })
 ], async (req, res) => {
     try {
         const errors = validationResult(req);
@@ -93,37 +108,58 @@ router.post('/staff/:id', authMiddleware, hrOrAdmin, [
         if (!staff) {
             return res.status(404).json({ success: false, message: 'Staff member not found' });
         }
-        const salary = await Staff.getSalaryInfo(req.params.id);
-        if (!salary || !salary.base_salary) {
-            return res.status(400).json({ success: false, message: 'This staff member has no salary on file yet - set it on the Payroll page first' });
+        const payrollSalary = await Staff.getSalaryInfo(req.params.id);
+
+        const {
+            jobTitle, jobDescription, startDate, sendEmail: shouldEmail,
+            department, reportingTo, employmentStatus, ptoDays,
+            probationPeriod, resignationNotice, terminationNotice,
+            offerExpirationDate, senderName, senderTitle,
+            basicSalary, housingAllowance, transportAllowance, utilityAllowance, mealAllowance
+        } = req.body;
+
+        const basic = basicSalary != null && basicSalary !== '' ? parseFloat(basicSalary) : (parseFloat(payrollSalary?.base_salary) || 0);
+        const housing = housingAllowance != null && housingAllowance !== '' ? parseFloat(housingAllowance) : (parseFloat(payrollSalary?.housing_allowance) || 0);
+        const transport = transportAllowance != null && transportAllowance !== '' ? parseFloat(transportAllowance) : (parseFloat(payrollSalary?.transport_allowance) || 0);
+        const utility = utilityAllowance != null && utilityAllowance !== '' ? parseFloat(utilityAllowance) : (parseFloat(payrollSalary?.utility_allowance) || 0);
+        const meal = mealAllowance != null && mealAllowance !== '' ? parseFloat(mealAllowance) : (parseFloat(payrollSalary?.meal_allowance) || 0);
+        const gross = basic + housing + transport + utility + meal;
+
+        if (basic <= 0) {
+            return res.status(400).json({ success: false, message: 'Enter a basic salary for this offer, or set one on the Payroll page first' });
         }
 
-        const { jobTitle, jobDescription, startDate, sendEmail: shouldEmail } = req.body;
-        const basic = parseFloat(salary.base_salary) || 0;
-        const housing = parseFloat(salary.housing_allowance) || 0;
-        const transport = parseFloat(salary.transport_allowance) || 0;
-        const utility = parseFloat(salary.utility_allowance) || 0;
-        const meal = parseFloat(salary.meal_allowance) || 0;
-        const gross = basic + housing + transport + utility + meal;
+        const rawToken = crypto.randomBytes(32).toString('hex');
+        const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+        const tokenExpiresAt = offerExpirationDate
+            ? new Date(offerExpirationDate)
+            : new Date(Date.now() + 14 * 24 * 60 * 60 * 1000); // default 14-day offer window
 
         const result = await db.query(
             `INSERT INTO employee_contracts (
                 staff_id, department, job_title, job_description, start_date,
                 basic_salary, housing_allowance, transport_allowance, utility_allowance,
-                meal_allowance, gross_salary, currency, generated_by
-            ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+                meal_allowance, gross_salary, currency, generated_by,
+                reporting_to, employment_status, pto_days, probation_period,
+                resignation_notice, termination_notice, offer_expiration_date,
+                sender_name, sender_title, acceptance_token_hash, acceptance_token_expires_at
+            ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24)
             RETURNING *`,
-            [req.params.id, staff.department, jobTitle, jobDescription || null, startDate || null,
-                basic, housing, transport, utility, meal, gross, salary.salary_currency || 'NGN', req.user.id]
+            [req.params.id, department || staff.department, jobTitle, jobDescription || null, startDate || null,
+                basic, housing, transport, utility, meal, gross, payrollSalary?.salary_currency || 'NGN', req.user.id,
+                reportingTo || null, employmentStatus || 'Full-Time', ptoDays || null, probationPeriod || null,
+                resignationNotice || null, terminationNotice || null, offerExpirationDate || null,
+                senderName || req.user.name || null, senderTitle || null, tokenHash, tokenExpiresAt]
         );
         const contract = result.rows[0];
 
+        const acceptUrl = `${process.env.SITE_URL || 'http://localhost:5500'}/admin/accept-offer.html?token=${rawToken}`;
         const pdfBuffer = await generateContractPDF(contract, staff);
 
         let emailed = false;
         if (shouldEmail !== false) {
             try {
-                await sendContractEmail(staff, jobTitle, pdfBuffer);
+                await sendContractEmail(staff, jobTitle, pdfBuffer, acceptUrl, contract);
                 await db.query('UPDATE employee_contracts SET emailed_at = CURRENT_TIMESTAMP WHERE id = $1', [contract.id]);
                 emailed = true;
             } catch (emailError) {
@@ -144,6 +180,96 @@ router.post('/staff/:id', authMiddleware, hrOrAdmin, [
     } catch (error) {
         console.error('Generate contract error:', error);
         res.status(500).json({ success: false, message: 'Failed to generate contract' });
+    }
+});
+
+/**
+ * GET /api/contracts/accept/:token
+ * Public (unauthenticated) - a candidate follows the emailed link to review
+ * their offer before accepting. Token is looked up by hash, never stored
+ * raw, same pattern as password-reset tokens. Returns just enough to render
+ * the offer; salary fields intentionally included since the candidate is
+ * the one person for whom that isn't sensitive.
+ */
+router.get('/accept/:token', contractAcceptLimiter, async (req, res) => {
+    try {
+        const tokenHash = crypto.createHash('sha256').update(req.params.token).digest('hex');
+        const result = await db.query(
+            `SELECT ec.*, s.name AS staff_name, s.email AS staff_email
+             FROM employee_contracts ec
+             JOIN staff s ON s.id = ec.staff_id
+             WHERE ec.acceptance_token_hash = $1`,
+            [tokenHash]
+        );
+        const contract = result.rows[0];
+        if (!contract) {
+            return res.status(404).json({ success: false, message: 'This offer link is invalid.' });
+        }
+        if (contract.accepted_at) {
+            return res.status(200).json({ success: true, alreadyAccepted: true, data: { acceptedAt: contract.accepted_at, staffName: contract.staff_name } });
+        }
+        if (contract.acceptance_token_expires_at && new Date(contract.acceptance_token_expires_at) < new Date()) {
+            return res.status(410).json({ success: false, message: 'This offer link has expired. Please contact HR for a new offer.' });
+        }
+
+        res.json({ success: true, data: contract });
+    } catch (error) {
+        console.error('Get offer for acceptance error:', error);
+        res.status(500).json({ success: false, message: 'Failed to load offer' });
+    }
+});
+
+/**
+ * POST /api/contracts/accept/:token
+ * Public (unauthenticated) - records the candidate's electronic acceptance:
+ * typed full name, timestamp, and IP, then auto-marks the staff record's
+ * offer as accepted so Workspace provisioning unlocks without an admin
+ * having to manually flip the toggle.
+ */
+router.post('/accept/:token', contractAcceptLimiter, [
+    body('signatureName').trim().notEmpty().withMessage('Please type your full name to accept')
+], async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ success: false, errors: errors.array() });
+        }
+
+        const tokenHash = crypto.createHash('sha256').update(req.params.token).digest('hex');
+        const result = await db.query('SELECT * FROM employee_contracts WHERE acceptance_token_hash = $1', [tokenHash]);
+        const contract = result.rows[0];
+        if (!contract) {
+            return res.status(404).json({ success: false, message: 'This offer link is invalid.' });
+        }
+        if (contract.accepted_at) {
+            return res.status(409).json({ success: false, message: 'This offer has already been accepted.' });
+        }
+        if (contract.acceptance_token_expires_at && new Date(contract.acceptance_token_expires_at) < new Date()) {
+            return res.status(410).json({ success: false, message: 'This offer link has expired. Please contact HR for a new offer.' });
+        }
+
+        const updated = await db.query(
+            `UPDATE employee_contracts
+             SET accepted_at = CURRENT_TIMESTAMP, accepted_ip = $1, accepted_signature_name = $2
+             WHERE id = $3 RETURNING *`,
+            [req.ip, req.body.signatureName.trim(), contract.id]
+        );
+
+        await Staff.update(contract.staff_id, { offerAcceptedAt: new Date().toISOString() });
+
+        await AuditService.log({
+            staffId: contract.staff_id,
+            action: 'offer_accepted',
+            entityType: 'employee_contract',
+            entityId: contract.id,
+            details: { signatureName: req.body.signatureName.trim() },
+            ipAddress: req.ip
+        });
+
+        res.json({ success: true, data: updated.rows[0] });
+    } catch (error) {
+        console.error('Accept offer error:', error);
+        res.status(500).json({ success: false, message: 'Failed to record acceptance' });
     }
 });
 

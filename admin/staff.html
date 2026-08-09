@@ -442,38 +442,127 @@
 
     <!-- Generate Contract Modal -->
     <div class="modal-overlay" id="contract-modal">
-        <div class="modal" style="max-width: 480px;">
+        <div class="modal" style="max-width: 680px;">
             <div class="modal-header">
-                <h3>Generate Employment Contract</h3>
+                <h3>Generate Employment Offer Letter</h3>
                 <button class="modal-close" onclick="document.getElementById('contract-modal').classList.remove('active')">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <div class="modal-body">
-                <p class="text-muted mb-3">Generating a contract for <strong id="contract-staff-name"></strong></p>
+                <p class="text-muted mb-3">Generating an offer for <strong id="contract-staff-name"></strong>. The candidate accepts electronically via a secure link - nothing to print or scan.</p>
                 <input type="hidden" id="contract-staff-id">
-                <div class="form-group">
-                    <label for="contract-job-title">Job Title *</label>
-                    <input type="text" id="contract-job-title" class="form-control" placeholder="e.g. Software Developer">
+
+                <label class="text-muted" style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Position</label>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="contract-job-title">Job Title *</label>
+                        <input type="text" id="contract-job-title" class="form-control" placeholder="e.g. Software Developer">
+                    </div>
+                    <div class="form-group">
+                        <label for="contract-department">Department</label>
+                        <input type="text" id="contract-department" class="form-control" placeholder="e.g. Development">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="contract-reporting-to">Reporting To</label>
+                        <input type="text" id="contract-reporting-to" class="form-control" placeholder="e.g. Efe Obukohwo, CTO">
+                    </div>
+                    <div class="form-group">
+                        <label for="contract-employment-status">Employment Status</label>
+                        <select id="contract-employment-status" class="form-control">
+                            <option value="Full-Time">Full-Time</option>
+                            <option value="Part-Time">Part-Time</option>
+                            <option value="Contract">Contract</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="contract-start-date">Start Date</label>
+                        <input type="date" id="contract-start-date" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="contract-expiration-date">Offer Expires</label>
+                        <input type="date" id="contract-expiration-date" class="form-control">
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label for="contract-job-description">Job Description &amp; Responsibilities</label>
-                    <textarea id="contract-job-description" class="form-control" rows="4"></textarea>
+                    <label for="contract-job-description">Key Responsibilities</label>
+                    <textarea id="contract-job-description" class="form-control" rows="3"></textarea>
                 </div>
-                <div class="form-group">
-                    <label for="contract-start-date">Start Date</label>
-                    <input type="date" id="contract-start-date" class="form-control">
+
+                <label class="text-muted" style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Compensation (prefilled from Payroll if set - editable for this offer)</label>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="contract-basic-salary">Basic Salary (Monthly, NGN) *</label>
+                        <input type="number" id="contract-basic-salary" class="form-control" min="0" step="1000">
+                    </div>
+                    <div class="form-group">
+                        <label for="contract-housing">Housing Allowance</label>
+                        <input type="number" id="contract-housing" class="form-control" min="0" step="1000">
+                    </div>
                 </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="contract-transport">Transport Allowance</label>
+                        <input type="number" id="contract-transport" class="form-control" min="0" step="1000">
+                    </div>
+                    <div class="form-group">
+                        <label for="contract-utility">Utility Allowance</label>
+                        <input type="number" id="contract-utility" class="form-control" min="0" step="1000">
+                    </div>
+                </div>
+                <div class="form-group" style="max-width: calc(50% - 8px);">
+                    <label for="contract-meal">Meal / Entertainment Allowance</label>
+                    <input type="number" id="contract-meal" class="form-control" min="0" step="1000">
+                </div>
+
+                <label class="text-muted" style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Leave &amp; Notice</label>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="contract-pto-days">Annual PTO Days</label>
+                        <input type="number" id="contract-pto-days" class="form-control" min="0" value="15">
+                    </div>
+                    <div class="form-group">
+                        <label for="contract-probation">Probation Period</label>
+                        <input type="text" id="contract-probation" class="form-control" value="3 months">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="contract-resignation-notice">Resignation Notice</label>
+                        <input type="text" id="contract-resignation-notice" class="form-control" value="2 weeks">
+                    </div>
+                    <div class="form-group">
+                        <label for="contract-termination-notice">Termination Notice</label>
+                        <input type="text" id="contract-termination-notice" class="form-control" value="2 weeks">
+                    </div>
+                </div>
+
+                <label class="text-muted" style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Signed By</label>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="contract-sender-name">Name</label>
+                        <input type="text" id="contract-sender-name" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="contract-sender-title">Title</label>
+                        <input type="text" id="contract-sender-title" class="form-control" placeholder="e.g. HR Manager">
+                    </div>
+                </div>
+
                 <label class="checkbox-label">
                     <input type="checkbox" id="contract-send-email" checked>
-                    <span>Email the contract PDF to this employee now</span>
+                    <span>Email the offer letter and accept link to this candidate now</span>
                 </label>
                 <div id="contract-error" class="alert alert-danger" style="display: none; margin-top: 12px;"></div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="document.getElementById('contract-modal').classList.remove('active')">Cancel</button>
                 <button class="btn btn-primary" id="contract-generate-btn">
-                    <i class="fas fa-file-signature"></i> Generate Contract
+                    <i class="fas fa-file-signature"></i> Generate Offer Letter
                 </button>
             </div>
         </div>
@@ -1048,7 +1137,22 @@
                 document.getElementById('contract-staff-name').textContent = staffName;
                 document.getElementById('contract-job-title').value = '';
                 document.getElementById('contract-job-description').value = '';
+                document.getElementById('contract-department').value = department || '';
+                document.getElementById('contract-reporting-to').value = '';
+                document.getElementById('contract-employment-status').value = 'Full-Time';
                 document.getElementById('contract-start-date').value = new Date().toISOString().split('T')[0];
+                document.getElementById('contract-expiration-date').value = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                document.getElementById('contract-basic-salary').value = '';
+                document.getElementById('contract-housing').value = '';
+                document.getElementById('contract-transport').value = '';
+                document.getElementById('contract-utility').value = '';
+                document.getElementById('contract-meal').value = '';
+                document.getElementById('contract-pto-days').value = 15;
+                document.getElementById('contract-probation').value = '3 months';
+                document.getElementById('contract-resignation-notice').value = '2 weeks';
+                document.getElementById('contract-termination-notice').value = '2 weeks';
+                document.getElementById('contract-sender-name').value = AdminApp.getCurrentUser()?.name || '';
+                document.getElementById('contract-sender-title').value = '';
                 document.getElementById('contract-send-email').checked = true;
                 document.getElementById('contract-error').style.display = 'none';
 
@@ -1066,6 +1170,21 @@
                     } catch (e) { /* prefill is a convenience, not required */ }
                 }
 
+                // Prefill compensation from Payroll, if already set - still fully editable for this offer
+                try {
+                    const salaryRes = await AdminApp.apiRequest(`/admin/staff/${staffId}/salary`);
+                    if (salaryRes && salaryRes.success && salaryRes.data) {
+                        const s = salaryRes.data;
+                        if (parseFloat(s.base_salary) > 0) {
+                            document.getElementById('contract-basic-salary').value = s.base_salary;
+                            document.getElementById('contract-housing').value = s.housing_allowance || 0;
+                            document.getElementById('contract-transport').value = s.transport_allowance || 0;
+                            document.getElementById('contract-utility').value = s.utility_allowance || 0;
+                            document.getElementById('contract-meal').value = s.meal_allowance || 0;
+                        }
+                    }
+                } catch (e) { /* prefill is a convenience, not required */ }
+
                 document.getElementById('contract-modal').classList.add('active');
             },
 
@@ -1073,13 +1192,33 @@
                 const staffId = document.getElementById('contract-staff-id').value;
                 const jobTitle = document.getElementById('contract-job-title').value.trim();
                 const jobDescription = document.getElementById('contract-job-description').value.trim();
+                const department = document.getElementById('contract-department').value.trim();
+                const reportingTo = document.getElementById('contract-reporting-to').value.trim();
+                const employmentStatus = document.getElementById('contract-employment-status').value;
                 const startDate = document.getElementById('contract-start-date').value;
+                const offerExpirationDate = document.getElementById('contract-expiration-date').value;
+                const basicSalary = document.getElementById('contract-basic-salary').value;
+                const housingAllowance = document.getElementById('contract-housing').value;
+                const transportAllowance = document.getElementById('contract-transport').value;
+                const utilityAllowance = document.getElementById('contract-utility').value;
+                const mealAllowance = document.getElementById('contract-meal').value;
+                const ptoDays = document.getElementById('contract-pto-days').value;
+                const probationPeriod = document.getElementById('contract-probation').value.trim();
+                const resignationNotice = document.getElementById('contract-resignation-notice').value.trim();
+                const terminationNotice = document.getElementById('contract-termination-notice').value.trim();
+                const senderName = document.getElementById('contract-sender-name').value.trim();
+                const senderTitle = document.getElementById('contract-sender-title').value.trim();
                 const sendEmailFlag = document.getElementById('contract-send-email').checked;
                 const errorDiv = document.getElementById('contract-error');
                 const btn = document.getElementById('contract-generate-btn');
 
                 if (!jobTitle) {
                     errorDiv.textContent = 'Job title is required';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+                if (!basicSalary || parseFloat(basicSalary) <= 0) {
+                    errorDiv.textContent = 'Enter a basic salary for this offer';
                     errorDiv.style.display = 'block';
                     return;
                 }
@@ -1090,18 +1229,24 @@
                 try {
                     const response = await AdminApp.apiRequest(`/contracts/staff/${staffId}`, {
                         method: 'POST',
-                        body: JSON.stringify({ jobTitle, jobDescription, startDate, sendEmail: sendEmailFlag })
+                        body: JSON.stringify({
+                            jobTitle, jobDescription, department, reportingTo, employmentStatus,
+                            startDate, offerExpirationDate, basicSalary, housingAllowance,
+                            transportAllowance, utilityAllowance, mealAllowance, ptoDays,
+                            probationPeriod, resignationNotice, terminationNotice,
+                            senderName, senderTitle, sendEmail: sendEmailFlag
+                        })
                     });
 
                     if (response.success) {
                         document.getElementById('contract-modal').classList.remove('active');
                         AdminApp.showNotification(
-                            response.emailed ? 'Contract generated and emailed' : 'Contract generated (email not sent)',
+                            response.emailed ? 'Offer letter generated and emailed' : 'Offer letter generated (email not sent)',
                             'success'
                         );
                         await this.downloadContractPdf(response.data.id);
                     } else {
-                        errorDiv.textContent = response.message || 'Failed to generate contract';
+                        errorDiv.textContent = response.message || 'Failed to generate offer letter';
                         errorDiv.style.display = 'block';
                     }
                 } catch (error) {
@@ -1109,7 +1254,7 @@
                     errorDiv.style.display = 'block';
                 } finally {
                     btn.disabled = false;
-                    btn.innerHTML = '<i class="fas fa-file-signature"></i> Generate Contract';
+                    btn.innerHTML = '<i class="fas fa-file-signature"></i> Generate Offer Letter';
                 }
             },
 
