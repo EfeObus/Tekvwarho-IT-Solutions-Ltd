@@ -5,7 +5,7 @@ A comprehensive IT solutions website with integrated admin dashboard, live chat,
 ![License](https://img.shields.io/badge/license-Proprietary-blue)
 ![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14%2B-blue)
-![Version](https://img.shields.io/badge/version-1.5.0-orange)
+![Version](https://img.shields.io/badge/version-1.6.0-orange)
 
 ## Company Information
 
@@ -63,6 +63,8 @@ A comprehensive IT solutions website with integrated admin dashboard, live chat,
 - **Analytics** - Visitor tracking, conversion metrics, and trends
 - **Staff Management** - Add/edit staff, roles, permissions, password resets
 - **Payroll** - Accountant/admin dashboard for monthly salaries (NGN); salary changes are admin-only
+- **Tickets** - Internal helpdesk for IT Support requests and Development tasks/bugs
+- **Handbook** - Employee Handbook and Code of Conduct with per-staff acknowledgment tracking
 - **Settings** - Business hours, notifications, email templates, data export
 - **Audit Logs** - Complete activity tracking and compliance logging
 - **Performance** - Staff performance metrics, scores, and leaderboards
@@ -450,19 +452,19 @@ Bulk CSV/report exports additionally require the **Manager** or **Admin** role t
 
 Selecting a department when adding staff (Staff page → Add Staff) suggests sensible default permissions, which can still be overridden before saving:
 
-| Department | Default role | Messages | Consultations | Chats | Analytics | Employees | Payroll |
-|---|---|---|---|---|---|---|---|
-| Management | Admin | ✓ | ✓ | ✓ | ✓ | | |
-| Customer Service | Staff | ✓ | | ✓ | | | |
-| Sales | Staff | | ✓ | | | | |
-| Development | Staff | | | | ✓ | | |
-| IT Support | Staff | ✓ | | ✓ | | | |
-| Human Resources | HR | | | | | ✓ | |
-| Accounting | Accountant | | | | | | ✓ |
+| Department | Default role | Messages | Consultations | Chats | Analytics | Employees | Payroll | Tickets |
+|---|---|---|---|---|---|---|---|---|
+| Management | Admin | ✓ | ✓ | ✓ | ✓ | | | |
+| Customer Service | Staff | ✓ | | ✓ | | | | |
+| Sales | Staff | | ✓ | | | | | |
+| Development | Staff | | | | ✓ | | | ✓ |
+| IT Support | Staff | ✓ | | ✓ | | | | ✓ |
+| Human Resources | HR | | | | | ✓ | | |
+| Accounting | Accountant | | | | | | ✓ | |
 
 Setting the role to **Manager** for any department adds analytics visibility and export rights on top of that department's base access — the "Lead" tier gets reporting + export, "Regular Staff" doesn't. This mirrors standard least-privilege / separation-of-duties practice: staff get only what their day-to-day work requires, leads get the added oversight that comes with running a team.
 
-Development and IT Support are scoped conservatively because this app is a lead-capture/CRM tool, not a project or ticketing system — Development gets read-only analytics rather than write access to customer records (Development has no legitimate reason to edit customer PII), and IT Support shares Customer Service's inbox access since there's currently no separate support-ticket queue. Building either a sales pipeline view, a dev-facing project tracker, or a distinct support-ticket system would be new feature work beyond adjusting these defaults.
+Development and IT Support are scoped conservatively on customer-facing data — Development gets read-only analytics rather than write access to customer records (no legitimate reason to edit customer PII), and IT Support shares Customer Service's inbox access. Both departments instead get `can_manage_tickets` by default, for the internal Tickets queue (see below). A dedicated sales pipeline view for Sales, or a fuller dev-facing project tracker beyond the ticket queue, would still be new feature work.
 
 ### Payroll & Salary Access
 
@@ -670,6 +672,27 @@ curl -X GET http://localhost:5500/api/messages \
 ---
 
 ## Changelog
+
+### v1.6.0 (August 8, 2026)
+
+#### HR & Payroll, Phase 2
+- Extended salary from a single figure into the standard Nigerian
+  structure: Basic Salary + Housing/Transport/Utility/Meal allowances.
+- Monthly Paystubs: Accountant/admin generates a per-month snapshot PDF
+  (pdfkit) per employee; every staff member sees their own pay history on
+  their profile page. Deductions are entered manually with a note, not
+  auto-calculated - see [Payroll & Salary Access](#payroll--salary-access).
+- Employee Handbook & Code of Conduct: versioned, admin-editable content
+  with per-staff acknowledgment tracking (editing a document resets
+  everyone's acknowledgment, so a real change requires re-reading it) and
+  an HR/admin compliance view of who has and hasn't acknowledged.
+- Contract generator: department-based templates (job title + description,
+  seeded for all 7 departments) prefill a per-employee contract; generating
+  one snapshots the employee's current salary structure into a branded PDF
+  and emails it to them automatically.
+- Internal Tickets system for IT Support and Development: any staff member
+  can submit a request/task, IT Support and Development get queue access
+  by default to triage priority/status/assignment and comment.
 
 ### v1.5.0 (August 8, 2026)
 

@@ -1,6 +1,6 @@
 {
   "name": "tekvwa-it-solutions",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "Tekvwa IT Solutions Ltd - Website with Admin Dashboard",
   "main": "server/index.js",
   "scripts": {
