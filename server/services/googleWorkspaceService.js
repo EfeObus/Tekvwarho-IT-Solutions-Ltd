@@ -61,9 +61,15 @@ function slugifyName(fullName) {
         .replace(/[^a-z\s]/g, '') // drop the combining marks and anything else non-alphabetic
         .trim()
         .split(/\s+/);
+    const rest = cleaned.slice(1);
     return {
         given: cleaned[0] || 'user',
-        family: cleaned.slice(1).join(' ') || 'staff'
+        // familyName (a display field) can contain spaces for multi-word
+        // surnames - familySlug is the same value with spaces stripped,
+        // since it goes straight into an email local-part where a space
+        // would make the address invalid.
+        family: rest.join(' ') || 'staff',
+        familySlug: rest.join('') || 'staff'
     };
 }
 
@@ -97,12 +103,12 @@ async function provisionWorkspaceUser({ fullName, department }) {
 
     const admin = getAdminClient();
     const domain = process.env.GOOGLE_WORKSPACE_DOMAIN;
-    const { given, family } = slugifyName(fullName);
+    const { given, family, familySlug } = slugifyName(fullName);
 
-    let email = `${given}.${family}@${domain}`;
+    let email = `${given}.${familySlug}@${domain}`;
     let attempt = 2;
     while (await userExists(admin, email)) {
-        email = `${given}.${family}${attempt}@${domain}`;
+        email = `${given}.${familySlug}${attempt}@${domain}`;
         attempt++;
         if (attempt > 20) throw new Error('Could not find an available email address after 20 attempts');
     }
