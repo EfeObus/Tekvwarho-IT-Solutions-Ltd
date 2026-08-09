@@ -235,6 +235,8 @@
                     return;
                 }
                 const { staff, autoStatus, tasks, workspaceConfigured } = res.data;
+                this.offerAccepted = !!staff.offerAcceptedAt;
+                this.workspaceConfigured = workspaceConfigured;
 
                 document.getElementById('detail-name').textContent = staff.name;
                 document.getElementById('detail-meta').textContent =
@@ -248,7 +250,11 @@
                 ];
                 document.getElementById('detail-status-pills').innerHTML = pills.map(([label, done]) => `
                     <span class="status-pill ${done ? 'done' : ''}"><i class="fas fa-${done ? 'check' : 'clock'}"></i> ${label}</span>
-                `).join('');
+                `).join('') + `
+                    <span class="status-pill ${this.offerAccepted ? 'done' : ''}" style="cursor:pointer;" onclick="NewHiresPage.toggleOfferAccepted()" title="Click to ${this.offerAccepted ? 'un-mark' : 'mark'} - gates Workspace email provisioning">
+                        <i class="fas fa-${this.offerAccepted ? 'check' : 'hand-pointer'}"></i> Offer Accepted
+                    </span>
+                `;
 
                 const renderGroup = (owner, title) => {
                     const groupTasks = tasks.filter(t => t.owner === owner);
@@ -268,6 +274,13 @@
                 const isEmailTask = t.task_key === 'email_provisioned';
                 const showProvisionBtn = isEmailTask && !isDone && workspaceConfigured;
 
+                let provisionControl = '';
+                if (showProvisionBtn) {
+                    provisionControl = this.offerAccepted
+                        ? `<button class="btn btn-sm btn-primary" onclick="NewHiresPage.provisionEmail()"><i class="fas fa-envelope-circle-check"></i> Create Workspace Account</button>`
+                        : `<button class="btn btn-sm btn-outline" disabled title="Mark Offer Accepted above first"><i class="fas fa-lock"></i> Create Workspace Account</button>`;
+                }
+
                 return `
                     <div class="task-row ${isDone ? 'done' : ''}">
                         <div>
@@ -277,9 +290,21 @@
                             </label>
                             ${isDone && t.completed_by_name ? `<div class="task-completed-note">Done by ${this.escapeHtml(t.completed_by_name)} on ${new Date(t.completed_at).toLocaleDateString()}</div>` : ''}
                         </div>
-                        ${showProvisionBtn ? `<button class="btn btn-sm btn-primary" onclick="NewHiresPage.provisionEmail()"><i class="fas fa-envelope-circle-check"></i> Create Workspace Account</button>` : ''}
+                        ${provisionControl}
                     </div>
                 `;
+            },
+
+            async toggleOfferAccepted() {
+                const res = await AdminApp.apiRequest(`/onboarding/${this.currentStaffId}/offer-accepted`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ accepted: !this.offerAccepted })
+                });
+                if (res && res.success) {
+                    this.loadDetail();
+                } else {
+                    AdminApp.showNotification(res?.message || 'Failed to update offer status', 'error');
+                }
             },
 
             async toggleTask(taskId, checked) {

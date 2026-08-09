@@ -5,7 +5,7 @@ A comprehensive IT solutions website with integrated admin dashboard, live chat,
 ![License](https://img.shields.io/badge/license-Proprietary-blue)
 ![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14%2B-blue)
-![Version](https://img.shields.io/badge/version-1.9.1-orange)
+![Version](https://img.shields.io/badge/version-1.9.2-orange)
 
 ## Company Information
 
@@ -725,6 +725,32 @@ curl -X GET http://localhost:5500/api/messages \
 ---
 
 ## Changelog
+
+### v1.9.2 (August 9, 2026)
+
+#### Contract Flow Consolidation & Offer-Acceptance Gate
+
+The Add Staff modal had its own embedded "Employment Contract & Offer
+Letter" section (job title, start date, send checkbox) that generated
+a contract on hire, entirely separate from the per-row "Generate
+Contract" action used for existing staff on the Staff table - two
+different code paths for the same document, out of sync with each
+other. Removed the embedded copy; hiring now always routes through the
+single per-row action, so there is one implementation to maintain and
+one place to look. The Staff table's Generate Contract button was also
+icon-only and visually identical (same grey square) to Edit, Reset
+Password, Deactivate, and Delete, distinguished only by a hover
+tooltip - genuinely hard to find in the Actions column. Gave it a
+persistent blue tint and a text label so it reads as a distinct action
+at rest, not just on hover.
+
+Separately, new hires were previously provisionable for a
+`@tekvwa.org` Workspace mailbox at any time, even before the offer had
+been sent or accepted - nothing enforced the actual hiring sequence.
+Added `offer_accepted_at` to `staff` and a toggle on the New Hires
+page; `POST /onboarding/:staffId/provision-email` now rejects with 400
+until the offer is marked accepted, and the "Create Workspace Account"
+button renders locked in the UI until then.
 
 ### v1.9.1 (August 9, 2026)
 

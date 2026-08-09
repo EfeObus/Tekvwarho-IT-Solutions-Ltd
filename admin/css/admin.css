@@ -1350,6 +1350,25 @@ select.form-control {
     background: var(--admin-success);
 }
 
+.btn-icon.btn-labeled {
+    width: auto;
+    padding: 0 10px 0 8px;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.btn-icon.btn-contract {
+    background: rgba(0, 102, 204, 0.1);
+    color: var(--admin-primary);
+}
+
+.btn-icon.btn-contract:hover {
+    background: var(--admin-primary);
+    color: white;
+}
+
 /* Form Row */
 .form-row {
     display: grid;

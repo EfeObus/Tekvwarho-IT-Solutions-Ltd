@@ -371,26 +371,9 @@
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <label>Employment Contract &amp; Offer Letter (optional now, can be generated later from the Staff table)</label>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="hire-job-title">Job Title</label>
-                                    <input type="text" id="hire-job-title" class="form-control" placeholder="e.g. Software Developer">
-                                </div>
-                                <div class="form-group">
-                                    <label for="hire-start-date">Start Date</label>
-                                    <input type="date" id="hire-start-date" class="form-control">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="hire-job-description">Job Description &amp; Responsibilities</label>
-                                <textarea id="hire-job-description" class="form-control" rows="3"></textarea>
-                            </div>
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="hire-send-contract" checked>
-                                <span>Generate the contract and email it to this employee now (requires Basic Salary and Job Title above)</span>
-                            </label>
+                        <div class="alert alert-info" style="margin-top: 12px;">
+                            <i class="fas fa-circle-info"></i>
+                            After saving, find this person's row in the Staff table below and click the blue <strong><i class="fas fa-file-signature"></i> Contract</strong> button in the Actions column (far right) to generate and send the employment contract - the same button used for existing staff, so there's a single, consistent way to do it either way.
                         </div>
                     </div>
 
@@ -601,10 +584,7 @@
 
                 // Department change - suggest permissions based on the department preset
                 // (admin can still override any checkbox before saving)
-                document.getElementById('staff-department').addEventListener('change', () => {
-                    this.applyDepartmentPreset();
-                    this.applyContractTemplatePreset();
-                });
+                document.getElementById('staff-department').addEventListener('change', () => this.applyDepartmentPreset());
 
                 // Role change - update permissions for admin/manager/hr/accountant tiers
                 document.getElementById('staff-role').addEventListener('change', (e) => {
@@ -758,8 +738,8 @@
                                 <button class="btn-icon" title="Reset Password" onclick="StaffPage.openResetPassword('${member.id}', '${safeNameJs}')">
                                     <i class="fas fa-key"></i>
                                 </button>
-                                <button class="btn-icon" title="Generate Contract" onclick="StaffPage.openContractModal('${member.id}', '${safeNameJs}', '${this.escapeHtml(member.department || '').replace(/'/g, "\\'")}')">
-                                    <i class="fas fa-file-signature"></i>
+                                <button class="btn-icon btn-labeled btn-contract" title="Generate employment contract PDF for this staff member" onclick="StaffPage.openContractModal('${member.id}', '${safeNameJs}', '${this.escapeHtml(member.department || '').replace(/'/g, "\\'")}')">
+                                    <i class="fas fa-file-signature"></i> Contract
                                 </button>
                                 ${member.is_active 
                                     ? `<button class="btn-icon text-warning" title="Deactivate" onclick="StaffPage.toggleStatus('${member.id}', false)">
@@ -866,8 +846,6 @@
                     document.getElementById('staff-send-setup-link').checked = true;
                     this.toggleSetupLinkMode(true);
                     document.getElementById('hire-extras').style.display = 'block';
-                    document.getElementById('hire-start-date').value = new Date().toISOString().split('T')[0];
-                    document.getElementById('hire-send-contract').checked = true;
                 }
 
                 modal.classList.add('active');
@@ -885,24 +863,6 @@
                 }
             },
 
-            // Prefill job title/description from the department's contract
-            // template - same convenience the per-row "Generate Contract"
-            // action already has.
-            async applyContractTemplatePreset() {
-                const department = document.getElementById('staff-department').value;
-                if (!department || document.getElementById('staff-id').value) return; // edit mode doesn't use this
-                try {
-                    const res = await AdminApp.apiRequest('/contracts/templates');
-                    if (res && res.success) {
-                        const template = res.data.find(t => t.department === department);
-                        if (template) {
-                            document.getElementById('hire-job-title').value = template.job_title || '';
-                            document.getElementById('hire-job-description').value = template.job_description || '';
-                        }
-                    }
-                } catch (e) { /* prefill is a convenience, not required */ }
-            },
-            
             closeModal() {
                 document.getElementById('staff-modal').classList.remove('active');
             },
@@ -1014,53 +974,26 @@
             },
 
             // Runs right after a new staff member is created: sets compensation
-            // if entered, then generates + emails the contract if requested.
-            // Staff creation itself already succeeded by this point, so these
-            // are reported as separate notifications rather than rolled into
-            // one pass/fail - a salary or contract hiccup shouldn't read as
-            // "the hire failed" when the account exists and works fine.
+            // if entered. Contract generation is deliberately NOT done here -
+            // it's always the per-row "Generate Contract" action (same one
+            // used for existing staff), so there's exactly one implementation
+            // instead of two that can drift apart.
             async finishHiring(staffId) {
                 const baseSalary = parseFloat(document.getElementById('hire-basic-salary').value) || 0;
-                const jobTitle = document.getElementById('hire-job-title').value.trim();
+                if (baseSalary <= 0) return;
 
-                let salarySet = false;
-                if (baseSalary > 0) {
-                    const salaryRes = await AdminApp.apiRequest(`/admin/staff/${staffId}/salary`, {
-                        method: 'PUT',
-                        body: JSON.stringify({
-                            baseSalary,
-                            housingAllowance: parseFloat(document.getElementById('hire-housing').value) || 0,
-                            transportAllowance: parseFloat(document.getElementById('hire-transport').value) || 0,
-                            utilityAllowance: parseFloat(document.getElementById('hire-utility').value) || 0,
-                            mealAllowance: parseFloat(document.getElementById('hire-meal').value) || 0
-                        })
-                    });
-                    salarySet = !!(salaryRes && salaryRes.success);
-                    if (!salaryRes || !salaryRes.success) {
-                        AdminApp.showNotification(salaryRes?.message || 'Staff created, but setting compensation failed - set it on the Payroll page', 'error');
-                    }
-                }
-
-                const shouldSendContract = document.getElementById('hire-send-contract').checked;
-                if (shouldSendContract && jobTitle) {
-                    if (!salarySet) {
-                        AdminApp.showNotification('Skipped contract generation - add a Basic Salary above, or generate it later from the Staff table once salary is set', 'warning');
-                        return;
-                    }
-                    const contractRes = await AdminApp.apiRequest(`/contracts/staff/${staffId}`, {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            jobTitle,
-                            jobDescription: document.getElementById('hire-job-description').value.trim(),
-                            startDate: document.getElementById('hire-start-date').value,
-                            sendEmail: true
-                        })
-                    });
-                    if (contractRes && contractRes.success) {
-                        AdminApp.showNotification(contractRes.emailed ? 'Contract generated and emailed to the new hire' : 'Contract generated (email delivery failed - resend from the Staff table)', contractRes.emailed ? 'success' : 'error');
-                    } else {
-                        AdminApp.showNotification(contractRes?.message || 'Staff and compensation saved, but contract generation failed', 'error');
-                    }
+                const salaryRes = await AdminApp.apiRequest(`/admin/staff/${staffId}/salary`, {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        baseSalary,
+                        housingAllowance: parseFloat(document.getElementById('hire-housing').value) || 0,
+                        transportAllowance: parseFloat(document.getElementById('hire-transport').value) || 0,
+                        utilityAllowance: parseFloat(document.getElementById('hire-utility').value) || 0,
+                        mealAllowance: parseFloat(document.getElementById('hire-meal').value) || 0
+                    })
+                });
+                if (!salaryRes || !salaryRes.success) {
+                    AdminApp.showNotification(salaryRes?.message || 'Staff created, but setting compensation failed - set it on the Payroll page', 'error');
                 }
             },
             

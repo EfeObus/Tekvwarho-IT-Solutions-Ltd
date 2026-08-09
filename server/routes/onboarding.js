@@ -87,7 +87,8 @@ router.get('/:staffId', authMiddleware, hasPermission('onboarding'), async (req,
                 staff: {
                     id: staff.id, name: staff.name, email: staff.email, role: staff.role,
                     department: staff.department, hireDate: staff.hire_date,
-                    workspaceEmail: staff.workspace_email, workspaceProvisionedAt: staff.workspace_provisioned_at
+                    workspaceEmail: staff.workspace_email, workspaceProvisionedAt: staff.workspace_provisioned_at,
+                    offerAcceptedAt: staff.offer_accepted_at
                 },
                 autoStatus,
                 tasks: tasksResult.rows,
@@ -136,6 +137,28 @@ router.patch('/tasks/:taskId', authMiddleware, hasPermission('onboarding'), asyn
 });
 
 /**
+ * PATCH /api/onboarding/:staffId/offer-accepted
+ * Mark whether the new hire has confirmed their offer. Gates Workspace
+ * provisioning below - IT previously had no signal at all for this and
+ * could provision the company mailbox before an offer was even sent.
+ */
+router.patch('/:staffId/offer-accepted', authMiddleware, hasPermission('onboarding'), async (req, res) => {
+    try {
+        const { accepted } = req.body;
+        const staff = await Staff.update(req.params.staffId, {
+            offerAcceptedAt: accepted ? new Date().toISOString() : null
+        });
+        if (!staff) {
+            return res.status(404).json({ success: false, message: 'Staff member not found' });
+        }
+        res.json({ success: true, data: { offerAcceptedAt: staff.offer_accepted_at } });
+    } catch (error) {
+        console.error('Update offer-accepted error:', error);
+        res.status(500).json({ success: false, message: 'Failed to update offer status' });
+    }
+});
+
+/**
  * POST /api/onboarding/:staffId/provision-email
  * Creates the @tekvwa.org Google Workspace mailbox via the Admin SDK,
  * emails the new credentials + first-day info to the hire's personal
@@ -155,6 +178,9 @@ router.post('/:staffId/provision-email', authMiddleware, hasPermission('onboardi
         const staff = await Staff.findById(req.params.staffId);
         if (!staff) {
             return res.status(404).json({ success: false, message: 'Staff member not found' });
+        }
+        if (!staff.offer_accepted_at) {
+            return res.status(400).json({ success: false, message: 'Mark the offer as accepted before provisioning the company email account' });
         }
         if (staff.workspace_email) {
             return res.status(400).json({ success: false, message: `Already provisioned: ${staff.workspace_email}` });
