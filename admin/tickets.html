@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="alternate icon" type="image/png" href="/img/tekvwa-icon-192.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Tickets | Tekvwa Admin</title>
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="css/onboarding.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .priority-badge, .category-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        .priority-low { background: #E7F7EE; color: #0F8A4B; }
+        .priority-medium { background: #EAF2FF; color: #0066CC; }
+        .priority-high { background: #FFF3E2; color: #B5680A; }
+        .priority-urgent { background: #FDE7E9; color: #C0243C; }
+        .category-it_support { background: #EEECFC; color: #5B4FCF; }
+        .category-development { background: #E0F7FA; color: #0B7285; }
+        .ticket-comment { padding: 10px 0; border-bottom: 1px solid #F0F2F5; }
+        .ticket-comment:last-child { border-bottom: none; }
+        .ticket-comment .meta { font-size: 12px; color: #8A94A6; margin-bottom: 4px; }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Tekvwa IT Solutions</h2>
+                <span class="subtitle">Admin Dashboard</span>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <span class="nav-section-title">Main</span>
+                    <a href="index.html" class="nav-item">
+                        <i class="fas fa-home"></i> Dashboard
+                    </a>
+                    <a href="messages.html" class="nav-item">
+                        <i class="fas fa-envelope"></i> Messages
+                    </a>
+                    <a href="chats.html" class="nav-item">
+                        <i class="fas fa-comments"></i> Live Chats
+                    </a>
+                    <a href="consultations.html" class="nav-item">
+                        <i class="fas fa-calendar-alt"></i> Consultations
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <span class="nav-section-title">Management</span>
+                    <a href="staff.html" class="nav-item">
+                        <i class="fas fa-users"></i> Staff
+                    </a>
+                    <a href="payroll.html" class="nav-item">
+                        <i class="fas fa-money-check-dollar"></i> Payroll
+                    </a>
+                    <a href="tickets.html" class="nav-item active">
+                        <i class="fas fa-ticket"></i> Tickets
+                    </a>
+                    <a href="analytics.html" class="nav-item">
+                        <i class="fas fa-chart-bar"></i> Analytics
+                    </a>
+                    <a href="performance.html" class="nav-item">
+                        <i class="fas fa-chart-line"></i> Performance
+                    </a>
+                    <a href="audit.html" class="nav-item">
+                        <i class="fas fa-history"></i> Audit Logs
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <span class="nav-section-title">Settings</span>
+                    <a href="handbook.html" class="nav-item">
+                        <i class="fas fa-book"></i> Handbook
+                    </a>
+                    <a href="profile.html" class="nav-item">
+                        <i class="fas fa-user-circle"></i> My Profile
+                    </a>
+                    <a href="settings.html" class="nav-item">
+                        <i class="fas fa-cog"></i> Settings
+                    </a>
+                    <a href="../index.html" class="nav-item">
+                        <i class="fas fa-globe"></i> View Website
+                    </a>
+                    <a href="#" class="nav-item" id="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Header -->
+            <header class="admin-header">
+                <div class="header-left">
+                    <button class="sidebar-toggle" id="sidebar-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title" id="page-title">Tickets</h1>
+                </div>
+                <div class="header-right">
+                    <button class="btn btn-primary" id="new-ticket-btn">
+                        <i class="fas fa-plus"></i> New Ticket
+                    </button>
+                    <div class="user-dropdown" id="user-dropdown">
+                        <div class="user-avatar" id="user-avatar">A</div>
+                        <div class="user-info">
+                            <div class="user-name" id="user-name">Admin</div>
+                            <div class="user-role" id="user-role">Administrator</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <div class="admin-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 id="list-title">My Tickets</h3>
+                        <div class="card-actions" id="queue-filters" style="display: none;">
+                            <select class="form-control" id="filter-category" style="width: auto;">
+                                <option value="">All Categories</option>
+                                <option value="it_support">IT Support</option>
+                                <option value="development">Development</option>
+                            </select>
+                            <select class="form-control" id="filter-status" style="width: auto;">
+                                <option value="">All Statuses</option>
+                                <option value="open">Open</option>
+                                <option value="in_progress">In Progress</option>
+                                <option value="resolved">Resolved</option>
+                                <option value="closed">Closed</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-body" style="padding: 0;">
+                        <div class="table-responsive">
+                            <table class="data-table" id="tickets-table">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Category</th>
+                                        <th>Priority</th>
+                                        <th>Status</th>
+                                        <th id="th-requester" style="display:none;">Requested By</th>
+                                        <th>Assigned To</th>
+                                        <th>Updated</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tickets-tbody">
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted" style="padding: 60px;">Loading tickets...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- New Ticket Modal -->
+    <div class="modal-overlay" id="new-ticket-modal">
+        <div class="modal" style="max-width: 480px;">
+            <div class="modal-header">
+                <h3>Submit a Ticket</h3>
+                <button class="modal-close" onclick="document.getElementById('new-ticket-modal').classList.remove('active')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="new-ticket-category">Category *</label>
+                    <select id="new-ticket-category" class="form-control">
+                        <option value="it_support">IT Support</option>
+                        <option value="development">Development</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="new-ticket-priority">Priority</label>
+                    <select id="new-ticket-priority" class="form-control">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                        <option value="urgent">Urgent</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="new-ticket-title">Title *</label>
+                    <input type="text" id="new-ticket-title" class="form-control" placeholder="Short summary">
+                </div>
+                <div class="form-group">
+                    <label for="new-ticket-description">Description *</label>
+                    <textarea id="new-ticket-description" class="form-control" rows="5" placeholder="What's the issue or task?"></textarea>
+                </div>
+                <div id="new-ticket-error" class="alert alert-danger" style="display: none;"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="document.getElementById('new-ticket-modal').classList.remove('active')">Cancel</button>
+                <button class="btn btn-primary" id="new-ticket-submit-btn">
+                    <i class="fas fa-paper-plane"></i> Submit
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ticket Detail Modal -->
+    <div class="modal-overlay" id="ticket-detail-modal">
+        <div class="modal" style="max-width: 640px;">
+            <div class="modal-header">
+                <h3 id="detail-title">Ticket</h3>
+                <button class="modal-close" onclick="document.getElementById('ticket-detail-modal').classList.remove('active')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div style="display: flex; gap: 8px; margin-bottom: 14px;">
+                    <span id="detail-category" class="category-badge"></span>
+                    <span id="detail-priority" class="priority-badge"></span>
+                    <span id="detail-status" class="status-badge"></span>
+                </div>
+                <p class="text-muted text-sm" id="detail-meta" style="margin-bottom: 14px;"></p>
+                <p id="detail-description" style="white-space: pre-wrap; margin-bottom: 20px;"></p>
+
+                <div id="queue-controls" style="display: none; background: #F5F6FA; padding: 14px; border-radius: 8px; margin-bottom: 20px;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="detail-status-select">Status</label>
+                            <select id="detail-status-select" class="form-control">
+                                <option value="open">Open</option>
+                                <option value="in_progress">In Progress</option>
+                                <option value="resolved">Resolved</option>
+                                <option value="closed">Closed</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="detail-priority-select">Priority</label>
+                            <select id="detail-priority-select" class="form-control">
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn btn-sm btn-primary" id="detail-save-btn">
+                        <i class="fas fa-save"></i> Update Ticket
+                    </button>
+                </div>
+
+                <h4 style="margin-bottom: 8px;">Comments</h4>
+                <div id="detail-comments"></div>
+                <div class="form-group" style="margin-top: 14px;">
+                    <textarea id="detail-comment-input" class="form-control" rows="2" placeholder="Add a comment..."></textarea>
+                    <button class="btn btn-sm btn-outline" id="detail-comment-btn" style="margin-top: 8px;">
+                        <i class="fas fa-comment"></i> Add Comment
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/admin.js"></script>
+    <script>
+        const TicketsPage = {
+            currentUser: null,
+            hasQueueAccess: false,
+            currentTicketId: null,
+
+            categoryLabel(c) { return c === 'it_support' ? 'IT Support' : 'Development'; },
+            statusLabel(s) { return s.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase()); },
+
+            escapeHtml(str) {
+                if (!str) return '';
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            },
+
+            async init() {
+                this.currentUser = AdminApp.getCurrentUser();
+                const perms = this.currentUser?.permissions || {};
+                this.hasQueueAccess = this.currentUser?.role === 'admin' || this.currentUser?.role === 'manager' || !!perms.canManageTickets || !!this.currentUser?.can_manage_tickets;
+
+                if (this.hasQueueAccess) {
+                    document.getElementById('list-title').textContent = 'Ticket Queue';
+                    document.getElementById('queue-filters').style.display = 'flex';
+                    document.getElementById('th-requester').style.display = '';
+                }
+
+                this.bindEvents();
+                await this.load();
+            },
+
+            bindEvents() {
+                document.getElementById('new-ticket-btn').addEventListener('click', () => {
+                    document.getElementById('new-ticket-title').value = '';
+                    document.getElementById('new-ticket-description').value = '';
+                    document.getElementById('new-ticket-error').style.display = 'none';
+                    document.getElementById('new-ticket-modal').classList.add('active');
+                });
+                document.getElementById('new-ticket-submit-btn').addEventListener('click', () => this.submitTicket());
+                document.getElementById('filter-category')?.addEventListener('change', () => this.load());
+                document.getElementById('filter-status')?.addEventListener('change', () => this.load());
+                document.getElementById('detail-save-btn').addEventListener('click', () => this.saveTicketUpdate());
+                document.getElementById('detail-comment-btn').addEventListener('click', () => this.addComment());
+            },
+
+            async load() {
+                const tbody = document.getElementById('tickets-tbody');
+                const params = new URLSearchParams();
+                if (this.hasQueueAccess) {
+                    const cat = document.getElementById('filter-category').value;
+                    const status = document.getElementById('filter-status').value;
+                    if (cat) params.set('category', cat);
+                    if (status) params.set('status', status);
+                }
+                const response = await AdminApp.apiRequest(`/tickets?${params}`);
+                if (!response || !response.success) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Failed to load tickets</td></tr>';
+                    return;
+                }
+                if (!response.data.length) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted" style="padding: 60px;">No tickets ${this.hasQueueAccess ? 'in the queue' : 'submitted yet'}</td></tr>`;
+                    return;
+                }
+                tbody.innerHTML = response.data.map(t => `
+                    <tr style="cursor: pointer;" onclick="TicketsPage.openDetail('${t.id}')">
+                        <td><strong>${this.escapeHtml(t.title)}</strong></td>
+                        <td><span class="category-badge category-${t.category}">${this.categoryLabel(t.category)}</span></td>
+                        <td><span class="priority-badge priority-${t.priority}">${t.priority}</span></td>
+                        <td><span class="status-badge status-${t.status}">${this.statusLabel(t.status)}</span></td>
+                        <td style="display:${this.hasQueueAccess ? '' : 'none'};">${this.escapeHtml(t.requested_by_name) || '-'}</td>
+                        <td>${t.assigned_to_name ? this.escapeHtml(t.assigned_to_name) : '<span class="text-muted">Unassigned</span>'}</td>
+                        <td>${new Date(t.updated_at).toLocaleDateString()}</td>
+                    </tr>
+                `).join('');
+            },
+
+            async submitTicket() {
+                const title = document.getElementById('new-ticket-title').value.trim();
+                const description = document.getElementById('new-ticket-description').value.trim();
+                const category = document.getElementById('new-ticket-category').value;
+                const priority = document.getElementById('new-ticket-priority').value;
+                const errorDiv = document.getElementById('new-ticket-error');
+
+                if (!title || !description) {
+                    errorDiv.textContent = 'Title and description are required';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+
+                const response = await AdminApp.apiRequest('/tickets', {
+                    method: 'POST',
+                    body: JSON.stringify({ title, description, category, priority })
+                });
+
+                if (response && response.success) {
+                    document.getElementById('new-ticket-modal').classList.remove('active');
+                    AdminApp.showNotification('Ticket submitted', 'success');
+                    await this.load();
+                } else {
+                    errorDiv.textContent = response?.message || 'Failed to submit ticket';
+                    errorDiv.style.display = 'block';
+                }
+            },
+
+            async openDetail(id) {
+                const response = await AdminApp.apiRequest(`/tickets/${id}`);
+                if (!response || !response.success) return;
+                const t = response.data;
+                this.currentTicketId = id;
+
+                document.getElementById('detail-title').textContent = t.title;
+                document.getElementById('detail-category').textContent = this.categoryLabel(t.category);
+                document.getElementById('detail-category').className = `category-badge category-${t.category}`;
+                document.getElementById('detail-priority').textContent = t.priority;
+                document.getElementById('detail-priority').className = `priority-badge priority-${t.priority}`;
+                document.getElementById('detail-status').textContent = this.statusLabel(t.status);
+                document.getElementById('detail-status').className = `status-badge status-${t.status}`;
+                document.getElementById('detail-meta').textContent =
+                    `Requested by ${t.requested_by_name || 'Unknown'} on ${new Date(t.created_at).toLocaleDateString()}` +
+                    (t.assigned_to_name ? ` · Assigned to ${t.assigned_to_name}` : '');
+                document.getElementById('detail-description').textContent = t.description;
+
+                document.getElementById('queue-controls').style.display = this.hasQueueAccess ? 'block' : 'none';
+                if (this.hasQueueAccess) {
+                    document.getElementById('detail-status-select').value = t.status;
+                    document.getElementById('detail-priority-select').value = t.priority;
+                }
+
+                const commentsEl = document.getElementById('detail-comments');
+                commentsEl.innerHTML = t.comments.length
+                    ? t.comments.map(c => `
+                        <div class="ticket-comment">
+                            <div class="meta">${this.escapeHtml(c.staff_name) || 'Unknown'} · ${new Date(c.created_at).toLocaleString()}</div>
+                            <div>${this.escapeHtml(c.content)}</div>
+                        </div>
+                    `).join('')
+                    : '<p class="text-muted text-sm">No comments yet</p>';
+
+                document.getElementById('detail-comment-input').value = '';
+                document.getElementById('ticket-detail-modal').classList.add('active');
+            },
+
+            async saveTicketUpdate() {
+                const status = document.getElementById('detail-status-select').value;
+                const priority = document.getElementById('detail-priority-select').value;
+                const response = await AdminApp.apiRequest(`/tickets/${this.currentTicketId}`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ status, priority })
+                });
+                if (response && response.success) {
+                    AdminApp.showNotification('Ticket updated', 'success');
+                    await this.load();
+                    this.openDetail(this.currentTicketId);
+                } else {
+                    AdminApp.showNotification(response?.message || 'Failed to update ticket', 'error');
+                }
+            },
+
+            async addComment() {
+                const content = document.getElementById('detail-comment-input').value.trim();
+                if (!content) return;
+                const response = await AdminApp.apiRequest(`/tickets/${this.currentTicketId}/comments`, {
+                    method: 'POST',
+                    body: JSON.stringify({ content })
+                });
+                if (response && response.success) {
+                    this.openDetail(this.currentTicketId);
+                }
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof AdminApp !== 'undefined') {
+                const authOk = AdminApp.init();
+                if (authOk !== false) {
+                    TicketsPage.init();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
