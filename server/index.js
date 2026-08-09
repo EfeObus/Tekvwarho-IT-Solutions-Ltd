@@ -37,6 +37,8 @@ const documentsRoutes = require('./routes/documents');
 const paystubsRoutes = require('./routes/paystubs');
 const contractsRoutes = require('./routes/contracts');
 const ticketsRoutes = require('./routes/tickets');
+const letterheadRoutes = require('./routes/letterhead');
+const complianceRoutes = require('./routes/compliance');
 
 // Import middleware
 const { securityHeaders, corsOptions, botProtection } = require('./middleware/securityHeaders');
@@ -143,6 +145,8 @@ app.use('/api/documents', documentsRoutes);
 app.use('/api/paystubs', paystubsRoutes);
 app.use('/api/contracts', contractsRoutes);
 app.use('/api/tickets', ticketsRoutes);
+app.use('/api/letterhead', letterheadRoutes);
+app.use('/api/compliance', complianceRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

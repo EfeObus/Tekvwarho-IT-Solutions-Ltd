@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="alternate icon" type="image/png" href="/img/tekvwa-icon-192.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Compliance | Tekvwa Admin</title>
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="css/onboarding.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .compliance-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+        .deadline-row, .vault-row, .notice-card {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 16px; border-bottom: 1px solid #F0F2F5;
+        }
+        .deadline-row:last-child, .vault-row:last-child { border-bottom: none; }
+        .deadline-row.overdue { background: #FDE7E9; }
+        .deadline-row.completed { opacity: 0.5; }
+        .deadline-due { font-size: 12px; color: #8A94A6; }
+        .deadline-due.overdue { color: #C0243C; font-weight: 700; }
+        .notice-card { flex-direction: column; align-items: flex-start; padding: 18px 20px; border: 1px solid #E2E8F0; border-radius: 10px; margin-bottom: 12px; }
+        .notice-card h4 { margin: 0 0 6px; }
+        .notice-meta { font-size: 12px; color: #8A94A6; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Tekvwa IT Solutions</h2>
+                <span class="subtitle">Admin Dashboard</span>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <span class="nav-section-title">Main</span>
+                    <a href="index.html" class="nav-item">
+                        <i class="fas fa-home"></i> Dashboard
+                    </a>
+                    <a href="messages.html" class="nav-item">
+                        <i class="fas fa-envelope"></i> Messages
+                    </a>
+                    <a href="chats.html" class="nav-item">
+                        <i class="fas fa-comments"></i> Live Chats
+                    </a>
+                    <a href="consultations.html" class="nav-item">
+                        <i class="fas fa-calendar-alt"></i> Consultations
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <span class="nav-section-title">Management</span>
+                    <a href="staff.html" class="nav-item">
+                        <i class="fas fa-users"></i> Staff
+                    </a>
+                    <a href="payroll.html" class="nav-item">
+                        <i class="fas fa-money-check-dollar"></i> Payroll
+                    </a>
+                    <a href="tickets.html" class="nav-item">
+                        <i class="fas fa-ticket"></i> Tickets
+                    </a>
+                    <a href="analytics.html" class="nav-item">
+                        <i class="fas fa-chart-bar"></i> Analytics
+                    </a>
+                    <a href="performance.html" class="nav-item">
+                        <i class="fas fa-chart-line"></i> Performance
+                    </a>
+                    <a href="audit.html" class="nav-item">
+                        <i class="fas fa-history"></i> Audit Logs
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <span class="nav-section-title">Admin</span>
+                    <a href="letterhead.html" class="nav-item">
+                        <i class="fas fa-file-signature"></i> Letterhead
+                    </a>
+                    <a href="compliance.html" class="nav-item active">
+                        <i class="fas fa-shield-halved"></i> Compliance
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <span class="nav-section-title">Settings</span>
+                    <a href="handbook.html" class="nav-item">
+                        <i class="fas fa-book"></i> Handbook
+                    </a>
+                    <a href="profile.html" class="nav-item">
+                        <i class="fas fa-user-circle"></i> My Profile
+                    </a>
+                    <a href="settings.html" class="nav-item">
+                        <i class="fas fa-cog"></i> Settings
+                    </a>
+                    <a href="../index.html" class="nav-item">
+                        <i class="fas fa-globe"></i> View Website
+                    </a>
+                    <a href="#" class="nav-item" id="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Header -->
+            <header class="admin-header">
+                <div class="header-left">
+                    <button class="sidebar-toggle" id="sidebar-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Compliance</h1>
+                </div>
+                <div class="header-right">
+                    <div class="user-dropdown" id="user-dropdown">
+                        <div class="user-avatar" id="user-avatar">A</div>
+                        <div class="user-info">
+                            <div class="user-name" id="user-name">Admin</div>
+                            <div class="user-role" id="user-role">Administrator</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <div class="admin-content">
+                <div class="compliance-tabs" id="compliance-tabs">
+                    <button class="btn btn-sm btn-primary" id="tab-deadlines" style="display:none;">Filing Deadlines</button>
+                    <button class="btn btn-sm btn-outline" id="tab-vault" style="display:none;">Document Vault</button>
+                    <button class="btn btn-sm btn-outline" id="tab-notices">Company Notices</button>
+                </div>
+
+                <!-- Deadlines Panel -->
+                <div id="panel-deadlines" style="display: none;">
+                    <div class="card" style="margin-bottom: 20px;">
+                        <div class="card-header">
+                            <h3>Add a Deadline</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="dl-title">Title *</label>
+                                    <input type="text" id="dl-title" class="form-control" placeholder="e.g. CAC Annual Return">
+                                </div>
+                                <div class="form-group">
+                                    <label for="dl-due">Due Date *</label>
+                                    <input type="date" id="dl-due" class="form-control">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="dl-recurring">Recurs</label>
+                                    <select id="dl-recurring" class="form-control">
+                                        <option value="none">One-time</option>
+                                        <option value="monthly">Monthly</option>
+                                        <option value="yearly">Yearly</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="dl-description">Notes</label>
+                                    <input type="text" id="dl-description" class="form-control" placeholder="Optional detail">
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" id="dl-add-btn"><i class="fas fa-plus"></i> Add Deadline</button>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><h3>Upcoming &amp; Past Deadlines</h3></div>
+                        <div class="card-body" style="padding: 0;" id="deadlines-list">Loading...</div>
+                    </div>
+                </div>
+
+                <!-- Vault Panel -->
+                <div id="panel-vault" style="display: none;">
+                    <div class="card" style="margin-bottom: 20px;">
+                        <div class="card-header"><h3>Upload a Document</h3></div>
+                        <div class="card-body">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="vault-title">Title *</label>
+                                    <input type="text" id="vault-title" class="form-control" placeholder="e.g. Certificate of Incorporation">
+                                </div>
+                                <div class="form-group">
+                                    <label for="vault-category">Category</label>
+                                    <select id="vault-category" class="form-control">
+                                        <option value="incorporation">Incorporation</option>
+                                        <option value="license">License</option>
+                                        <option value="permit">Permit</option>
+                                        <option value="tax">Tax</option>
+                                        <option value="other" selected>Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="vault-expiry">Expiry Date (if applicable)</label>
+                                    <input type="date" id="vault-expiry" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label for="vault-file">File *</label>
+                                    <input type="file" id="vault-file" class="form-control">
+                                </div>
+                            </div>
+                            <div id="vault-error" class="alert alert-danger" style="display:none;"></div>
+                            <button class="btn btn-primary" id="vault-upload-btn"><i class="fas fa-upload"></i> Upload</button>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><h3>Stored Documents</h3></div>
+                        <div class="card-body" style="padding: 0;" id="vault-list">Loading...</div>
+                    </div>
+                </div>
+
+                <!-- Notices Panel -->
+                <div id="panel-notices">
+                    <div class="card" style="margin-bottom: 20px;" id="notice-form-card">
+                        <div class="card-header"><h3>Post a Company Notice</h3></div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="notice-title">Title *</label>
+                                <input type="text" id="notice-title" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="notice-content">Message *</label>
+                                <textarea id="notice-content" class="form-control" rows="4"></textarea>
+                            </div>
+                            <button class="btn btn-primary" id="notice-post-btn"><i class="fas fa-bullhorn"></i> Post Notice</button>
+                        </div>
+                    </div>
+                    <div id="notices-list">Loading...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/admin.js"></script>
+    <script>
+        const CompliancePage = {
+            isAdmin: false,
+
+            escapeHtml(str) {
+                if (!str) return '';
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            },
+
+            init() {
+                const user = AdminApp.getCurrentUser();
+                this.isAdmin = user?.role === 'admin';
+
+                if (this.isAdmin) {
+                    document.getElementById('tab-deadlines').style.display = 'inline-flex';
+                    document.getElementById('tab-vault').style.display = 'inline-flex';
+                    document.getElementById('tab-deadlines').addEventListener('click', () => this.switchTab('deadlines'));
+                    document.getElementById('tab-vault').addEventListener('click', () => this.switchTab('vault'));
+                    document.getElementById('dl-add-btn').addEventListener('click', () => this.addDeadline());
+                    document.getElementById('vault-upload-btn').addEventListener('click', () => this.uploadDocument());
+                    document.getElementById('notice-post-btn').addEventListener('click', () => this.postNotice());
+                    this.switchTab('deadlines');
+                } else {
+                    document.getElementById('notice-form-card').style.display = 'none';
+                }
+
+                document.getElementById('tab-notices').addEventListener('click', () => this.switchTab('notices'));
+                this.loadNotices();
+            },
+
+            switchTab(tab) {
+                ['deadlines', 'vault', 'notices'].forEach(t => {
+                    const btn = document.getElementById(`tab-${t}`);
+                    const panel = document.getElementById(`panel-${t}`);
+                    if (btn) { btn.classList.toggle('btn-primary', t === tab); btn.classList.toggle('btn-outline', t !== tab); }
+                    if (panel) panel.style.display = t === tab ? 'block' : 'none';
+                });
+                if (tab === 'deadlines') this.loadDeadlines();
+                if (tab === 'vault') this.loadVault();
+                if (tab === 'notices') this.loadNotices();
+            },
+
+            // ── Deadlines ──
+            async loadDeadlines() {
+                const el = document.getElementById('deadlines-list');
+                const res = await AdminApp.apiRequest('/compliance/deadlines');
+                if (!res || !res.success) { el.innerHTML = '<p class="text-danger" style="padding:20px;">Failed to load</p>'; return; }
+                if (!res.data.length) { el.innerHTML = '<p class="text-muted" style="padding:20px;">No deadlines yet</p>'; return; }
+
+                const today = new Date(); today.setHours(0,0,0,0);
+                el.innerHTML = res.data.map(d => {
+                    const due = new Date(d.due_date);
+                    const isOverdue = due < today && d.status !== 'completed';
+                    return `
+                        <div class="deadline-row ${isOverdue ? 'overdue' : ''} ${d.status === 'completed' ? 'completed' : ''}">
+                            <div>
+                                <strong>${this.escapeHtml(d.title)}</strong>
+                                ${d.description ? `<div class="text-muted text-sm">${this.escapeHtml(d.description)}</div>` : ''}
+                                <div class="deadline-due ${isOverdue ? 'overdue' : ''}">Due ${due.toLocaleDateString()} ${d.recurring !== 'none' ? `· ${d.recurring}` : ''}</div>
+                            </div>
+                            <div class="action-buttons">
+                                <button class="btn btn-sm btn-outline" onclick="CompliancePage.toggleDeadline('${d.id}', '${d.status === 'completed' ? 'pending' : 'completed'}')">
+                                    ${d.status === 'completed' ? 'Reopen' : 'Mark Done'}
+                                </button>
+                                <button class="btn-icon text-danger" onclick="CompliancePage.deleteDeadline('${d.id}')"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            },
+
+            async addDeadline() {
+                const title = document.getElementById('dl-title').value.trim();
+                const dueDate = document.getElementById('dl-due').value;
+                const recurring = document.getElementById('dl-recurring').value;
+                const description = document.getElementById('dl-description').value.trim();
+                if (!title || !dueDate) { AdminApp.showNotification('Title and due date are required', 'error'); return; }
+
+                const res = await AdminApp.apiRequest('/compliance/deadlines', {
+                    method: 'POST',
+                    body: JSON.stringify({ title, dueDate, recurring, description })
+                });
+                if (res && res.success) {
+                    document.getElementById('dl-title').value = '';
+                    document.getElementById('dl-due').value = '';
+                    document.getElementById('dl-description').value = '';
+                    AdminApp.showNotification('Deadline added', 'success');
+                    this.loadDeadlines();
+                }
+            },
+
+            async toggleDeadline(id, status) {
+                const res = await AdminApp.apiRequest(`/compliance/deadlines/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) });
+                if (res && res.success) this.loadDeadlines();
+            },
+
+            async deleteDeadline(id) {
+                const res = await AdminApp.apiRequest(`/compliance/deadlines/${id}`, { method: 'DELETE' });
+                if (res && res.success) this.loadDeadlines();
+            },
+
+            // ── Vault ──
+            async loadVault() {
+                const el = document.getElementById('vault-list');
+                const res = await AdminApp.apiRequest('/compliance/vault');
+                if (!res || !res.success) { el.innerHTML = '<p class="text-danger" style="padding:20px;">Failed to load</p>'; return; }
+                if (!res.data.length) { el.innerHTML = '<p class="text-muted" style="padding:20px;">No documents uploaded yet</p>'; return; }
+
+                el.innerHTML = res.data.map(d => `
+                    <div class="vault-row">
+                        <div>
+                            <strong>${this.escapeHtml(d.title)}</strong>
+                            <span class="badge badge-info" style="margin-left:8px;">${d.category}</span>
+                            <div class="text-muted text-sm">${this.escapeHtml(d.file_name)} ${d.expiry_date ? `· Expires ${new Date(d.expiry_date).toLocaleDateString()}` : ''}</div>
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn btn-sm btn-outline" onclick="CompliancePage.downloadDocument('${d.id}', '${this.escapeHtml(d.file_name).replace(/'/g, "\\'")}')"><i class="fas fa-download"></i></button>
+                            <button class="btn-icon text-danger" onclick="CompliancePage.deleteDocument('${d.id}')"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                `).join('');
+            },
+
+            async uploadDocument() {
+                const title = document.getElementById('vault-title').value.trim();
+                const category = document.getElementById('vault-category').value;
+                const expiryDate = document.getElementById('vault-expiry').value;
+                const fileInput = document.getElementById('vault-file');
+                const errorDiv = document.getElementById('vault-error');
+                errorDiv.style.display = 'none';
+
+                if (!title || !fileInput.files.length) {
+                    errorDiv.textContent = 'Title and a file are required';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('title', title);
+                formData.append('category', category);
+                if (expiryDate) formData.append('expiryDate', expiryDate);
+                formData.append('file', fileInput.files[0]);
+
+                const token = localStorage.getItem('adminToken');
+                const response = await fetch('/api/compliance/vault', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('vault-title').value = '';
+                    document.getElementById('vault-expiry').value = '';
+                    fileInput.value = '';
+                    AdminApp.showNotification('Document uploaded', 'success');
+                    this.loadVault();
+                } else {
+                    errorDiv.textContent = data.message || 'Upload failed';
+                    errorDiv.style.display = 'block';
+                }
+            },
+
+            async downloadDocument(id, filename) {
+                const token = localStorage.getItem('adminToken');
+                const response = await fetch(`/api/compliance/vault/${id}/download`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!response.ok) return;
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = filename; a.click();
+                window.URL.revokeObjectURL(url);
+            },
+
+            async deleteDocument(id) {
+                const res = await AdminApp.apiRequest(`/compliance/vault/${id}`, { method: 'DELETE' });
+                if (res && res.success) this.loadVault();
+            },
+
+            // ── Notices ──
+            async loadNotices() {
+                const el = document.getElementById('notices-list');
+                const res = await AdminApp.apiRequest('/compliance/notices');
+                if (!res || !res.success) { el.innerHTML = '<p class="text-danger">Failed to load</p>'; return; }
+                if (!res.data.length) { el.innerHTML = '<p class="text-muted">No company notices yet</p>'; return; }
+
+                el.innerHTML = res.data.map(n => `
+                    <div class="notice-card">
+                        <h4>${this.escapeHtml(n.title)}</h4>
+                        <div class="notice-meta">Posted by ${this.escapeHtml(n.posted_by_name) || 'Admin'} on ${new Date(n.created_at).toLocaleDateString()}</div>
+                        <p style="white-space: pre-wrap; margin: 0;">${this.escapeHtml(n.content)}</p>
+                        ${this.isAdmin ? `<button class="btn btn-sm btn-outline text-danger" style="margin-top:10px;" onclick="CompliancePage.deleteNotice('${n.id}')"><i class="fas fa-trash"></i> Delete</button>` : ''}
+                    </div>
+                `).join('');
+            },
+
+            async postNotice() {
+                const title = document.getElementById('notice-title').value.trim();
+                const content = document.getElementById('notice-content').value.trim();
+                if (!title || !content) { AdminApp.showNotification('Title and message are required', 'error'); return; }
+
+                const res = await AdminApp.apiRequest('/compliance/notices', { method: 'POST', body: JSON.stringify({ title, content }) });
+                if (res && res.success) {
+                    document.getElementById('notice-title').value = '';
+                    document.getElementById('notice-content').value = '';
+                    AdminApp.showNotification('Notice posted', 'success');
+                    this.loadNotices();
+                }
+            },
+
+            async deleteNotice(id) {
+                const res = await AdminApp.apiRequest(`/compliance/notices/${id}`, { method: 'DELETE' });
+                if (res && res.success) this.loadNotices();
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof AdminApp !== 'undefined') {
+                const authOk = AdminApp.init();
+                if (authOk !== false) {
+                    CompliancePage.init();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="alternate icon" type="image/png" href="/img/tekvwa-icon-192.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Letterhead | Tekvwa Admin</title>
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="css/onboarding.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Tekvwa IT Solutions</h2>
+                <span class="subtitle">Admin Dashboard</span>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <span class="nav-section-title">Main</span>
+                    <a href="index.html" class="nav-item">
+                        <i class="fas fa-home"></i> Dashboard
+                    </a>
+                    <a href="messages.html" class="nav-item">
+                        <i class="fas fa-envelope"></i> Messages
+                    </a>
+                    <a href="chats.html" class="nav-item">
+                        <i class="fas fa-comments"></i> Live Chats
+                    </a>
+                    <a href="consultations.html" class="nav-item">
+                        <i class="fas fa-calendar-alt"></i> Consultations
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <span class="nav-section-title">Management</span>
+                    <a href="staff.html" class="nav-item">
+                        <i class="fas fa-users"></i> Staff
+                    </a>
+                    <a href="payroll.html" class="nav-item">
+                        <i class="fas fa-money-check-dollar"></i> Payroll
+                    </a>
+                    <a href="tickets.html" class="nav-item">
+                        <i class="fas fa-ticket"></i> Tickets
+                    </a>
+                    <a href="analytics.html" class="nav-item">
+                        <i class="fas fa-chart-bar"></i> Analytics
+                    </a>
+                    <a href="performance.html" class="nav-item">
+                        <i class="fas fa-chart-line"></i> Performance
+                    </a>
+                    <a href="audit.html" class="nav-item">
+                        <i class="fas fa-history"></i> Audit Logs
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <span class="nav-section-title">Admin</span>
+                    <a href="letterhead.html" class="nav-item active">
+                        <i class="fas fa-file-signature"></i> Letterhead
+                    </a>
+                    <a href="compliance.html" class="nav-item">
+                        <i class="fas fa-shield-halved"></i> Compliance
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <span class="nav-section-title">Settings</span>
+                    <a href="handbook.html" class="nav-item">
+                        <i class="fas fa-book"></i> Handbook
+                    </a>
+                    <a href="profile.html" class="nav-item">
+                        <i class="fas fa-user-circle"></i> My Profile
+                    </a>
+                    <a href="settings.html" class="nav-item">
+                        <i class="fas fa-cog"></i> Settings
+                    </a>
+                    <a href="../index.html" class="nav-item">
+                        <i class="fas fa-globe"></i> View Website
+                    </a>
+                    <a href="#" class="nav-item" id="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Header -->
+            <header class="admin-header">
+                <div class="header-left">
+                    <button class="sidebar-toggle" id="sidebar-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Company Letterhead</h1>
+                </div>
+                <div class="header-right">
+                    <div class="user-dropdown" id="user-dropdown">
+                        <div class="user-avatar" id="user-avatar">A</div>
+                        <div class="user-info">
+                            <div class="user-name" id="user-name">Admin</div>
+                            <div class="user-role" id="user-role">Administrator</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <div class="admin-content" style="max-width: 720px;">
+                <div id="access-denied" class="alert alert-danger" style="display: none;">
+                    Only Admin can generate official correspondence on company letterhead.
+                </div>
+
+                <div class="card" id="letterhead-form-card">
+                    <div class="card-header">
+                        <h3>Draft a Letter</h3>
+                        <p class="text-muted text-sm" style="margin: 0;">Generates branded PDF or Word documents with the company logo and letterhead</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="lh-date">Date</label>
+                            <input type="date" id="lh-date" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="lh-recipient">Recipient (optional)</label>
+                            <input type="text" id="lh-recipient" class="form-control" placeholder="e.g. To Whom It May Concern, or a specific name/address">
+                        </div>
+                        <div class="form-group">
+                            <label for="lh-subject">Subject (optional)</label>
+                            <input type="text" id="lh-subject" class="form-control" placeholder="e.g. Confirmation of Employment">
+                        </div>
+                        <div class="form-group">
+                            <label for="lh-body">Letter Body *</label>
+                            <textarea id="lh-body" class="form-control" rows="10" placeholder="Write the letter here. Leave a blank line between paragraphs."></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="lh-signature-name">Signed By</label>
+                                <input type="text" id="lh-signature-name" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="lh-signature-title">Title</label>
+                                <input type="text" id="lh-signature-title" class="form-control" placeholder="e.g. Founder & Managing Director">
+                            </div>
+                        </div>
+                        <div id="lh-error" class="alert alert-danger" style="display: none;"></div>
+                    </div>
+                    <div class="modal-footer" style="justify-content: flex-start; gap: 10px;">
+                        <button class="btn btn-primary" id="lh-download-pdf-btn">
+                            <i class="fas fa-file-pdf"></i> Download PDF
+                        </button>
+                        <button class="btn btn-outline" id="lh-download-docx-btn">
+                            <i class="fas fa-file-word"></i> Download Word (.docx)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/admin.js"></script>
+    <script>
+        const LetterheadPage = {
+            init() {
+                const user = AdminApp.getCurrentUser();
+                if (user?.role !== 'admin') {
+                    document.getElementById('access-denied').style.display = 'block';
+                    document.getElementById('letterhead-form-card').style.display = 'none';
+                    return;
+                }
+
+                document.getElementById('lh-date').value = new Date().toISOString().split('T')[0];
+                document.getElementById('lh-signature-name').value = user.name || '';
+                document.getElementById('lh-signature-title').value = 'Founder & Managing Director';
+
+                document.getElementById('lh-download-pdf-btn').addEventListener('click', () => this.download('pdf'));
+                document.getElementById('lh-download-docx-btn').addEventListener('click', () => this.download('docx'));
+            },
+
+            getPayload() {
+                return {
+                    date: document.getElementById('lh-date').value,
+                    recipient: document.getElementById('lh-recipient').value.trim(),
+                    subject: document.getElementById('lh-subject').value.trim(),
+                    body: document.getElementById('lh-body').value.trim(),
+                    signatureName: document.getElementById('lh-signature-name').value.trim(),
+                    signatureTitle: document.getElementById('lh-signature-title').value.trim()
+                };
+            },
+
+            async download(format) {
+                const errorDiv = document.getElementById('lh-error');
+                errorDiv.style.display = 'none';
+                const payload = this.getPayload();
+
+                if (!payload.body) {
+                    errorDiv.textContent = 'Letter body is required';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+
+                const token = localStorage.getItem('adminToken');
+                const response = await fetch(`/api/letterhead/${format}`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const data = await response.json().catch(() => ({}));
+                    errorDiv.textContent = data.message || 'Failed to generate document';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = format === 'pdf' ? 'tekvwa-letter.pdf' : 'tekvwa-letter.docx';
+                a.click();
+                window.URL.revokeObjectURL(url);
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof AdminApp !== 'undefined') {
+                const authOk = AdminApp.init();
+                if (authOk !== false) {
+                    LetterheadPage.init();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

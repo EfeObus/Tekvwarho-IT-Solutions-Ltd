@@ -244,4 +244,57 @@ function generateContractPDF(contract, staff) {
     });
 }
 
-module.exports = { generatePaystubPDF, generateContractPDF, formatNaira };
+/**
+ * Generate a general company letterhead PDF: subject + free-text body on
+ * the branded header/footer, with an optional recipient block and
+ * signature line. Returns a Buffer.
+ */
+function generateLetterheadPDF({ subject, recipient, date, body, signatureName, signatureTitle }) {
+    return new Promise((resolve, reject) => {
+        try {
+            const doc = new PDFDocument({ size: 'A4', margins: { top: 50, bottom: 15, left: 50, right: 50 } });
+            const chunks = [];
+            doc.on('data', (chunk) => chunks.push(chunk));
+            doc.on('end', () => resolve(Buffer.concat(chunks)));
+            doc.on('error', reject);
+
+            drawHeader(doc, 'Official Correspondence');
+            let y = doc.y;
+
+            doc.fontSize(10).fillColor(GRAY)
+                .text(new Date(date || Date.now()).toLocaleDateString('en-GB'), 50, y);
+            y += 24;
+
+            if (recipient) {
+                doc.fontSize(10).fillColor(DARK).text(recipient, 50, y, { width: doc.page.width - 100 });
+                y += doc.heightOfString(recipient, { width: doc.page.width - 100 }) + 16;
+            }
+
+            if (subject) {
+                doc.fontSize(12).font('Helvetica-Bold').fillColor(DARK).text(`Re: ${subject}`, 50, y, { width: doc.page.width - 100 });
+                y += doc.heightOfString(`Re: ${subject}`, { width: doc.page.width - 100 }) + 20;
+            }
+
+            doc.fontSize(10).font('Helvetica').fillColor(DARK).text(body || '', 50, y, { width: doc.page.width - 100 });
+            y += doc.heightOfString(body || '', { width: doc.page.width - 100 }) + 50;
+
+            if (signatureName) {
+                doc.fontSize(10).fillColor(DARK).text('_______________________', 50, y);
+                y += 18;
+                doc.font('Helvetica-Bold').text(signatureName, 50, y);
+                y += 14;
+                if (signatureTitle) {
+                    doc.font('Helvetica').fontSize(9).fillColor(GRAY).text(signatureTitle, 50, y);
+                }
+            }
+
+            drawFooter(doc, 'Tekvwa IT Solutions Ltd • Ughelli, Delta State, Nigeria • RC 9748441');
+
+            doc.end();
+        } catch (err) {
+            reject(err);
+        }
+    });
+}
+
+module.exports = { generatePaystubPDF, generateContractPDF, generateLetterheadPDF, formatNaira };
