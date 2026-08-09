@@ -133,11 +133,32 @@
                     </div>
                 </div>
 
+                <!-- DBIR PAYE Schedule Export -->
+                <div class="card" style="margin-bottom: 20px;">
+                    <div class="card-header">
+                        <h3>DBIR PAYE Schedule</h3>
+                        <p class="text-muted text-sm" style="margin: 0;">Monthly export for the Delta State Board of Internal Revenue portal</p>
+                    </div>
+                    <div class="card-body" style="display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;">
+                        <div class="form-group" style="margin: 0;">
+                            <label for="dbir-month">Month</label>
+                            <select id="dbir-month" class="form-control"></select>
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label for="dbir-year">Year</label>
+                            <input type="number" id="dbir-year" class="form-control" style="width: 100px;">
+                        </div>
+                        <button class="btn btn-outline" id="dbir-export-btn">
+                            <i class="fas fa-file-csv"></i> Export Schedule (CSV)
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Payroll Table -->
                 <div class="card">
                     <div class="card-header">
                         <h3>Employee Salaries</h3>
-                        <p class="text-muted text-sm" style="margin: 0;">Paid monthly, in Nigerian Naira (NGN)</p>
+                        <p class="text-muted text-sm" style="margin: 0;">Paid monthly, in Nigerian Naira (NGN). PAYE tax is calculated on total gross; pension and NHF are not yet enrolled.</p>
                     </div>
                     <div class="card-body" style="padding: 0;">
                         <div class="table-responsive">
@@ -298,6 +319,33 @@
                 const monthSelect = document.getElementById('paystub-month');
                 const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
                 monthSelect.innerHTML = monthNames.map((m, i) => `<option value="${i + 1}">${m}</option>`).join('');
+
+                const dbirMonthSelect = document.getElementById('dbir-month');
+                dbirMonthSelect.innerHTML = monthNames.map((m, i) => `<option value="${i + 1}">${m}</option>`).join('');
+                const now = new Date();
+                dbirMonthSelect.value = now.getMonth() + 1;
+                document.getElementById('dbir-year').value = now.getFullYear();
+                document.getElementById('dbir-export-btn').addEventListener('click', () => this.exportDbirSchedule());
+            },
+
+            async exportDbirSchedule() {
+                const month = document.getElementById('dbir-month').value;
+                const year = document.getElementById('dbir-year').value;
+                const token = localStorage.getItem('adminToken');
+                const response = await fetch(`/api/paystubs/dbir-schedule?month=${month}&year=${year}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) {
+                    AdminApp.showNotification('Failed to export schedule', 'error');
+                    return;
+                }
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `dbir-paye-schedule-${year}-${String(month).padStart(2, '0')}.csv`;
+                a.click();
+                window.URL.revokeObjectURL(url);
             },
 
             async load() {

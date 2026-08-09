@@ -1,8 +1,9 @@
 /**
  * Paystub Routes
- * Monthly paystub generation and retrieval. Deductions are entered
- * manually by the Accountant (see migration 008 for why) - this is not
- * an automatic Nigerian PAYE/pension calculator.
+ * Monthly paystub generation and retrieval. PAYE tax and the DBIR
+ * Development Levy are auto-calculated (see payeService.js); pension and
+ * NHF are deliberately not included yet. "Other deductions" (advances,
+ * etc.) are still entered manually by the Accountant.
  */
 
 const express = require('express');
@@ -13,6 +14,7 @@ const db = require('../config/database');
 const Staff = require('../models/Staff');
 const AuditService = require('../services/auditService');
 const { generatePaystubPDF } = require('../services/pdfService');
+const { calculateMonthlyPAYE, monthlyDevelopmentLevy } = require('../services/payeService');
 
 const canAccessStaffPaystubs = (req, staffId) => {
     return req.user.id === staffId || req.user.role === 'admin' || req.user.role === 'accountant';
@@ -76,25 +78,32 @@ router.post('/', authMiddleware, accountantOrAdmin, [
         const utility = parseFloat(salary.utility_allowance) || 0;
         const meal = parseFloat(salary.meal_allowance) || 0;
         const gross = basic + housing + transport + utility + meal;
-        const deductionAmount = parseFloat(deductions) || 0;
-        const net = gross - deductionAmount;
+
+        const paye = calculateMonthlyPAYE(gross);
+        const devLevy = monthlyDevelopmentLevy();
+        const otherDeductions = parseFloat(deductions) || 0;
+        const net = gross - paye.monthlyTax - devLevy - otherDeductions;
 
         const result = await db.query(
             `INSERT INTO paystubs (
                 staff_id, pay_period_month, pay_period_year, basic_salary,
                 housing_allowance, transport_allowance, utility_allowance, meal_allowance,
-                gross_pay, deductions, deductions_note, net_pay, currency, generated_by
-            ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+                gross_pay, paye_tax, cra_amount, development_levy,
+                deductions, deductions_note, net_pay, currency, generated_by
+            ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
             ON CONFLICT (staff_id, pay_period_month, pay_period_year)
             DO UPDATE SET
                 basic_salary = EXCLUDED.basic_salary, housing_allowance = EXCLUDED.housing_allowance,
                 transport_allowance = EXCLUDED.transport_allowance, utility_allowance = EXCLUDED.utility_allowance,
                 meal_allowance = EXCLUDED.meal_allowance, gross_pay = EXCLUDED.gross_pay,
+                paye_tax = EXCLUDED.paye_tax, cra_amount = EXCLUDED.cra_amount,
+                development_levy = EXCLUDED.development_levy,
                 deductions = EXCLUDED.deductions, deductions_note = EXCLUDED.deductions_note,
                 net_pay = EXCLUDED.net_pay, generated_by = EXCLUDED.generated_by, generated_at = CURRENT_TIMESTAMP
             RETURNING *`,
             [staffId, month, year, basic, housing, transport, utility, meal,
-                gross, deductionAmount, deductionsNote || null, net, salary.salary_currency || 'NGN', req.user.id]
+                gross, paye.monthlyTax, paye.monthlyCRA, devLevy,
+                otherDeductions, deductionsNote || null, net, salary.salary_currency || 'NGN', req.user.id]
         );
 
         await AuditService.log({
@@ -137,6 +146,49 @@ router.get('/:id/pdf', authMiddleware, async (req, res) => {
     } catch (error) {
         console.error('Paystub PDF error:', error);
         res.status(500).json({ success: false, message: 'Failed to generate PDF' });
+    }
+});
+
+/**
+ * GET /api/paystubs/dbir-schedule?month=&year=
+ * Monthly DBIR PAYE Schedule export (Employee Name, Tax ID, Gross Income,
+ * CRA, PAYE Tax Deducted) as CSV, ready for upload to the Delta State
+ * Board of Internal Revenue portal. Accountant/Admin only.
+ */
+router.get('/dbir-schedule', authMiddleware, accountantOrAdmin, async (req, res) => {
+    try {
+        const month = parseInt(req.query.month, 10);
+        const year = parseInt(req.query.year, 10);
+        if (!month || month < 1 || month > 12 || !year) {
+            return res.status(400).json({ success: false, message: 'Valid month and year are required' });
+        }
+
+        const result = await db.query(
+            `SELECT s.name, s.nin, s.tin, p.gross_pay, p.cra_amount, p.paye_tax, p.development_levy
+             FROM paystubs p
+             JOIN staff s ON s.id = p.staff_id
+             WHERE p.pay_period_month = $1 AND p.pay_period_year = $2
+             ORDER BY s.name`,
+            [month, year]
+        );
+
+        const header = 'Employee Name,NIN,Tax ID (TIN),Gross Income (NGN),CRA (NGN),PAYE Tax (NGN),Development Levy (NGN)\n';
+        const rows = result.rows.map(r => [
+            `"${(r.name || '').replace(/"/g, '""')}"`,
+            r.nin || 'MISSING',
+            r.tin || 'PENDING',
+            Number(r.gross_pay).toFixed(2),
+            Number(r.cra_amount).toFixed(2),
+            Number(r.paye_tax).toFixed(2),
+            Number(r.development_levy).toFixed(2)
+        ].join(',')).join('\n');
+
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename=dbir-paye-schedule-${year}-${String(month).padStart(2, '0')}.csv`);
+        res.send(header + rows);
+    } catch (error) {
+        console.error('DBIR schedule error:', error);
+        res.status(500).json({ success: false, message: 'Failed to generate DBIR schedule' });
     }
 });
 

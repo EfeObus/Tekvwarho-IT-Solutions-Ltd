@@ -441,7 +441,9 @@ router.post('/staff', authMiddleware, hrOrAdmin, [
     body('email').isEmail().withMessage('Valid email is required'),
     body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
     body('name').trim().notEmpty().withMessage('Name is required'),
-    body('role').isIn(['admin', 'manager', 'staff', 'hr', 'accountant']).withMessage('Invalid role')
+    body('role').isIn(['admin', 'manager', 'staff', 'hr', 'accountant']).withMessage('Invalid role'),
+    body('nin').trim().isLength({ min: 11, max: 11 }).isNumeric().withMessage('NIN is required and must be 11 digits'),
+    body('tin').optional({ nullable: true, checkFalsy: true }).trim()
 ], async (req, res) => {
     try {
         const errors = validationResult(req);
@@ -452,7 +454,7 @@ router.post('/staff', authMiddleware, hrOrAdmin, [
             });
         }
 
-        const { email, password, name, role, department, phone, permissions } = req.body;
+        const { email, password, name, role, department, phone, nin, tin, permissions } = req.body;
 
         // Check if email exists
         const existing = await Staff.findByEmail(email);
@@ -470,6 +472,8 @@ router.post('/staff', authMiddleware, hrOrAdmin, [
             role,
             department,
             phone,
+            nin,
+            tin: tin || null,
             createdBy: req.user.id,
             permissions: permissions || {}
         });

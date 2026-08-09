@@ -229,7 +229,18 @@
                             </select>
                         </div>
                     </div>
-                    
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="staff-nin">NIN *</label>
+                            <input type="text" id="staff-nin" class="form-control" maxlength="11" placeholder="11-digit National ID Number">
+                        </div>
+                        <div class="form-group">
+                            <label for="staff-tin">Tax ID / TIN (DBIR)</label>
+                            <input type="text" id="staff-tin" class="form-control" placeholder="Leave blank if not yet registered">
+                        </div>
+                    </div>
+
                     <div class="form-row" id="password-row">
                         <div class="form-group">
                             <label for="staff-password">Password *</label>
@@ -538,6 +549,8 @@
                                 <div>
                                     <div class="font-medium">${safeName}</div>
                                     ${member.must_change_password ? '<span class="badge badge-warning">Password Change Required</span>' : ''}
+                                    ${!member.tin ? '<span class="badge badge-warning" title="No DBIR Tax ID on file yet">TIN Pending</span>' : ''}
+                                    ${!member.nin ? '<span class="badge badge-danger" title="NIN missing">NIN Missing</span>' : ''}
                                 </div>
                             </div>
                         </td>
@@ -642,6 +655,8 @@
                         document.getElementById('staff-email').disabled = true;
                         document.getElementById('staff-phone').value = member.phone || '';
                         document.getElementById('staff-department').value = member.department || '';
+                        document.getElementById('staff-nin').value = member.nin || '';
+                        document.getElementById('staff-tin').value = member.tin || '';
                         document.getElementById('staff-role').value = member.role;
                         document.getElementById('perm-messages').checked = member.can_manage_messages;
                         document.getElementById('perm-consultations').checked = member.can_manage_consultations;
@@ -677,6 +692,8 @@
                 const password = document.getElementById('staff-password').value;
                 const phone = document.getElementById('staff-phone').value;
                 const department = document.getElementById('staff-department').value;
+                const nin = document.getElementById('staff-nin').value.trim();
+                const tin = document.getElementById('staff-tin').value.trim();
                 const role = document.getElementById('staff-role').value;
                 const errorDiv = document.getElementById('form-error');
                 
@@ -702,6 +719,12 @@
                     errorDiv.style.display = 'block';
                     return;
                 }
+
+                if (!id && !/^\d{11}$/.test(nin)) {
+                    errorDiv.textContent = 'NIN is required and must be 11 digits';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
                 
                 const btn = document.getElementById('save-staff-btn');
                 btn.disabled = true;
@@ -713,13 +736,15 @@
                     // top level (see Staff.create() vs Staff.update() in
                     // server/models/Staff.js). Sending the wrong shape to either
                     // silently drops the permission changes - keep these in sync.
-                    const payload = { name, phone, department, role };
+                    const payload = { name, phone, department, role, tin: tin || null };
                     if (!id) {
                         payload.email = email;
                         payload.password = password;
+                        payload.nin = nin;
                         payload.permissions = permissions;
                     } else {
                         if (password) payload.password = password;
+                        if (nin) payload.nin = nin;
                         Object.assign(payload, permissions);
                     }
 

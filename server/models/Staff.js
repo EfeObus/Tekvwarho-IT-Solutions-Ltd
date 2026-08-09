@@ -20,6 +20,8 @@ const Staff = {
         phone = null,
         createdBy = null,
         hireDate = null,
+        nin = null,
+        tin = null,
         permissions = {}
     }) {
         const id = uuidv4();
@@ -28,22 +30,24 @@ const Staff = {
         const result = await db.query(
             `INSERT INTO staff (
                 id, email, password_hash, name, role, department, phone,
-                must_change_password, is_active, created_by, hire_date,
+                must_change_password, is_active, created_by, hire_date, nin, tin,
                 can_manage_messages, can_manage_consultations,
                 can_manage_chats, can_view_analytics,
                 can_manage_employees, can_manage_payroll, can_manage_tickets
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
             RETURNING id, email, name, role, department, phone, is_active,
                       must_change_password, can_manage_messages, can_manage_consultations,
                       can_manage_chats, can_view_analytics, can_manage_employees,
-                      can_manage_payroll, can_manage_tickets, hire_date, created_at`,
+                      can_manage_payroll, can_manage_tickets, hire_date, nin, tin, created_at`,
             [
                 id, email, passwordHash, name, role, department, phone,
                 true, // must_change_password - new staff must change password
                 true, // is_active
                 createdBy,
                 hireDate,
+                nin,
+                tin,
                 permissions.canManageMessages !== false,
                 permissions.canManageConsultations !== false,
                 permissions.canManageChats !== false,
@@ -75,7 +79,7 @@ const Staff = {
             `SELECT id, email, name, role, department, phone, is_active,
                     must_change_password, can_manage_messages, can_manage_consultations,
                     can_manage_chats, can_view_analytics, can_manage_employees,
-                    can_manage_payroll, can_manage_tickets, hire_date, created_at, last_login
+                    can_manage_payroll, can_manage_tickets, hire_date, nin, tin, created_at, last_login
              FROM staff WHERE id = $1`,
             [id]
         );
@@ -91,7 +95,7 @@ const Staff = {
             SELECT id, email, name, role, department, phone, is_active,
                    must_change_password, can_manage_messages, can_manage_consultations,
                    can_manage_chats, can_view_analytics, can_manage_employees,
-                   can_manage_payroll, can_manage_tickets, hire_date, created_at, last_login
+                   can_manage_payroll, can_manage_tickets, hire_date, nin, tin, created_at, last_login
             FROM staff
         `;
         const conditions = [];
@@ -186,7 +190,9 @@ const Staff = {
             canViewAnalytics: 'can_view_analytics',
             canManageEmployees: 'can_manage_employees',
             canManagePayroll: 'can_manage_payroll',
-            canManageTickets: 'can_manage_tickets'
+            canManageTickets: 'can_manage_tickets',
+            nin: 'nin',
+            tin: 'tin'
             // Note: base_salary is deliberately NOT editable through this method.
             // Use updateSalary() instead, which routes gate to admin-only, so a
             // salary change always requires Admin sign-off even for HR/Accountant.
@@ -223,7 +229,7 @@ const Staff = {
              RETURNING id, email, name, role, department, phone, is_active,
                        must_change_password, can_manage_messages, can_manage_consultations,
                        can_manage_chats, can_view_analytics, can_manage_employees,
-                       can_manage_payroll, can_manage_tickets, hire_date, created_at`,
+                       can_manage_payroll, can_manage_tickets, hire_date, nin, tin, created_at`,
             values
         );
         return result.rows[0];
@@ -238,7 +244,7 @@ const Staff = {
         const result = await db.query(
             `SELECT id, name, email, department, base_salary, housing_allowance,
                     transport_allowance, utility_allowance, meal_allowance,
-                    salary_currency, hire_date
+                    salary_currency, hire_date, nin, tin
              FROM staff WHERE id = $1`,
             [id]
         );
