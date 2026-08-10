@@ -16,8 +16,9 @@ const router = express.Router();
 const { authMiddleware, hasPermission } = require('../middleware/auth');
 const db = require('../config/database');
 const Staff = require('../models/Staff');
+const TokenManager = require('../services/tokenManager');
 const { provisionWorkspaceUser, isWorkspaceConfigured, resetWorkspacePassword, hasLoggedIn } = require('../services/googleWorkspaceService');
-const { sendWelcomeEmail } = require('../services/emailService');
+const { sendWelcomeEmail, sendAccountSetupEmail } = require('../services/emailService');
 
 async function getAutoStatus(staffId) {
     const [contract, handbook, codeOfConduct, salary] = await Promise.all([
@@ -43,14 +44,16 @@ router.get('/', authMiddleware, hasPermission('onboarding'), async (req, res) =>
     try {
         const result = await db.query(`
             SELECT s.id, s.name, s.email, s.role, s.department, s.hire_date, s.workspace_email,
-                   s.workspace_provisioned_at, s.offer_accepted_at, s.welcome_email_sent_at, s.workspace_activated_at,
+                   s.workspace_provisioned_at, s.offer_accepted_at, s.welcome_email_sent_at,
+                   s.workspace_activated_at, s.dashboard_setup_sent_at,
                    COUNT(t.id) AS total_tasks,
                    COUNT(t.id) FILTER (WHERE t.status = 'done') AS completed_tasks
             FROM staff s
             LEFT JOIN onboarding_tasks t ON t.staff_id = s.id
             GROUP BY s.id
             HAVING COUNT(t.id) > 0
-            ORDER BY (COUNT(t.id) FILTER (WHERE t.status = 'done') = COUNT(t.id)), s.created_at DESC
+               AND COUNT(t.id) FILTER (WHERE t.status = 'done') < COUNT(t.id)
+            ORDER BY s.created_at DESC
         `);
         res.json({ success: true, data: result.rows });
     } catch (error) {
@@ -90,6 +93,7 @@ router.get('/:staffId', authMiddleware, hasPermission('onboarding'), async (req,
                     department: staff.department, hireDate: staff.hire_date,
                     workspaceEmail: staff.workspace_email, workspaceProvisionedAt: staff.workspace_provisioned_at,
                     welcomeEmailSentAt: staff.welcome_email_sent_at, workspaceActivatedAt: staff.workspace_activated_at,
+                    dashboardSetupSentAt: staff.dashboard_setup_sent_at,
                     offerAcceptedAt: staff.offer_accepted_at
                 },
                 autoStatus,
@@ -162,11 +166,12 @@ router.patch('/:staffId/offer-accepted', authMiddleware, hasPermission('onboardi
 
 /**
  * POST /api/onboarding/:staffId/provision-email
- * Creates the @tekvwa.org Google Workspace mailbox via the Admin SDK and
- * marks the email_provisioned task done. Deliberately does NOT email
- * anything yet - that's the separate "Send Welcome Email" step below, so
- * IT can verify the account (licenses, groups, OU) before credentials go
- * out. Requires GOOGLE_WORKSPACE_* to be configured - returns 501
+ * Creates the @tekvwa.org Google Workspace mailbox via the Admin SDK,
+ * emails the new credentials immediately using the password just set at
+ * creation (no separate users.update() call shortly after users.insert() -
+ * that pairing was hitting Google's account-propagation window and
+ * failing with "Resource Not Found"), and marks the email_provisioned
+ * task done. Requires GOOGLE_WORKSPACE_* to be configured - returns 501
  * otherwise so the UI can fall back to the manual checklist toggle.
  */
 router.post('/:staffId/provision-email', authMiddleware, hasPermission('onboarding'), async (req, res) => {
@@ -188,8 +193,11 @@ router.post('/:staffId/provision-email', authMiddleware, hasPermission('onboardi
         if (staff.workspace_email) {
             return res.status(400).json({ success: false, message: `Already provisioned: ${staff.workspace_email}` });
         }
+        if (!staff.email) {
+            return res.status(400).json({ success: false, message: 'Staff member has no personal email on file to send credentials to' });
+        }
 
-        const { email: workspaceEmail } = await provisionWorkspaceUser({
+        const { email: workspaceEmail, tempPassword } = await provisionWorkspaceUser({
             fullName: staff.name,
             department: staff.department
         });
@@ -199,6 +207,15 @@ router.post('/:staffId/provision-email', authMiddleware, hasPermission('onboardi
             [workspaceEmail, staff.id]
         );
 
+        let emailed = false;
+        try {
+            await sendWelcomeEmail({ staff, workspaceEmail, tempPassword });
+            await db.query('UPDATE staff SET welcome_email_sent_at = CURRENT_TIMESTAMP WHERE id = $1', [staff.id]);
+            emailed = true;
+        } catch (emailError) {
+            console.error('Welcome email error (account still created, retry via send-welcome-email):', emailError);
+        }
+
         await db.query(
             `UPDATE onboarding_tasks
              SET status = 'done', completed_by = $1, completed_at = CURRENT_TIMESTAMP
@@ -206,7 +223,7 @@ router.post('/:staffId/provision-email', authMiddleware, hasPermission('onboardi
             [req.user.id, staff.id]
         );
 
-        res.json({ success: true, data: { workspaceEmail } });
+        res.json({ success: true, data: { workspaceEmail, emailed } });
     } catch (error) {
         console.error('Provision workspace email error:', error);
         res.status(500).json({ success: false, message: error.message || 'Failed to provision Workspace account' });
@@ -215,10 +232,11 @@ router.post('/:staffId/provision-email', authMiddleware, hasPermission('onboardi
 
 /**
  * POST /api/onboarding/:staffId/send-welcome-email
- * Sets a fresh temp password on the already-provisioned Workspace account
- * and emails it plus first-day info to the hire's personal address. The
- * explicit second step the flow calls for - IT confirms the account is
- * ready, then this fires the credentials out.
+ * Recovery action, not the normal path - provision-email above already
+ * sends this automatically using the password set at creation. This is
+ * for the rare case that email failed (e.g. transient SMTP error): it
+ * sets a fresh temp password (the original one is otherwise unknown to
+ * anyone by now) and re-sends.
  */
 router.post('/:staffId/send-welcome-email', authMiddleware, hasPermission('onboarding'), async (req, res) => {
     try {
@@ -277,6 +295,39 @@ router.post('/:staffId/check-activation', authMiddleware, hasPermission('onboard
     } catch (error) {
         console.error('Check activation error:', error);
         res.status(500).json({ success: false, message: 'Failed to check activation status' });
+    }
+});
+
+/**
+ * POST /api/onboarding/:staffId/send-dashboard-login
+ * The fourth and final onboarding step: Workspace gets them into Gmail,
+ * but they still need a way into admin.tekvwa.org itself, since that's
+ * where the job actually happens (messages, chats, consultations, per
+ * their granted permissions). Reuses the same password-reset-token
+ * mechanism as self-service password resets, just framed as onboarding.
+ */
+router.post('/:staffId/send-dashboard-login', authMiddleware, hasPermission('onboarding'), async (req, res) => {
+    try {
+        const staff = await Staff.findById(req.params.staffId);
+        if (!staff) {
+            return res.status(404).json({ success: false, message: 'Staff member not found' });
+        }
+        if (!staff.workspace_activated_at) {
+            return res.status(400).json({ success: false, message: 'Confirm Workspace activation first' });
+        }
+        if (!staff.email) {
+            return res.status(400).json({ success: false, message: 'Staff member has no personal email on file to send the link to' });
+        }
+
+        const setupToken = await TokenManager.createPasswordResetToken(staff.id, req.ip, req.get('User-Agent'), 72);
+        await sendAccountSetupEmail(staff.email, staff.name, setupToken);
+
+        await db.query('UPDATE staff SET dashboard_setup_sent_at = CURRENT_TIMESTAMP WHERE id = $1', [staff.id]);
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Send dashboard login error:', error);
+        res.status(500).json({ success: false, message: error.message || 'Failed to send dashboard login link' });
     }
 });
 

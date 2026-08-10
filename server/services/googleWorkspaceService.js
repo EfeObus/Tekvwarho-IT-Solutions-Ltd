@@ -171,10 +171,22 @@ async function resetWorkspacePassword(workspaceEmail) {
     }
     const admin = getAdminClient();
     const tempPassword = generateTempPassword();
-    await admin.users.update({
-        userKey: workspaceEmail,
-        requestBody: { password: tempPassword, changePasswordAtNextLogin: true }
-    });
+    try {
+        await admin.users.update({
+            userKey: workspaceEmail,
+            requestBody: { password: tempPassword, changePasswordAtNextLogin: true }
+        });
+    } catch (error) {
+        // A brand-new account can take a short while to become fully
+        // queryable across Google's Directory API even though users.insert()
+        // already succeeded - a 404 here right after provisioning usually
+        // means "not propagated yet," not "doesn't exist." Give IT
+        // something actionable instead of a raw Gaxios error.
+        if (error.code === 404 || /not found/i.test(error.message || '')) {
+            throw new Error(`This Workspace account was just created and may still be propagating on Google's side - wait a minute and try Send Welcome Email again.`);
+        }
+        throw error;
+    }
     return tempPassword;
 }
 

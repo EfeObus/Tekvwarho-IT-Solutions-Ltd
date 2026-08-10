@@ -164,9 +164,15 @@
                             <h3 id="detail-name" style="margin: 0 0 4px;"></h3>
                             <div class="hire-meta" id="detail-meta"></div>
                             <div class="status-pill-row" id="detail-status-pills" style="margin-top: 16px;"></div>
-                            <button class="btn btn-primary btn-sm" id="detail-generate-contract-btn" style="margin-top: 4px;">
-                                <i class="fas fa-file-signature"></i> <span id="detail-generate-contract-label">Generate &amp; Send Offer</span>
-                            </button>
+                            <div style="margin-top: 4px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                                <button class="btn btn-primary btn-sm" id="detail-generate-contract-btn">
+                                    <i class="fas fa-file-signature"></i> <span id="detail-generate-contract-label">Generate &amp; Send Offer</span>
+                                </button>
+                                <span id="detail-provision-action"></span>
+                                <button class="btn btn-sm" style="color: #dc3545; background: none; border: 1px solid #dc3545;" id="detail-delete-btn" title="Remove this record entirely - for a test hire or a mistaken entry, not an offboarding action">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -191,8 +197,45 @@
                 return div.innerHTML;
             },
 
+            escapeJs(str) {
+                if (!str) return '';
+                return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+            },
+
+            // Single source of truth for "what does IT/HR need to click next
+            // to move this hire's Workspace account forward" - used by both
+            // the list row and the detail page header, so the action is
+            // never buried in a checklist and never computed two different
+            // ways in two places.
+            provisioningActionHtml(staffId, offerAccepted, hasWorkspaceEmail, welcomeSent, activated, dashboardSetupSent, workspaceConfigured, inList) {
+                if (!workspaceConfigured || !offerAccepted) return '';
+                const stop = inList ? 'event.stopPropagation(); ' : '';
+                const fromList = inList ? 'true' : 'false';
+                if (!hasWorkspaceEmail) {
+                    return `<button class="btn btn-primary btn-sm" onclick="${stop}NewHiresPage.provisionEmail('${staffId}', ${fromList})" title="Creates the account and immediately emails their credentials - one step"><i class="fas fa-envelope-circle-check"></i> Create Workspace Account</button>`;
+                }
+                if (!welcomeSent) {
+                    // Only reachable if the automatic email at provisioning
+                    // time failed (e.g. transient SMTP error) - a recovery
+                    // action, not the normal path.
+                    return `<button class="btn btn-outline btn-sm" onclick="${stop}NewHiresPage.sendWelcomeEmail('${staffId}', ${fromList})" title="The automatic email didn't go out - resend it"><i class="fas fa-paper-plane"></i> Resend Welcome Email</button>`;
+                }
+                if (!activated) {
+                    return `<button class="btn btn-outline btn-sm" onclick="${stop}NewHiresPage.checkActivation('${staffId}', ${fromList})" title="No push notification exists for Google sign-ins - click to check"><i class="fas fa-rotate"></i> Check Sign-In Status</button>`;
+                }
+                if (!dashboardSetupSent) {
+                    return `<button class="btn btn-primary btn-sm" onclick="${stop}NewHiresPage.sendDashboardLogin('${staffId}', ${fromList})" title="Gmail access alone isn't enough - they need this to log into admin.tekvwa.org"><i class="fas fa-right-to-bracket"></i> Send Dashboard Login</button>`;
+                }
+                return `<span class="status-pill done"><i class="fas fa-check"></i> Fully Onboarded</span>`;
+            },
+
             init() {
                 document.getElementById('back-to-list').addEventListener('click', () => this.showList());
+                // The list endpoint doesn't return workspaceConfigured (only
+                // the per-hire detail endpoint does) - default true, since
+                // it's already configured in this deployment; provisionEmail()
+                // still surfaces a clear error if that ever isn't the case.
+                this.workspaceConfigured = true;
                 this.loadList();
             },
 
@@ -237,9 +280,12 @@
                                     <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); window.location.href='staff.html?generateContractFor=${h.id}';">
                                         <i class="fas fa-file-signature"></i> Send Offer
                                     </button>
-                                ` : ''}
+                                ` : this.provisioningActionHtml(h.id, offerAccepted, !!h.workspace_email, !!h.welcome_email_sent_at, activated, !!h.dashboard_setup_sent_at, this.workspaceConfigured, true)}
                                 <span class="hire-meta">${done}/${total} tasks</span>
                                 <div class="hire-progress-bar"><div class="hire-progress-fill ${pct === 100 ? 'complete' : ''}" style="width:${pct}%;"></div></div>
+                                <button class="btn-icon" style="width:28px;height:28px;color:#dc3545;" title="Delete" onclick="event.stopPropagation(); NewHiresPage.deleteHire('${h.id}', '${this.escapeJs(h.name)}', true)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                                 <i class="fas fa-chevron-right text-muted"></i>
                             </div>
                         </div>
@@ -279,6 +325,14 @@
                     window.location.href = `staff.html?generateContractFor=${this.currentStaffId}`;
                 };
 
+                document.getElementById('detail-provision-action').innerHTML = this.provisioningActionHtml(
+                    this.currentStaffId, this.offerAccepted, !!staff.workspaceEmail,
+                    !!staff.welcomeEmailSentAt, !!staff.workspaceActivatedAt, !!staff.dashboardSetupSentAt,
+                    workspaceConfigured, false
+                );
+
+                document.getElementById('detail-delete-btn').onclick = () => this.deleteHire(this.currentStaffId, staff.name);
+
                 const pills = [
                     ['Contract Generated', autoStatus.contractGenerated],
                     ['Salary Set', autoStatus.salarySet],
@@ -313,27 +367,23 @@
                 // a one-shot poll on page view, not a background loop.
                 if (staff.welcomeEmailSentAt && !staff.workspaceActivatedAt && !this._autoChecked) {
                     this._autoChecked = true;
-                    this.checkActivation(true);
+                    this.checkActivation(this.currentStaffId, false, true);
                 }
             },
 
+            // The email_provisioned row's action lives in one place now -
+            // the prominent button at the top of the page (and in the list
+            // row) - this just reflects status so it isn't a second,
+            // inconsistent copy of the same button.
             renderTask(t, workspaceConfigured, staff) {
                 const isDone = t.status === 'done';
                 const isEmailTask = t.task_key === 'email_provisioned';
 
                 let provisionControl = '';
-                if (isEmailTask && workspaceConfigured) {
-                    if (!this.offerAccepted) {
-                        provisionControl = `<button class="btn btn-sm btn-outline" disabled title="Mark Offer Accepted above first"><i class="fas fa-lock"></i> Create Workspace Account</button>`;
-                    } else if (!staff.workspaceEmail) {
-                        provisionControl = `<button class="btn btn-sm btn-primary" onclick="NewHiresPage.provisionEmail()"><i class="fas fa-envelope-circle-check"></i> Create Workspace Account</button>`;
-                    } else if (!staff.welcomeEmailSentAt) {
-                        provisionControl = `<button class="btn btn-sm btn-primary" onclick="NewHiresPage.sendWelcomeEmail()"><i class="fas fa-paper-plane"></i> Send Welcome Email</button>`;
-                    } else if (!staff.workspaceActivatedAt) {
-                        provisionControl = `<span class="hire-meta" style="margin-right:8px;">Awaiting first sign-in&hellip;</span><button class="btn btn-sm btn-outline" onclick="NewHiresPage.checkActivation()"><i class="fas fa-rotate"></i> Check Now</button>`;
-                    } else {
-                        provisionControl = `<span class="status-pill done"><i class="fas fa-check"></i> Activated</span>`;
-                    }
+                if (isEmailTask && workspaceConfigured && !isDone) {
+                    provisionControl = this.offerAccepted
+                        ? `<span class="hire-meta">See the button above &uarr;</span>`
+                        : `<span class="hire-meta"><i class="fas fa-lock"></i> Waiting on offer acceptance</span>`;
                 }
 
                 return `
@@ -374,37 +424,78 @@
                 }
             },
 
-            async provisionEmail() {
-                const res = await AdminApp.apiRequest(`/onboarding/${this.currentStaffId}/provision-email`, { method: 'POST' });
+            async provisionEmail(id, fromList = false) {
+                const staffId = id || this.currentStaffId;
+                const res = await AdminApp.apiRequest(`/onboarding/${staffId}/provision-email`, { method: 'POST' });
                 if (res && res.success) {
-                    AdminApp.showNotification(`Workspace account created: ${res.data.workspaceEmail}`, 'success');
-                    this.loadDetail();
+                    AdminApp.showNotification(
+                        res.data.emailed
+                            ? `Workspace account created and welcome email sent: ${res.data.workspaceEmail}`
+                            : `Workspace account created (${res.data.workspaceEmail}), but the welcome email failed to send - use "Resend Welcome Email" below.`,
+                        res.data.emailed ? 'success' : 'error'
+                    );
+                    fromList ? this.loadList() : this.loadDetail();
                 } else {
                     AdminApp.showNotification(res?.message || 'Provisioning failed', 'error');
                 }
             },
 
-            async sendWelcomeEmail() {
-                const res = await AdminApp.apiRequest(`/onboarding/${this.currentStaffId}/send-welcome-email`, { method: 'POST' });
+            async sendWelcomeEmail(id, fromList = false) {
+                const staffId = id || this.currentStaffId;
+                const res = await AdminApp.apiRequest(`/onboarding/${staffId}/send-welcome-email`, { method: 'POST' });
                 if (res && res.success) {
                     AdminApp.showNotification('Welcome email sent with temporary login details', 'success');
-                    this.loadDetail();
+                    fromList ? this.loadList() : this.loadDetail();
                 } else {
                     AdminApp.showNotification(res?.message || 'Failed to send welcome email', 'error');
                 }
             },
 
-            async checkActivation(silent = false) {
-                const res = await AdminApp.apiRequest(`/onboarding/${this.currentStaffId}/check-activation`, { method: 'POST' });
+            async checkActivation(id, fromList = false, silent = false) {
+                const staffId = id || this.currentStaffId;
+                const res = await AdminApp.apiRequest(`/onboarding/${staffId}/check-activation`, { method: 'POST' });
                 if (res && res.success) {
                     if (res.data.activated) {
                         AdminApp.showNotification('First sign-in confirmed - now showing as Active staff', 'success');
-                        this.loadDetail();
+                        fromList ? this.loadList() : this.loadDetail();
                     } else if (!silent) {
                         AdminApp.showNotification('No sign-in detected yet - try again in a few minutes', 'info');
                     }
                 } else if (!silent) {
                     AdminApp.showNotification(res?.message || 'Failed to check activation', 'error');
+                }
+            },
+
+            // The Staff page's own Delete action lives in its default table
+            // view, which deliberately hides anyone Workspace-provisioned
+            // but not yet activated - exactly the state a mid-onboarding
+            // test hire is usually in, so there was no way to remove one
+            // without knowing to switch a filter dropdown on a different
+            // page. This is the same DELETE /admin/staff/:id endpoint,
+            // just reachable from where an in-progress hire is actually
+            // being managed.
+            async deleteHire(id, name, fromList = false) {
+                const staffId = id || this.currentStaffId;
+                if (!confirm(`Permanently delete ${name}? This removes their record, contracts, and onboarding checklist. This does not touch any Google Workspace account - delete that separately in the Workspace admin console if one was created.`)) {
+                    return;
+                }
+                const res = await AdminApp.apiRequest(`/admin/staff/${staffId}`, { method: 'DELETE' });
+                if (res && res.success) {
+                    AdminApp.showNotification('Staff record deleted', 'success');
+                    fromList ? this.loadList() : this.showList();
+                } else {
+                    AdminApp.showNotification(res?.message || 'Failed to delete', 'error');
+                }
+            },
+
+            async sendDashboardLogin(id, fromList = false) {
+                const staffId = id || this.currentStaffId;
+                const res = await AdminApp.apiRequest(`/onboarding/${staffId}/send-dashboard-login`, { method: 'POST' });
+                if (res && res.success) {
+                    AdminApp.showNotification('Dashboard login link sent', 'success');
+                    fromList ? this.loadList() : this.loadDetail();
+                } else {
+                    AdminApp.showNotification(res?.message || 'Failed to send dashboard login link', 'error');
                 }
             }
         };

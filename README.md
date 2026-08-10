@@ -5,7 +5,7 @@ A comprehensive IT solutions website with integrated admin dashboard, live chat,
 ![License](https://img.shields.io/badge/license-Proprietary-blue)
 ![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14%2B-blue)
-![Version](https://img.shields.io/badge/version-1.11.0-orange)
+![Version](https://img.shields.io/badge/version-1.11.1-orange)
 
 ## Company Information
 
@@ -725,6 +725,59 @@ curl -X GET http://localhost:5500/api/messages \
 ---
 
 ## Changelog
+
+### v1.11.1 (August 10, 2026)
+
+#### Onboarding Flow: Discoverability, Delete, and a Fourth Step - From Real Usage
+
+v1.11.0 shipped the three-gate activation flow but hadn't been driven end-to-end
+against a real Workspace account yet. Testing it live surfaced several real
+issues, fixed here:
+
+The "Create Workspace Account" action was buried three levels deep (New Hires
+- click into detail - scroll to IT Tasks - find it inline in a checklist row)
+- the same discoverability failure as the original Contract button, now fixed
+the same way: one shared `provisioningActionHtml()` helper renders the correct
+next-step button prominently in both the list row and the top of the detail
+page, so it's never hidden in a checklist again.
+
+There was no way to delete a staff record stuck mid-onboarding at all -
+Staff Management's own Delete action was unreachable for anyone
+Workspace-provisioned-but-not-yet-activated, since that state is deliberately
+hidden from its default view. Added Delete directly to New Hires (list and
+detail), reusing the same `DELETE /admin/staff/:id` endpoint from where an
+in-progress hire is actually being managed.
+
+Added the fourth and final step: after Workspace activation is confirmed,
+"Send Dashboard Login" emails a self-service password-setup link so the new
+hire can actually get into admin.tekvwa.org, not just Gmail - Workspace access
+alone was a dead end for anyone who needed to do their actual job (messages,
+chats, consultations) through this dashboard.
+
+Merged "Create Workspace Account" and "Send Welcome Email" back into one
+step - live testing showed the two-click split (deliberately built for IT
+review between them) was consistently more confusing than useful in
+practice. Clicking Create Workspace Account now emails the new hire's
+credentials immediately, using the password already set at creation instead
+of a second `users.update()` call shortly after `users.insert()` - which
+also incidentally eliminates a real bug the split had introduced: that
+second call was landing inside Google's account-propagation window and
+failing with "Resource Not Found." The old two-step route still exists as
+a manual resend, for the rare case the automatic email fails.
+
+Fixed the New Hires list showing staff who finished onboarding months ago:
+the query only ever checked for "has at least one onboarding task," never
+whether any were still outstanding, so anyone with a permanently-unchecked
+manual checklist item (signed contract received, first-day orientation)
+stayed on the list forever. Now filtered to hires with genuinely outstanding
+tasks only.
+
+Live testing also surfaced that a new hire has two entirely separate email
+identities - their personal address (dashboard login) and their new
+@tekvwa.org address (Gmail only) - and nothing made clear which one to
+actually log into admin.tekvwa.org with, leading to "invalid credentials"
+when someone tried their company email. The dashboard-login email now
+states the login address explicitly.
 
 ### v1.11.0 (August 10, 2026)
 

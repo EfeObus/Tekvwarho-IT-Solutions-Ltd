@@ -454,6 +454,9 @@ const sendAccountSetupEmail = async (email, name, setupToken) => {
                     Set Your Password
                 </a>
             </div>
+            <p style="background: #F5F6FA; padding: 12px 16px; border-radius: 6px; font-size: 14px;">
+                <strong>To log in at the portal, use this email address:</strong><br>${email}
+            </p>
             <p style="color: #666; font-size: 14px;">This link will expire in <strong>72 hours</strong>. If it expires, ask an admin or HR to resend it.</p>
             <hr style="margin-top: 30px; border: none; border-top: 1px solid #ddd;">
             <p style="font-size: 12px; color: #666;">
@@ -548,7 +551,8 @@ const sendWelcomeEmail = async ({ staff, workspaceEmail, tempPassword }) => {
                 <li>Complete 2-Step Verification (MFA) setup when prompted.</li>
                 <li>Your manager will be in touch shortly with your first-week schedule.</li>
             </ul>
-            <p>If you run into any issues signing in, reply to this email and IT will help you out.</p>
+            <p style="color: #666; font-size: 13px;">New accounts can occasionally take a little while to become fully active - if sign-in doesn't work right away, wait a few minutes and try again before reaching out.</p>
+            <p>If you're still having trouble after that, reply to this email and IT will help you out.</p>
             <hr style="margin-top: 30px; border: none; border-top: 1px solid #ddd;">
             <p style="font-size: 12px; color: #666;">
                 Tekvwa IT Solutions Ltd &bull; Ughelli, Delta State, Nigeria &bull; RC 9748441

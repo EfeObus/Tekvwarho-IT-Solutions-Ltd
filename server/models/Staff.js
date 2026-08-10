@@ -123,7 +123,7 @@ const Staff = {
                     can_manage_chats, can_view_analytics, can_manage_employees,
                     can_manage_payroll, can_manage_tickets, can_manage_onboarding,
                     can_view_compliance, workspace_email, workspace_provisioned_at,
-                    welcome_email_sent_at, workspace_activated_at,
+                    welcome_email_sent_at, workspace_activated_at, dashboard_setup_sent_at,
                     offer_accepted_at, hire_date, nin, tin, created_at, last_login
              FROM staff WHERE id = $1`,
             [id]
