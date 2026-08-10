@@ -145,7 +145,12 @@
                 <!-- List View -->
                 <div id="list-view">
                     <div class="card">
-                        <div class="card-header"><h3>Onboarding Checklists</h3></div>
+                        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                            <h3>Onboarding Checklists</h3>
+                            <a href="staff.html?openAddStaff=true" class="btn btn-primary btn-sm">
+                                <i class="fas fa-user-plus"></i> Add New Hire
+                            </a>
+                        </div>
                         <div class="card-body" style="padding: 0;" id="hires-list">Loading...</div>
                     </div>
                 </div>
@@ -209,6 +214,15 @@
                     const done = parseInt(h.completed_tasks, 10);
                     const pct = total ? Math.round((done / total) * 100) : 0;
                     const offerAccepted = !!h.offer_accepted_at;
+                    const provisioned = !!h.workspace_provisioned_at;
+                    const activated = !!h.workspace_activated_at;
+                    // Matches isAwaitingActivation() on the Staff page exactly -
+                    // "Awaiting Activation" means Workspace-provisioned but not
+                    // yet confirmed logged in, not just "offer accepted."
+                    let pillClass = '', pillIcon = 'hourglass-half', pillLabel = 'Pending Offer';
+                    if (activated) { pillClass = 'done'; pillIcon = 'check'; pillLabel = 'Active'; }
+                    else if (provisioned) { pillIcon = 'circle-notch'; pillLabel = 'Awaiting Activation'; }
+                    else if (offerAccepted) { pillIcon = 'clipboard-check'; pillLabel = 'Offer Accepted'; }
                     return `
                         <div class="hire-card" onclick="NewHiresPage.showDetail('${h.id}')">
                             <div>
@@ -216,8 +230,8 @@
                                 <div class="hire-meta">${this.escapeHtml(h.department || h.role)} ${h.workspace_email ? `&middot; ${this.escapeHtml(h.workspace_email)}` : ''}</div>
                             </div>
                             <div style="display:flex; align-items:center; gap:12px;">
-                                <span class="status-pill ${offerAccepted ? 'done' : ''}">
-                                    <i class="fas fa-${offerAccepted ? 'check' : 'hourglass-half'}"></i> ${offerAccepted ? 'Offer Accepted' : 'Pending Offer'}
+                                <span class="status-pill ${pillClass}">
+                                    <i class="fas fa-${pillIcon}"></i> ${pillLabel}
                                 </span>
                                 ${!offerAccepted ? `
                                     <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); window.location.href='staff.html?generateContractFor=${h.id}';">
@@ -235,6 +249,7 @@
 
             async showDetail(staffId) {
                 this.currentStaffId = staffId;
+                this._autoChecked = false;
                 document.getElementById('list-view').style.display = 'none';
                 document.getElementById('detail-view').style.display = 'block';
                 await this.loadDetail();
@@ -249,6 +264,7 @@
                 const { staff, autoStatus, tasks, workspaceConfigured } = res.data;
                 this.offerAccepted = !!staff.offerAcceptedAt;
                 this.workspaceConfigured = workspaceConfigured;
+                this.staff = staff;
 
                 document.getElementById('detail-name').textContent = staff.name;
                 document.getElementById('detail-meta').textContent =
@@ -275,6 +291,9 @@
                     <span class="status-pill ${this.offerAccepted ? 'done' : ''}" style="cursor:pointer;" onclick="NewHiresPage.toggleOfferAccepted()" title="Click to ${this.offerAccepted ? 'un-mark' : 'mark'} - gates Workspace email provisioning">
                         <i class="fas fa-${this.offerAccepted ? 'check' : 'hand-pointer'}"></i> Offer Accepted
                     </span>
+                    <span class="status-pill ${staff.workspaceActivatedAt ? 'done' : ''}" title="Set only after their first confirmed Google sign-in - this is what makes them show up on the Staff page">
+                        <i class="fas fa-${staff.workspaceActivatedAt ? 'check' : 'user-clock'}"></i> ${staff.workspaceActivatedAt ? 'Active Staff' : 'Not Yet Active'}
+                    </span>
                 `;
 
                 const renderGroup = (owner, title) => {
@@ -282,24 +301,39 @@
                     if (!groupTasks.length) return '';
                     return `
                         <div class="task-group-title">${title}</div>
-                        ${groupTasks.map(t => this.renderTask(t, workspaceConfigured)).join('')}
+                        ${groupTasks.map(t => this.renderTask(t, workspaceConfigured, staff)).join('')}
                     `;
                 };
 
                 document.getElementById('detail-tasks').innerHTML =
                     renderGroup('hr', 'HR Tasks') + renderGroup('it', 'IT Tasks');
+
+                // Most of the time this saves IT a manual "Check Now" click -
+                // there's no push notification for Google logins, so this is
+                // a one-shot poll on page view, not a background loop.
+                if (staff.welcomeEmailSentAt && !staff.workspaceActivatedAt && !this._autoChecked) {
+                    this._autoChecked = true;
+                    this.checkActivation(true);
+                }
             },
 
-            renderTask(t, workspaceConfigured) {
+            renderTask(t, workspaceConfigured, staff) {
                 const isDone = t.status === 'done';
                 const isEmailTask = t.task_key === 'email_provisioned';
-                const showProvisionBtn = isEmailTask && !isDone && workspaceConfigured;
 
                 let provisionControl = '';
-                if (showProvisionBtn) {
-                    provisionControl = this.offerAccepted
-                        ? `<button class="btn btn-sm btn-primary" onclick="NewHiresPage.provisionEmail()"><i class="fas fa-envelope-circle-check"></i> Create Workspace Account</button>`
-                        : `<button class="btn btn-sm btn-outline" disabled title="Mark Offer Accepted above first"><i class="fas fa-lock"></i> Create Workspace Account</button>`;
+                if (isEmailTask && workspaceConfigured) {
+                    if (!this.offerAccepted) {
+                        provisionControl = `<button class="btn btn-sm btn-outline" disabled title="Mark Offer Accepted above first"><i class="fas fa-lock"></i> Create Workspace Account</button>`;
+                    } else if (!staff.workspaceEmail) {
+                        provisionControl = `<button class="btn btn-sm btn-primary" onclick="NewHiresPage.provisionEmail()"><i class="fas fa-envelope-circle-check"></i> Create Workspace Account</button>`;
+                    } else if (!staff.welcomeEmailSentAt) {
+                        provisionControl = `<button class="btn btn-sm btn-primary" onclick="NewHiresPage.sendWelcomeEmail()"><i class="fas fa-paper-plane"></i> Send Welcome Email</button>`;
+                    } else if (!staff.workspaceActivatedAt) {
+                        provisionControl = `<span class="hire-meta" style="margin-right:8px;">Awaiting first sign-in&hellip;</span><button class="btn btn-sm btn-outline" onclick="NewHiresPage.checkActivation()"><i class="fas fa-rotate"></i> Check Now</button>`;
+                    } else {
+                        provisionControl = `<span class="status-pill done"><i class="fas fa-check"></i> Activated</span>`;
+                    }
                 }
 
                 return `
@@ -347,6 +381,30 @@
                     this.loadDetail();
                 } else {
                     AdminApp.showNotification(res?.message || 'Provisioning failed', 'error');
+                }
+            },
+
+            async sendWelcomeEmail() {
+                const res = await AdminApp.apiRequest(`/onboarding/${this.currentStaffId}/send-welcome-email`, { method: 'POST' });
+                if (res && res.success) {
+                    AdminApp.showNotification('Welcome email sent with temporary login details', 'success');
+                    this.loadDetail();
+                } else {
+                    AdminApp.showNotification(res?.message || 'Failed to send welcome email', 'error');
+                }
+            },
+
+            async checkActivation(silent = false) {
+                const res = await AdminApp.apiRequest(`/onboarding/${this.currentStaffId}/check-activation`, { method: 'POST' });
+                if (res && res.success) {
+                    if (res.data.activated) {
+                        AdminApp.showNotification('First sign-in confirmed - now showing as Active staff', 'success');
+                        this.loadDetail();
+                    } else if (!silent) {
+                        AdminApp.showNotification('No sign-in detected yet - try again in a few minutes', 'info');
+                    }
+                } else if (!silent) {
+                    AdminApp.showNotification(res?.message || 'Failed to check activation', 'error');
                 }
             }
         };

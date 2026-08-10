@@ -5,7 +5,7 @@ A comprehensive IT solutions website with integrated admin dashboard, live chat,
 ![License](https://img.shields.io/badge/license-Proprietary-blue)
 ![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14%2B-blue)
-![Version](https://img.shields.io/badge/version-1.10.1-orange)
+![Version](https://img.shields.io/badge/version-1.11.0-orange)
 
 ## Company Information
 
@@ -725,6 +725,49 @@ curl -X GET http://localhost:5500/api/messages \
 ---
 
 ## Changelog
+
+### v1.11.0 (August 10, 2026)
+
+#### Three-Gate Onboarding: Offer -> Workspace Activation -> Real Staff
+
+v1.10.1 activated a hire as soon as they accepted their offer. That's one
+gate; the actual requirement has three: offer accepted, then Workspace
+provisioned and welcome-emailed, then - the part that was missing -
+confirmed by the hire's own first Google sign-in. Only that last step
+should make someone read as genuinely active, working staff.
+
+Split Workspace provisioning (`POST /onboarding/:id/provision-email`) from
+sending credentials: provisioning now only creates the mailbox, and a new
+`POST /onboarding/:id/send-welcome-email` is the explicit second step,
+resetting the temp password fresh right before emailing it rather than
+reusing whatever was set at creation. A new `POST
+/onboarding/:id/check-activation` polls Google's Reports API (Directory
+API's login audit log) for a first successful sign-in since provisioning
+- there's no push notification for Google login events, so New Hires
+polls this once automatically when a candidate's detail page loads, plus
+a manual "Check Now" button. Confirmed activation sets
+`workspace_activated_at`, and staff.html now hides anyone
+Workspace-provisioned-but-not-yet-activated from the default Staff
+Management view (safe by construction - `workspace_provisioned_at` is
+only ever set by this new flow, so it can't hide a pre-existing real
+employee), with an explicit "Awaiting Activation" filter to still find
+them. New Hires and Staff Management previously computed "awaiting
+activation" two different ways after this got built incrementally - now
+both use the identical `workspace_provisioned_at && !workspace_activated_at`
+check.
+
+New Hires also gained the actual missing starting point - a "+ Add New
+Hire" button (deep-links to the Staff page's Add Staff modal, one
+implementation instead of a duplicate) - since previously the only way in
+was creating someone via the Staff page first.
+
+Fixed a real sequencing bug this surfaced in production: Add Staff's
+"email a dashboard password-setup link" checkbox defaulted to checked,
+so a new hire could receive a confusing "set up your account" email
+before ever seeing their offer letter. It's now unchecked by default
+(password is auto-generated, unused, and unemailed unless explicitly
+opted into) - the offer letter is the only thing that goes out at
+creation time.
 
 ### v1.10.1 (August 9, 2026)
 

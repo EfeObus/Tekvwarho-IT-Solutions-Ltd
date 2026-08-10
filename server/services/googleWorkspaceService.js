@@ -23,7 +23,15 @@
 const { google } = require('googleapis');
 const crypto = require('crypto');
 
-const SCOPES = ['https://www.googleapis.com/auth/admin.directory.user'];
+// admin.reports.audit.readonly is used only for hasLoggedIn() - detecting a
+// hire's first Google sign-in so they can be promoted to real Active staff
+// (see checkActivation in routes/onboarding.js). Both scopes must be added
+// to this service account's domain-wide delegation authorization in the
+// Workspace Admin Console, not just requested here - see README.
+const SCOPES = [
+    'https://www.googleapis.com/auth/admin.directory.user',
+    'https://www.googleapis.com/auth/admin.reports.audit.readonly'
+];
 const PASSWORD_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%';
 
 function isWorkspaceConfigured() {
@@ -34,15 +42,22 @@ function isWorkspaceConfigured() {
     );
 }
 
-function getAdminClient() {
+function getAuthClient() {
     const key = JSON.parse(process.env.GOOGLE_WORKSPACE_SA_KEY);
-    const auth = new google.auth.JWT({
+    return new google.auth.JWT({
         email: key.client_email,
         key: key.private_key,
         scopes: SCOPES,
         subject: process.env.GOOGLE_WORKSPACE_ADMIN_EMAIL
     });
-    return google.admin({ version: 'directory_v1', auth });
+}
+
+function getAdminClient() {
+    return google.admin({ version: 'directory_v1', auth: getAuthClient() });
+}
+
+function getReportsClient() {
+    return google.admin({ version: 'reports_v1', auth: getAuthClient() });
 }
 
 function generateTempPassword() {
@@ -144,4 +159,51 @@ async function provisionWorkspaceUser({ fullName, department }) {
     return { email, tempPassword };
 }
 
-module.exports = { isWorkspaceConfigured, provisionWorkspaceUser };
+/**
+ * Set a fresh temporary password on an already-provisioned account, right
+ * before emailing it - keeps "Send Welcome Email" as its own explicit step
+ * without a stale/unused password sitting in memory or the DB between
+ * provisioning and whenever IT actually sends it.
+ */
+async function resetWorkspacePassword(workspaceEmail) {
+    if (!isWorkspaceConfigured()) {
+        throw new Error('Google Workspace is not configured');
+    }
+    const admin = getAdminClient();
+    const tempPassword = generateTempPassword();
+    await admin.users.update({
+        userKey: workspaceEmail,
+        requestBody: { password: tempPassword, changePasswordAtNextLogin: true }
+    });
+    return tempPassword;
+}
+
+/**
+ * Has this user signed in successfully at least once since `sinceDate`
+ * (their Workspace provisioning time)? Backed by the Reports API's login
+ * audit log, which is pull-only - Google doesn't push login events, so
+ * callers (checkActivation route) poll this on demand rather than being
+ * notified. Any error (including "no activity yet," which the API can
+ * surface as an error for a brand-new account) is treated as "not signed
+ * in yet" rather than failing the caller - this is a convenience check,
+ * not a security gate.
+ */
+async function hasLoggedIn(workspaceEmail, sinceDate) {
+    if (!isWorkspaceConfigured()) return false;
+    try {
+        const reports = getReportsClient();
+        const res = await reports.activities.list({
+            userKey: workspaceEmail,
+            applicationName: 'login',
+            eventName: 'login_success',
+            startTime: new Date(sinceDate).toISOString(),
+            maxResults: 1
+        });
+        return !!(res.data.items && res.data.items.length > 0);
+    } catch (error) {
+        console.error(`Workspace login check failed for ${workspaceEmail}:`, error.message);
+        return false;
+    }
+}
+
+module.exports = { isWorkspaceConfigured, provisionWorkspaceUser, resetWorkspacePassword, hasLoggedIn };

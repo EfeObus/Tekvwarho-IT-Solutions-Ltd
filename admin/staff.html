@@ -165,6 +165,7 @@
                                 <option value="">All Status</option>
                                 <option value="active">Active</option>
                                 <option value="inactive">Inactive</option>
+                                <option value="awaiting_activation">Awaiting Activation</option>
                             </select>
                         </div>
                     </div>
@@ -272,15 +273,15 @@
 
                     <div class="form-group" id="setup-link-row">
                         <label class="checkbox-label">
-                            <input type="checkbox" id="staff-send-setup-link" checked>
-                            <span>Email the new hire a link to set their own password (recommended)</span>
+                            <input type="checkbox" id="staff-send-setup-link">
+                            <span>Email a dashboard password-setup link right now (not needed for the normal flow - they won't be able to log in until they accept their offer anyway, so this is only for edge cases like re-adding a former employee directly)</span>
                         </label>
                     </div>
 
                     <div class="form-row" id="password-row">
                         <div class="form-group" id="password-field-group">
-                            <label for="staff-password">Password *</label>
-                            <input type="password" id="staff-password" class="form-control" minlength="8" placeholder="Minimum 8 characters">
+                            <label for="staff-password">Password</label>
+                            <input type="password" id="staff-password" class="form-control" minlength="8" placeholder="Leave blank to auto-generate (not needed until they're onboarded)">
                         </div>
                         <div class="form-group">
                             <label for="staff-role">Role *</label>
@@ -617,21 +618,31 @@
             async init() {
                 this.bindEvents();
                 await this.loadStaff();
-                this.openContractModalFromQueryParam();
+                this.handleDeepLinkQueryParams();
             },
 
-            // Deep-link from the New Hires page ("Generate & Send Offer"),
-            // which doesn't duplicate this modal - it just navigates here
-            // with the candidate pre-selected.
-            openContractModalFromQueryParam() {
+            // Deep-links from the New Hires page - "Generate & Send Offer"
+            // (pre-selects a candidate in the Contract modal) and "+ Add New
+            // Hire" (opens the Add Staff modal). Neither duplicates its
+            // target modal - New Hires just navigates here with the right
+            // starting state, so there's one implementation of each.
+            handleDeepLinkQueryParams() {
                 const params = new URLSearchParams(window.location.search);
-                const staffId = params.get('generateContractFor');
-                if (!staffId) return;
-                const member = this.staffList.find(s => s.id === staffId);
-                if (member) {
-                    this.openContractModal(member.id, member.name, member.department, !!member.is_active);
+                const contractForId = params.get('generateContractFor');
+                const openAddStaff = params.get('openAddStaff') === 'true';
+
+                if (contractForId) {
+                    const member = this.staffList.find(s => s.id === contractForId);
+                    if (member) {
+                        this.openContractModal(member.id, member.name, member.department, !!member.is_active);
+                    }
+                } else if (openAddStaff) {
+                    this.openModal();
                 }
-                window.history.replaceState({}, '', 'staff.html');
+
+                if (contractForId || openAddStaff) {
+                    window.history.replaceState({}, '', 'staff.html');
+                }
             },
             
             bindEvents() {
@@ -734,8 +745,9 @@
                     const response = await AdminApp.apiRequest('/admin/staff');
                     if (response.success) {
                         this.staffList = response.data;
-                        this.renderTable(response.data);
-                        this.updateStats(response.data);
+                        const visible = this.staffList.filter(s => !this.isAwaitingActivation(s));
+                        this.renderTable(visible);
+                        this.updateStats(visible);
                     }
                 } catch (error) {
                     console.error('Failed to load staff:', error);
@@ -744,7 +756,16 @@
                     `;
                 }
             },
-            
+
+            // Provisioned but not yet confirmed logged in for the first
+            // time - the last of three onboarding gates. Never matches
+            // legacy staff (workspace_provisioned_at is only ever set by
+            // the new-hire provisioning flow), so hiding these by default
+            // can't accidentally hide a real existing employee.
+            isAwaitingActivation(s) {
+                return !!s.workspace_provisioned_at && !s.workspace_activated_at;
+            },
+
             updateStats(staff) {
                 document.getElementById('total-staff').textContent = staff.length;
                 document.getElementById('active-staff').textContent = staff.filter(s => s.is_active).length;
@@ -804,11 +825,13 @@
                             </div>
                         </td>
                         <td>
-                            ${member.is_active
-                                ? '<span class="status-badge status-active">Active</span>'
-                                : member.offer_accepted_at
-                                    ? '<span class="status-badge status-inactive">Inactive</span>'
-                                    : '<span class="status-badge status-pending" title="Hasn\'t accepted their offer yet - can\'t log in or use permissions until then">Pending Offer</span>'
+                            ${this.isAwaitingActivation(member)
+                                ? '<span class="status-badge status-pending" title="Workspace account created - waiting on their first Google sign-in before they count as fully Active">Awaiting Activation</span>'
+                                : member.is_active
+                                    ? '<span class="status-badge status-active">Active</span>'
+                                    : member.offer_accepted_at
+                                        ? '<span class="status-badge status-inactive">Inactive</span>'
+                                        : '<span class="status-badge status-pending" title="Hasn\'t accepted their offer yet - can\'t log in or use permissions until then">Pending Offer</span>'
                             }
                         </td>
                         <td>${member.last_login ? this.formatDate(member.last_login) : 'Never'}</td>
@@ -856,18 +879,22 @@
             applyFilters() {
                 const role = document.getElementById('filter-role').value;
                 const status = document.getElementById('filter-status').value;
-                
+
                 let filtered = this.staffList;
-                
+
                 if (role) {
                     filtered = filtered.filter(s => s.role === role);
                 }
-                
-                if (status) {
+
+                if (status === 'awaiting_activation') {
+                    filtered = filtered.filter(s => this.isAwaitingActivation(s));
+                } else if (status) {
                     const isActive = status === 'active';
-                    filtered = filtered.filter(s => s.is_active === isActive);
+                    filtered = filtered.filter(s => s.is_active === isActive && !this.isAwaitingActivation(s));
+                } else {
+                    filtered = filtered.filter(s => !this.isAwaitingActivation(s));
                 }
-                
+
                 this.renderTable(filtered);
             },
             
@@ -925,21 +952,23 @@
                     document.getElementById('staff-email').disabled = false;
                     document.getElementById('workspace-email-row').style.display = 'none';
                     document.getElementById('setup-link-row').style.display = 'block';
-                    document.getElementById('staff-send-setup-link').checked = true;
-                    this.toggleSetupLinkMode(true);
+                    document.getElementById('staff-send-setup-link').checked = false;
+                    this.toggleSetupLinkMode(false);
                     document.getElementById('hire-extras').style.display = 'block';
                 }
 
                 modal.classList.add('active');
             },
 
-            // When sending a setup link, HR/admin never sets (or sees) a
-            // real password - the field is hidden and not required.
+            // Password is never required for a new hire - it's either
+            // auto-generated (normal case, no email sent) or, if the admin
+            // explicitly opts into the setup-link checkbox for an edge
+            // case, HR/admin never sets (or sees) the real one either way.
             toggleSetupLinkMode(sendingSetupLink) {
                 const passwordGroup = document.getElementById('password-field-group');
                 const passwordInput = document.getElementById('staff-password');
                 passwordGroup.style.display = sendingSetupLink ? 'none' : 'block';
-                passwordInput.required = !sendingSetupLink;
+                passwordInput.required = false;
                 if (sendingSetupLink) {
                     passwordInput.value = '';
                 }
@@ -982,7 +1011,7 @@
                     return;
                 }
 
-                if (!id && !sendSetupLink && (!password || password.length < 8)) {
+                if (!id && password && password.length < 8) {
                     errorDiv.textContent = 'Password must be at least 8 characters';
                     errorDiv.style.display = 'block';
                     return;

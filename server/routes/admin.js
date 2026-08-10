@@ -448,9 +448,10 @@ router.get('/staff/active', authMiddleware, async (req, res) => {
  */
 router.post('/staff', authMiddleware, hrOrAdmin, [
     body('email').isEmail().withMessage('Valid email is required'),
-    // Either a manual password OR sendSetupLink is required - checked below,
-    // since express-validator can't easily express "one of these two".
-    body('password').if((value, { req }) => !req.body.sendSetupLink).isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
+    // Password is optional - a new hire doesn't need a real one until they
+    // accept their offer and someone explicitly sends setup credentials
+    // (sendSetupLink), so a random, unused one is generated when omitted.
+    body('password').optional({ checkFalsy: true }).isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
     body('name').trim().notEmpty().withMessage('Name is required'),
     body('role').isIn(['admin', 'manager', 'staff', 'hr', 'accountant']).withMessage('Invalid role'),
     body('nin').trim().isLength({ min: 11, max: 11 }).isNumeric().withMessage('NIN is required and must be 11 digits'),
@@ -466,11 +467,13 @@ router.post('/staff', authMiddleware, hrOrAdmin, [
         }
 
         const { email, name, role, department, phone, nin, tin, permissions, sendSetupLink } = req.body;
-        // A setup-link hire never has HR/admin choose (or even see) a real
-        // password - a random one is generated here and immediately
-        // superseded by the emailed link, matching the "employee sets their
-        // own password" flow rather than "HR tells them a password".
-        const password = sendSetupLink ? crypto.randomBytes(24).toString('hex') : req.body.password;
+        // New hires created without a manual password (the normal case,
+        // now that onboarding starts with an offer letter, not dashboard
+        // credentials) get a random, unused one here - nobody needs to
+        // know it until sendSetupLink (or a later reset) actually emails
+        // real credentials, and is_active stays false regardless until
+        // they've accepted their offer.
+        const password = req.body.password || crypto.randomBytes(24).toString('hex');
 
         // hrOrAdmin lets HR create/onboard staff, but HR must not be able to
         // mint a fellow admin (or itself) into the admin tier - only an actual

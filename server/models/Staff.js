@@ -123,6 +123,7 @@ const Staff = {
                     can_manage_chats, can_view_analytics, can_manage_employees,
                     can_manage_payroll, can_manage_tickets, can_manage_onboarding,
                     can_view_compliance, workspace_email, workspace_provisioned_at,
+                    welcome_email_sent_at, workspace_activated_at,
                     offer_accepted_at, hire_date, nin, tin, created_at, last_login
              FROM staff WHERE id = $1`,
             [id]
@@ -140,7 +141,9 @@ const Staff = {
                    must_change_password, can_manage_messages, can_manage_consultations,
                    can_manage_chats, can_view_analytics, can_manage_employees,
                    can_manage_payroll, can_manage_tickets, can_manage_onboarding,
-                   can_view_compliance, workspace_email, offer_accepted_at, hire_date, nin, tin, created_at, last_login
+                   can_view_compliance, workspace_email, workspace_provisioned_at,
+                   welcome_email_sent_at, workspace_activated_at, offer_accepted_at,
+                   hire_date, nin, tin, created_at, last_login
             FROM staff
         `;
         const conditions = [];
@@ -239,6 +242,7 @@ const Staff = {
             canManageOnboarding: 'can_manage_onboarding',
             canViewCompliance: 'can_view_compliance',
             offerAcceptedAt: 'offer_accepted_at',
+            workspaceActivatedAt: 'workspace_activated_at',
             nin: 'nin',
             tin: 'tin'
             // Note: base_salary is deliberately NOT editable through this method.

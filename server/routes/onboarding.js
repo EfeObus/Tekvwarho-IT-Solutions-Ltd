@@ -16,7 +16,7 @@ const router = express.Router();
 const { authMiddleware, hasPermission } = require('../middleware/auth');
 const db = require('../config/database');
 const Staff = require('../models/Staff');
-const { provisionWorkspaceUser, isWorkspaceConfigured } = require('../services/googleWorkspaceService');
+const { provisionWorkspaceUser, isWorkspaceConfigured, resetWorkspacePassword, hasLoggedIn } = require('../services/googleWorkspaceService');
 const { sendWelcomeEmail } = require('../services/emailService');
 
 async function getAutoStatus(staffId) {
@@ -42,7 +42,8 @@ async function getAutoStatus(staffId) {
 router.get('/', authMiddleware, hasPermission('onboarding'), async (req, res) => {
     try {
         const result = await db.query(`
-            SELECT s.id, s.name, s.email, s.role, s.department, s.hire_date, s.workspace_email, s.offer_accepted_at,
+            SELECT s.id, s.name, s.email, s.role, s.department, s.hire_date, s.workspace_email,
+                   s.workspace_provisioned_at, s.offer_accepted_at, s.welcome_email_sent_at, s.workspace_activated_at,
                    COUNT(t.id) AS total_tasks,
                    COUNT(t.id) FILTER (WHERE t.status = 'done') AS completed_tasks
             FROM staff s
@@ -88,6 +89,7 @@ router.get('/:staffId', authMiddleware, hasPermission('onboarding'), async (req,
                     id: staff.id, name: staff.name, email: staff.email, role: staff.role,
                     department: staff.department, hireDate: staff.hire_date,
                     workspaceEmail: staff.workspace_email, workspaceProvisionedAt: staff.workspace_provisioned_at,
+                    welcomeEmailSentAt: staff.welcome_email_sent_at, workspaceActivatedAt: staff.workspace_activated_at,
                     offerAcceptedAt: staff.offer_accepted_at
                 },
                 autoStatus,
@@ -160,11 +162,12 @@ router.patch('/:staffId/offer-accepted', authMiddleware, hasPermission('onboardi
 
 /**
  * POST /api/onboarding/:staffId/provision-email
- * Creates the @tekvwa.org Google Workspace mailbox via the Admin SDK,
- * emails the new credentials + first-day info to the hire's personal
- * address, and marks the email_provisioned task done automatically.
- * Requires GOOGLE_WORKSPACE_* to be configured - returns 501 otherwise so
- * the UI can fall back to the manual checklist toggle.
+ * Creates the @tekvwa.org Google Workspace mailbox via the Admin SDK and
+ * marks the email_provisioned task done. Deliberately does NOT email
+ * anything yet - that's the separate "Send Welcome Email" step below, so
+ * IT can verify the account (licenses, groups, OU) before credentials go
+ * out. Requires GOOGLE_WORKSPACE_* to be configured - returns 501
+ * otherwise so the UI can fall back to the manual checklist toggle.
  */
 router.post('/:staffId/provision-email', authMiddleware, hasPermission('onboarding'), async (req, res) => {
     try {
@@ -185,11 +188,8 @@ router.post('/:staffId/provision-email', authMiddleware, hasPermission('onboardi
         if (staff.workspace_email) {
             return res.status(400).json({ success: false, message: `Already provisioned: ${staff.workspace_email}` });
         }
-        if (!staff.email) {
-            return res.status(400).json({ success: false, message: 'Staff member has no personal email on file to send credentials to' });
-        }
 
-        const { email: workspaceEmail, tempPassword } = await provisionWorkspaceUser({
+        const { email: workspaceEmail } = await provisionWorkspaceUser({
             fullName: staff.name,
             department: staff.department
         });
@@ -198,8 +198,6 @@ router.post('/:staffId/provision-email', authMiddleware, hasPermission('onboardi
             'UPDATE staff SET workspace_email = $1, workspace_provisioned_at = CURRENT_TIMESTAMP WHERE id = $2',
             [workspaceEmail, staff.id]
         );
-
-        await sendWelcomeEmail({ staff, workspaceEmail, tempPassword });
 
         await db.query(
             `UPDATE onboarding_tasks
@@ -212,6 +210,73 @@ router.post('/:staffId/provision-email', authMiddleware, hasPermission('onboardi
     } catch (error) {
         console.error('Provision workspace email error:', error);
         res.status(500).json({ success: false, message: error.message || 'Failed to provision Workspace account' });
+    }
+});
+
+/**
+ * POST /api/onboarding/:staffId/send-welcome-email
+ * Sets a fresh temp password on the already-provisioned Workspace account
+ * and emails it plus first-day info to the hire's personal address. The
+ * explicit second step the flow calls for - IT confirms the account is
+ * ready, then this fires the credentials out.
+ */
+router.post('/:staffId/send-welcome-email', authMiddleware, hasPermission('onboarding'), async (req, res) => {
+    try {
+        const staff = await Staff.findById(req.params.staffId);
+        if (!staff) {
+            return res.status(404).json({ success: false, message: 'Staff member not found' });
+        }
+        if (!staff.workspace_email) {
+            return res.status(400).json({ success: false, message: 'Create the Workspace account first' });
+        }
+        if (!staff.email) {
+            return res.status(400).json({ success: false, message: 'Staff member has no personal email on file to send credentials to' });
+        }
+
+        const tempPassword = await resetWorkspacePassword(staff.workspace_email);
+        await sendWelcomeEmail({ staff, workspaceEmail: staff.workspace_email, tempPassword });
+
+        await db.query('UPDATE staff SET welcome_email_sent_at = CURRENT_TIMESTAMP WHERE id = $1', [staff.id]);
+
+        res.json({ success: true, data: { workspaceEmail: staff.workspace_email } });
+    } catch (error) {
+        console.error('Send welcome email error:', error);
+        res.status(500).json({ success: false, message: error.message || 'Failed to send welcome email' });
+    }
+});
+
+/**
+ * POST /api/onboarding/:staffId/check-activation
+ * The last of three gates: offer accepted -> Workspace provisioned +
+ * welcome email sent -> confirmed first Google sign-in. There's no push
+ * notification for Google login events, so this polls the Reports API on
+ * demand (called when the New Hires detail page loads, and via a manual
+ * "Check Now" button) rather than running continuously in the background.
+ * Once confirmed, the hire is promoted to real Active staff and starts
+ * showing up in Staff Management.
+ */
+router.post('/:staffId/check-activation', authMiddleware, hasPermission('onboarding'), async (req, res) => {
+    try {
+        const staff = await Staff.findById(req.params.staffId);
+        if (!staff) {
+            return res.status(404).json({ success: false, message: 'Staff member not found' });
+        }
+        if (staff.workspace_activated_at) {
+            return res.json({ success: true, data: { activated: true, alreadyActivated: true } });
+        }
+        if (!staff.workspace_email || !staff.workspace_provisioned_at) {
+            return res.status(400).json({ success: false, message: 'Workspace account not yet provisioned' });
+        }
+
+        const loggedIn = await hasLoggedIn(staff.workspace_email, staff.workspace_provisioned_at);
+        if (loggedIn) {
+            await Staff.update(staff.id, { workspaceActivatedAt: new Date().toISOString() });
+        }
+
+        res.json({ success: true, data: { activated: loggedIn } });
+    } catch (error) {
+        console.error('Check activation error:', error);
+        res.status(500).json({ success: false, message: 'Failed to check activation status' });
     }
 });
 
