@@ -336,44 +336,19 @@
                         </div>
                     </div>
 
-                    <!-- Compensation and Contract are only offered when hiring a new
-                         staff member - editing existing staff still uses the Payroll
-                         page for salary changes and the per-row "Generate Contract"
-                         action, so those stay the single source of truth. -->
+                    <!-- No compensation fields here - salary is entered once,
+                         on the offer letter, and synced into Payroll
+                         automatically when the candidate accepts (see
+                         POST /contracts/accept/:token). A second manual
+                         entry point here would let the two numbers drift. -->
                     <div id="hire-extras">
-                        <div class="form-group">
-                            <label>Compensation (optional now, can be set later on the Payroll page)</label>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="hire-basic-salary">Basic Salary (Monthly, NGN)</label>
-                                    <input type="number" id="hire-basic-salary" class="form-control" min="0" step="1000" placeholder="e.g. 250000">
-                                </div>
-                                <div class="form-group">
-                                    <label for="hire-housing">Housing Allowance</label>
-                                    <input type="number" id="hire-housing" class="form-control" min="0" step="1000" placeholder="0">
-                                </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="hire-transport">Transport Allowance</label>
-                                    <input type="number" id="hire-transport" class="form-control" min="0" step="1000" placeholder="0">
-                                </div>
-                                <div class="form-group">
-                                    <label for="hire-utility">Utility Allowance</label>
-                                    <input type="number" id="hire-utility" class="form-control" min="0" step="1000" placeholder="0">
-                                </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="hire-meal">Meal / Entertainment Allowance</label>
-                                    <input type="number" id="hire-meal" class="form-control" min="0" step="1000" placeholder="0">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="alert alert-info" style="margin-top: 12px;">
+                        <div class="alert alert-info">
                             <i class="fas fa-circle-info"></i>
-                            After saving, find this person's row in the Staff table below and click the blue <strong><i class="fas fa-file-signature"></i> Contract</strong> button in the Actions column (far right) to generate and send the employment contract - the same button used for existing staff, so there's a single, consistent way to do it either way.
+                            This person won't appear as Active, and can't log in, until they accept an offer.
+                            After saving, find their row in the Staff table below (status: <strong>Pending Offer</strong>)
+                            and click <strong><i class="fas fa-file-signature"></i> Send Offer</strong> to set their
+                            salary and send it - accepting is what sets their Payroll compensation and activates
+                            their account.
                         </div>
                     </div>
 
@@ -444,7 +419,7 @@
     <div class="modal-overlay" id="contract-modal">
         <div class="modal" style="max-width: 680px;">
             <div class="modal-header">
-                <h3>Generate Employment Offer Letter</h3>
+                <h3 id="contract-modal-title">Generate Employment Offer Letter</h3>
                 <button class="modal-close" onclick="document.getElementById('contract-modal').classList.remove('active')">
                     <i class="fas fa-times"></i>
                 </button>
@@ -642,6 +617,21 @@
             async init() {
                 this.bindEvents();
                 await this.loadStaff();
+                this.openContractModalFromQueryParam();
+            },
+
+            // Deep-link from the New Hires page ("Generate & Send Offer"),
+            // which doesn't duplicate this modal - it just navigates here
+            // with the candidate pre-selected.
+            openContractModalFromQueryParam() {
+                const params = new URLSearchParams(window.location.search);
+                const staffId = params.get('generateContractFor');
+                if (!staffId) return;
+                const member = this.staffList.find(s => s.id === staffId);
+                if (member) {
+                    this.openContractModal(member.id, member.name, member.department, !!member.is_active);
+                }
+                window.history.replaceState({}, '', 'staff.html');
             },
             
             bindEvents() {
@@ -814,9 +804,12 @@
                             </div>
                         </td>
                         <td>
-                            <span class="status-badge ${member.is_active ? 'status-active' : 'status-inactive'}">
-                                ${member.is_active ? 'Active' : 'Inactive'}
-                            </span>
+                            ${member.is_active
+                                ? '<span class="status-badge status-active">Active</span>'
+                                : member.offer_accepted_at
+                                    ? '<span class="status-badge status-inactive">Inactive</span>'
+                                    : '<span class="status-badge status-pending" title="Hasn\'t accepted their offer yet - can\'t log in or use permissions until then">Pending Offer</span>'
+                            }
                         </td>
                         <td>${member.last_login ? this.formatDate(member.last_login) : 'Never'}</td>
                         <td>
@@ -827,8 +820,8 @@
                                 <button class="btn-icon" title="Reset Password" onclick="StaffPage.openResetPassword('${member.id}', '${safeNameJs}')">
                                     <i class="fas fa-key"></i>
                                 </button>
-                                <button class="btn-icon btn-labeled btn-contract" title="Generate employment contract PDF for this staff member" onclick="StaffPage.openContractModal('${member.id}', '${safeNameJs}', '${this.escapeHtml(member.department || '').replace(/'/g, "\\'")}')">
-                                    <i class="fas fa-file-signature"></i> Contract
+                                <button class="btn-icon btn-labeled btn-contract" title="${member.is_active ? 'Generate a new contract for a promotion or salary change' : 'Generate and send the initial employment offer'}" onclick="StaffPage.openContractModal('${member.id}', '${safeNameJs}', '${this.escapeHtml(member.department || '').replace(/'/g, "\\'")}', ${member.is_active ? 'true' : 'false'})">
+                                    <i class="fas fa-file-signature"></i> ${member.is_active ? 'New Contract' : 'Send Offer'}
                                 </button>
                                 ${member.is_active 
                                     ? `<button class="btn-icon text-warning" title="Deactivate" onclick="StaffPage.toggleStatus('${member.id}', false)">
@@ -1044,9 +1037,6 @@
                                 : ' - setup email failed to send, use "Reset Password" to generate credentials manually';
                         }
                         AdminApp.showNotification(id ? 'Staff member updated' : addedMessage, 'success');
-                        if (!id) {
-                            await this.finishHiring(response.data.id);
-                        }
                         await this.loadStaff();
                     } else {
                         errorDiv.textContent = response.message || 'Failed to save';
@@ -1062,30 +1052,6 @@
                 }
             },
 
-            // Runs right after a new staff member is created: sets compensation
-            // if entered. Contract generation is deliberately NOT done here -
-            // it's always the per-row "Generate Contract" action (same one
-            // used for existing staff), so there's exactly one implementation
-            // instead of two that can drift apart.
-            async finishHiring(staffId) {
-                const baseSalary = parseFloat(document.getElementById('hire-basic-salary').value) || 0;
-                if (baseSalary <= 0) return;
-
-                const salaryRes = await AdminApp.apiRequest(`/admin/staff/${staffId}/salary`, {
-                    method: 'PUT',
-                    body: JSON.stringify({
-                        baseSalary,
-                        housingAllowance: parseFloat(document.getElementById('hire-housing').value) || 0,
-                        transportAllowance: parseFloat(document.getElementById('hire-transport').value) || 0,
-                        utilityAllowance: parseFloat(document.getElementById('hire-utility').value) || 0,
-                        mealAllowance: parseFloat(document.getElementById('hire-meal').value) || 0
-                    })
-                });
-                if (!salaryRes || !salaryRes.success) {
-                    AdminApp.showNotification(salaryRes?.message || 'Staff created, but setting compensation failed - set it on the Payroll page', 'error');
-                }
-            },
-            
             openResetPassword(staffId, staffName) {
                 document.getElementById('reset-staff-id').value = staffId;
                 document.getElementById('reset-staff-name').textContent = staffName;
@@ -1132,7 +1098,11 @@
                 }
             },
 
-            async openContractModal(staffId, staffName, department) {
+            async openContractModal(staffId, staffName, department, isPromotion) {
+                if (isPromotion && !confirm(`${staffName} has already accepted an employment offer. This generates a NEW contract - use this for a promotion or salary change, not the original offer. Continue?`)) {
+                    return;
+                }
+                document.getElementById('contract-modal-title').textContent = isPromotion ? 'Generate New Contract (Promotion / Raise)' : 'Generate Employment Offer Letter';
                 document.getElementById('contract-staff-id').value = staffId;
                 document.getElementById('contract-staff-name').textContent = staffName;
                 document.getElementById('contract-job-title').value = '';

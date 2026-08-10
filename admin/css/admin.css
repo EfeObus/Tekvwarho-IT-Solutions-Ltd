@@ -1312,6 +1312,11 @@ select.form-control {
     color: #721c24;
 }
 
+.status-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
 /* Action Buttons */
 .action-buttons {
     display: flex;

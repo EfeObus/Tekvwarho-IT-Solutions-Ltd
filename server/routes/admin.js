@@ -68,7 +68,9 @@ router.post('/login', loginLimiter, [
             });
             return res.status(401).json({
                 success: false,
-                message: 'Account is disabled. Please contact an administrator.'
+                message: staff.offer_accepted_at
+                    ? 'Account is disabled. Please contact an administrator.'
+                    : 'Your account isn\'t active yet - please accept your offer letter first (check your email), or contact HR.'
             });
         }
 

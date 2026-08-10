@@ -5,7 +5,7 @@ A comprehensive IT solutions website with integrated admin dashboard, live chat,
 ![License](https://img.shields.io/badge/license-Proprietary-blue)
 ![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14%2B-blue)
-![Version](https://img.shields.io/badge/version-1.10.0-orange)
+![Version](https://img.shields.io/badge/version-1.10.1-orange)
 
 ## Company Information
 
@@ -725,6 +725,35 @@ curl -X GET http://localhost:5500/api/messages \
 ---
 
 ## Changelog
+
+### v1.10.1 (August 9, 2026)
+
+#### Candidate/Staff Lifecycle - A Real Gap, Not Just a UI Fix
+
+v1.10.0 added electronic offer acceptance but left the underlying lifecycle
+unfixed: Add Staff created a full, `is_active: true` staff row immediately
+- with an optional setup-link email sent independently of the offer letter
+- meaning a candidate could set a dashboard password and start using real
+permissions before ever accepting an offer, while showing up in Staff
+Management as "Active" identically to a real employee. There was also no
+way to generate an offer from the New Hires page (only a read-only
+"Contract Generated" status pill), and a second, redundant place to type
+compensation (Add Staff's own Compensation fields, separate from the offer
+letter's), risking two salary figures that could quietly diverge.
+
+Fixed the actual sequence: new hires now start `is_active: false` and
+can't log in at all (with a clear message pointing them to their offer
+email) until they accept. Acceptance now does three things atomically -
+marks the offer accepted, activates the staff record (this is the moment
+they actually become "staff"), and syncs the offer's salary and allowances
+into Payroll directly, so there's one place compensation is ever typed in,
+not two. Removed Add Staff's now-redundant Compensation fields entirely.
+Staff Management shows a third status - Pending Offer - distinct from
+Active/Inactive, and its contract button now reads "Send Offer" for a
+pending candidate vs. "New Contract" (with a confirmation, since it's now
+a promotion/raise action) for someone already active. New Hires gained the
+actual missing action - "Send Offer" - surfaced directly on each
+candidate's row in the list, not buried behind a click into detail view.
 
 ### v1.10.0 (August 9, 2026)
 

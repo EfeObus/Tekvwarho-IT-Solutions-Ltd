@@ -9,7 +9,16 @@ const { v4: uuidv4 } = require('uuid');
 
 const Staff = {
     /**
-     * Create a new staff member (onboarding by admin)
+     * Create a new staff member (onboarding by admin).
+     *
+     * New hires start inactive (isActive: false) by default - they can't
+     * log in, and don't read as a real "Active" employee, until either
+     * they accept their offer letter (POST /contracts/accept/:token
+     * flips this automatically) or an admin explicitly activates them for
+     * cases that skip the offer-letter flow entirely (re-adding a legacy
+     * employee, an emergency same-day add). This closes the gap where a
+     * candidate who hasn't accepted anything yet could already log in and
+     * use real permissions the moment they set a dashboard password.
      */
     async create({
         email,
@@ -22,7 +31,8 @@ const Staff = {
         hireDate = null,
         nin = null,
         tin = null,
-        permissions = {}
+        permissions = {},
+        isActive = false
     }) {
         const id = uuidv4();
         const passwordHash = await bcrypt.hash(password, 12);
@@ -45,7 +55,7 @@ const Staff = {
             [
                 id, email, passwordHash, name, role, department, phone,
                 true, // must_change_password - new staff must change password
-                true, // is_active
+                isActive,
                 createdBy,
                 hireDate,
                 nin,

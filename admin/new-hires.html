@@ -159,6 +159,9 @@
                             <h3 id="detail-name" style="margin: 0 0 4px;"></h3>
                             <div class="hire-meta" id="detail-meta"></div>
                             <div class="status-pill-row" id="detail-status-pills" style="margin-top: 16px;"></div>
+                            <button class="btn btn-primary btn-sm" id="detail-generate-contract-btn" style="margin-top: 4px;">
+                                <i class="fas fa-file-signature"></i> <span id="detail-generate-contract-label">Generate &amp; Send Offer</span>
+                            </button>
                         </div>
                     </div>
 
@@ -205,6 +208,7 @@
                     const total = parseInt(h.total_tasks, 10);
                     const done = parseInt(h.completed_tasks, 10);
                     const pct = total ? Math.round((done / total) * 100) : 0;
+                    const offerAccepted = !!h.offer_accepted_at;
                     return `
                         <div class="hire-card" onclick="NewHiresPage.showDetail('${h.id}')">
                             <div>
@@ -212,6 +216,14 @@
                                 <div class="hire-meta">${this.escapeHtml(h.department || h.role)} ${h.workspace_email ? `&middot; ${this.escapeHtml(h.workspace_email)}` : ''}</div>
                             </div>
                             <div style="display:flex; align-items:center; gap:12px;">
+                                <span class="status-pill ${offerAccepted ? 'done' : ''}">
+                                    <i class="fas fa-${offerAccepted ? 'check' : 'hourglass-half'}"></i> ${offerAccepted ? 'Offer Accepted' : 'Pending Offer'}
+                                </span>
+                                ${!offerAccepted ? `
+                                    <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); window.location.href='staff.html?generateContractFor=${h.id}';">
+                                        <i class="fas fa-file-signature"></i> Send Offer
+                                    </button>
+                                ` : ''}
                                 <span class="hire-meta">${done}/${total} tasks</span>
                                 <div class="hire-progress-bar"><div class="hire-progress-fill ${pct === 100 ? 'complete' : ''}" style="width:${pct}%;"></div></div>
                                 <i class="fas fa-chevron-right text-muted"></i>
@@ -241,6 +253,15 @@
                 document.getElementById('detail-name').textContent = staff.name;
                 document.getElementById('detail-meta').textContent =
                     `${staff.department || staff.role}${staff.hireDate ? ' · Hired ' + new Date(staff.hireDate).toLocaleDateString() : ''}`;
+
+                // Contract generation has exactly one implementation, on the
+                // Staff page - this just deep-links there with the right
+                // person pre-selected instead of duplicating that whole modal.
+                document.getElementById('detail-generate-contract-label').textContent =
+                    this.offerAccepted ? 'New Contract (Promotion / Raise)' : 'Generate & Send Offer';
+                document.getElementById('detail-generate-contract-btn').onclick = () => {
+                    window.location.href = `staff.html?generateContractFor=${this.currentStaffId}`;
+                };
 
                 const pills = [
                     ['Contract Generated', autoStatus.contractGenerated],

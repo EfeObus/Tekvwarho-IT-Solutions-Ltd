@@ -255,7 +255,24 @@ router.post('/accept/:token', contractAcceptLimiter, [
             [req.ip, req.body.signatureName.trim(), contract.id]
         );
 
-        await Staff.update(contract.staff_id, { offerAcceptedAt: new Date().toISOString() });
+        // Acceptance is what actually makes this person a staff member, not
+        // the earlier Add Staff form submission - they couldn't log in or
+        // use any permission until this moment.
+        await Staff.update(contract.staff_id, { offerAcceptedAt: new Date().toISOString(), isActive: true });
+
+        // The offer's salary terms are the one place compensation is
+        // negotiated and typed in - syncing them into Payroll here (instead
+        // of also accepting manual entry on the Staff/Payroll pages at hire
+        // time) means there's a single source of truth instead of two
+        // numbers that can quietly drift apart.
+        await Staff.updateSalary(contract.staff_id, {
+            baseSalary: contract.basic_salary,
+            housingAllowance: contract.housing_allowance,
+            transportAllowance: contract.transport_allowance,
+            utilityAllowance: contract.utility_allowance,
+            mealAllowance: contract.meal_allowance,
+            currency: contract.currency
+        });
 
         await AuditService.log({
             staffId: contract.staff_id,

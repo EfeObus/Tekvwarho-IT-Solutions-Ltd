@@ -42,7 +42,7 @@ async function getAutoStatus(staffId) {
 router.get('/', authMiddleware, hasPermission('onboarding'), async (req, res) => {
     try {
         const result = await db.query(`
-            SELECT s.id, s.name, s.email, s.role, s.department, s.hire_date, s.workspace_email,
+            SELECT s.id, s.name, s.email, s.role, s.department, s.hire_date, s.workspace_email, s.offer_accepted_at,
                    COUNT(t.id) AS total_tasks,
                    COUNT(t.id) FILTER (WHERE t.status = 'done') AS completed_tasks
             FROM staff s
