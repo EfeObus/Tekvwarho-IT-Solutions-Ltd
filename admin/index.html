@@ -307,6 +307,16 @@
                         </div>
                         <div class="card-body" style="padding: 0;" id="pending-onboarding-list"></div>
                     </div>
+
+                    <!-- Company Notices - visible to every staff member, not just admins -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Company Notices</h3>
+                        </div>
+                        <div class="card-body" style="padding: 0;" id="company-notices-list">
+                            <div class="empty-state"><p>Loading...</p></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
@@ -326,6 +336,7 @@
                 OnboardingManager.init();
             }
             loadPendingOnboarding();
+            loadCompanyNotices();
         });
 
         function escapeHtml(str) {
@@ -359,6 +370,36 @@
                     </div>
                 `;
             }).join('');
+        }
+
+        // Notices are readable by any authenticated staff member (unlike
+        // Compliance, which this widget deliberately doesn't route through -
+        // that page also holds deadlines/vault access most staff shouldn't
+        // see). Posting/deleting stays admin-only, on Compliance.
+        async function loadCompanyNotices() {
+            const el = document.getElementById('company-notices-list');
+            const res = await AdminApp.apiRequest('/compliance/notices');
+            if (!res || !res.success) {
+                el.innerHTML = '<div class="empty-state"><p>Failed to load notices</p></div>';
+                return;
+            }
+            if (!res.data.length) {
+                el.innerHTML = '<div class="empty-state"><p>No notices yet</p></div>';
+                return;
+            }
+
+            const formatDate = (d) => new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+            el.innerHTML = res.data.slice(0, 5).map(n => `
+                <div style="padding:14px 16px; border-bottom:1px solid #F0F2F5;">
+                    <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px;">
+                        <strong>${escapeHtml(n.title)}</strong>
+                        <span class="text-muted" style="font-size:11px; white-space:nowrap;">${formatDate(n.created_at)}</span>
+                    </div>
+                    <p style="margin:6px 0 0; font-size:13px; color:#4A5568; white-space:pre-line;">${escapeHtml(n.content)}</p>
+                    ${n.posted_by_name ? `<div class="text-muted" style="font-size:11px; margin-top:6px;">Posted by ${escapeHtml(n.posted_by_name)}</div>` : ''}
+                </div>
+            `).join('');
         }
     </script>
 </body>

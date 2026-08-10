@@ -15,6 +15,7 @@ const { body, validationResult } = require('express-validator');
 const { authMiddleware, adminOnly } = require('../middleware/auth');
 const db = require('../config/database');
 const { uploadDocument, downloadDocument, deleteDocument } = require('../services/vaultStorage');
+const { sendCompanyNoticeEmail } = require('../services/emailService');
 
 const upload = multer({
     storage: multer.memoryStorage(),
@@ -201,7 +202,26 @@ router.post('/notices', authMiddleware, adminOnly, [
             `INSERT INTO company_notices (title, content, posted_by) VALUES ($1,$2,$3) RETURNING *`,
             [req.body.title, req.body.content, req.user.id]
         );
-        res.status(201).json({ success: true, data: result.rows[0] });
+        const notice = result.rows[0];
+
+        // Fan out to every active staff member's personal email - best
+        // effort, one failed address shouldn't block the others or the
+        // response. The dashboard widget already covers anyone who just
+        // logs in, this is the copy that reaches people who don't.
+        const staffResult = await db.query('SELECT email, name FROM staff WHERE is_active = true');
+        const outcomes = await Promise.allSettled(
+            staffResult.rows.map(s => sendCompanyNoticeEmail({
+                staffEmail: s.email,
+                staffName: s.name,
+                title: notice.title,
+                content: notice.content,
+                postedByName: req.user.name
+            }))
+        );
+        const emailedCount = outcomes.filter(o => o.status === 'fulfilled').length;
+        await db.query('UPDATE company_notices SET emailed_at = CURRENT_TIMESTAMP WHERE id = $1', [notice.id]);
+
+        res.status(201).json({ success: true, data: notice, emailedCount, totalStaff: staffResult.rows.length });
     } catch (error) {
         console.error('Create notice error:', error);
         res.status(500).json({ success: false, message: 'Failed to create notice' });

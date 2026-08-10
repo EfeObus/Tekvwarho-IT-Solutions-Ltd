@@ -5,7 +5,7 @@ A comprehensive IT solutions website with integrated admin dashboard, live chat,
 ![License](https://img.shields.io/badge/license-Proprietary-blue)
 ![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14%2B-blue)
-![Version](https://img.shields.io/badge/version-1.11.1-orange)
+![Version](https://img.shields.io/badge/version-1.12.0-orange)
 
 ## Company Information
 
@@ -725,6 +725,25 @@ curl -X GET http://localhost:5500/api/messages \
 ---
 
 ## Changelog
+
+### v1.12.0 (August 10, 2026)
+
+#### Company Notices Reach Staff, Not Just the Compliance Page
+
+`company_notices` already existed with a working, openly-readable API (any
+authenticated staff member, not just admins), but the only UI that ever
+displayed it was the admin/compliance-gated Compliance page - a regular
+staff member had no way to see one short of knowing to hit the API
+directly, and posting one never notified anyone at all.
+
+Added a "Company Notices" card to the main dashboard, visible to every
+staff member regardless of role or permissions (matching the API's own
+access level, not routed through Compliance, which also holds deadline and
+vault data most staff shouldn't see). Posting a notice now also fans out
+an email to every active staff member's personal address - best effort,
+sent concurrently via `Promise.allSettled` so one bad address can't block
+the rest - and the admin gets an immediate "emailed to X/Y staff"
+confirmation instead of wondering whether it went anywhere.
 
 ### v1.11.1 (August 10, 2026)
 

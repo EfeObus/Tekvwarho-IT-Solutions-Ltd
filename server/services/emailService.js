@@ -567,6 +567,33 @@ const sendWelcomeEmail = async ({ staff, workspaceEmail, tempPassword }) => {
     });
 };
 
+/**
+ * Send a company notice to one staff member's personal email - the
+ * dashboard widget shows the same content, this is the copy that reaches
+ * them even if they don't log in that day.
+ */
+const sendCompanyNoticeEmail = async ({ staffEmail, staffName, title, content, postedByName }) => {
+    const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #0066CC;">Company Notice: ${title}</h2>
+            <p>Hi ${staffName},</p>
+            <div style="background: #F5F6FA; padding: 16px 20px; border-radius: 8px; white-space: pre-line; margin: 20px 0;">${content}</div>
+            <p style="color: #666; font-size: 13px;">Posted by ${postedByName || 'Tekvwa IT Solutions'}. You can also view this and past notices on your dashboard.</p>
+            <hr style="margin-top: 30px; border: none; border-top: 1px solid #ddd;">
+            <p style="font-size: 12px; color: #666;">
+                Tekvwa IT Solutions Ltd &bull; Ughelli, Delta State, Nigeria &bull; RC 9748441<br>
+                This is an automated email, please do not reply.
+            </p>
+        </div>
+    `;
+
+    return sendEmail({
+        to: staffEmail,
+        subject: `Company Notice: ${title}`,
+        html
+    });
+};
+
 module.exports = {
     sendEmail,
     sendContactNotification,
@@ -580,5 +607,6 @@ module.exports = {
     sendPasswordResetEmail,
     sendContractEmail,
     sendWelcomeEmail,
-    sendAccountSetupEmail
+    sendAccountSetupEmail,
+    sendCompanyNoticeEmail
 };

@@ -458,7 +458,7 @@
                 if (res && res.success) {
                     document.getElementById('notice-title').value = '';
                     document.getElementById('notice-content').value = '';
-                    AdminApp.showNotification('Notice posted', 'success');
+                    AdminApp.showNotification(`Notice posted and emailed to ${res.emailedCount}/${res.totalStaff} staff`, 'success');
                     this.loadNotices();
                 }
             },
