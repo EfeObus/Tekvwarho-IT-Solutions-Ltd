@@ -31,3 +31,8 @@ build/
 # Temporary files
 tmp/
 temp/
+
+# Beta app binaries - deployed via `gcloud run deploy --source .` directly,
+# not tracked in git history to avoid bloating it with binary rebuilds
+downloads/*.apk
+downloads/*.ipa

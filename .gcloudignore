@@ -1,0 +1,7 @@
+#!include:.gitignore
+
+# Beta app binaries are excluded from git (to avoid bloating history with
+# binary rebuilds) but must still be present in the Cloud Run build - they
+# get served directly from the project root via express.static.
+!downloads/*.apk
+!downloads/*.ipa
